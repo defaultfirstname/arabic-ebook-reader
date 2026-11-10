@@ -14,6 +14,15 @@ import path from 'path-browserify';
 
 initZipSettings();
 
+function isFontResource(mediaType: string, filename: string) {
+  return (
+    mediaType.startsWith('font/') ||
+    /^application\/(?:x-)?font-/.test(mediaType) ||
+    mediaType === 'application/vnd.ms-opentype' ||
+    (mediaType === 'application/octet-stream' && /\.(?:otf|ttf|woff2?)$/i.test(filename))
+  );
+}
+
 export default async function extractEpub(blob: Blob) {
   const reader = new ZipReader(new BlobReader(blob));
   // get all entries from the zip
@@ -51,15 +60,17 @@ export default async function extractEpub(blob: Blob) {
         : contents.package.manifest.item
       ).map(async (item) => {
         const fileRelativePath = item['@_href'];
+        const mediaType = item['@_media-type'];
         const entry = fileMap[path.join(contentsDirectory, fileRelativePath)];
 
         if (!entry) {
+          // The reader can render the book with its own fonts.
+          if (isFontResource(mediaType, fileRelativePath)) return;
           throw new Error(`item ${fileRelativePath} not found`);
         }
 
         if (entry.getData && !entry.directory) {
           let value: string | Blob;
-          const mediaType: string = item['@_media-type'];
           if (mediaType.startsWith('image/')) {
             value = await entry.getData(new BlobWriter(mediaType));
           } else {
