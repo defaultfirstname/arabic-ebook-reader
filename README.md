@@ -9,7 +9,7 @@ An offline-capable reader for Modern Standard Arabic with right-to-left reading,
 - [x] Supports HTMLZ, Plain Text and EPUB files
 - [x] Themes, custom fonts, font size, line height, and image blur
 - [x] Horizontal right-to-left reading with paginated and continuous modes
-- [x] Bundled Noto Naskh Arabic font for offline reading
+- [x] Seven bundled fonts for offline Arabic reading, including Noto Naskh Arabic, Amiri, Scheherazade New, Noto Sans Arabic, Cairo, Readex Pro, and IBM Plex Sans Arabic
 - [x] Basic Time/Character and Reading Goals Tracker
 - [x] Reading Data Statistics
 - [x] Character count and progress display
