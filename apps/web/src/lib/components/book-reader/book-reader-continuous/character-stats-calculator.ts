@@ -11,7 +11,7 @@ import {
 } from '$lib/functions/binary-search';
 
 import { formatPos } from '$lib/functions/format-pos';
-import { getCharacterCount } from '$lib/functions/get-character-count';
+import { countTextCharacters, getCharacterCount } from '$lib/functions/get-character-count';
 import { getNodeBoundingRect } from '$lib/functions/range-util';
 import { getParagraphNodes } from '$lib/components/book-reader/get-paragraph-nodes';
 
@@ -110,6 +110,48 @@ export class CharacterStatsCalculator {
 
   calcExploredCharCount(customReadingPointScrollOffset = 0) {
     return this.getCharCountByScrollPos(this.scrollPos + customReadingPointScrollOffset);
+  }
+
+  getRtlPageStartCounts(pageSize: number) {
+    const startCounts = [0];
+    if (pageSize <= 0) return startCounts;
+
+    const contentRight = this.containerEl.getBoundingClientRect().right;
+    const range = this.document.createRange();
+
+    for (let index = 0; index < this.paragraphs.length; index += 1) {
+      const node = this.paragraphs[index];
+      const countBeforeNode = this.accumulatedCharCount[index - 1] ?? 0;
+      if (countBeforeNode === this.accumulatedCharCount[index]) continue;
+
+      const rect = getNodeBoundingRect(this.document, node);
+      if (!rect.width) continue;
+
+      // The right edge of the content moves with scrolling and with the partial-page transform.
+      const lastPage = Math.floor((contentRight - rect.left - 0.01) / pageSize);
+      for (let page = startCounts.length; page <= lastPage; page += 1) {
+        let prefixCount = 0;
+        if (node instanceof Text && rect.right > contentRight - page * pageSize) {
+          // Find the first character whose range reaches the next spread.
+          range.setStart(node, 0);
+          let low = 1;
+          let high = node.length;
+          while (low < high) {
+            const middle = Math.floor((low + high) / 2);
+            range.setEnd(node, middle);
+            if (range.getBoundingClientRect().left < contentRight - page * pageSize) {
+              high = middle;
+            } else {
+              low = middle + 1;
+            }
+          }
+          prefixCount = countTextCharacters(node.data.slice(0, low - 1));
+        }
+        startCounts.push(countBeforeNode + prefixCount);
+      }
+    }
+
+    return startCounts;
   }
 
   getCharCountByScrollPos(scrollPos: number) {

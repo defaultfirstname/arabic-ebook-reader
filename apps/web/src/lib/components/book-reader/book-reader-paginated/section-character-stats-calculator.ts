@@ -20,6 +20,7 @@ export class SectionCharacterStatsCalculator {
   private sectionIndex = -1;
 
   private calculator: CharacterStatsCalculator | undefined;
+  private rtlPageStartCounts = [0];
 
   constructor(
     public readonly containerEl: HTMLElement,
@@ -29,6 +30,7 @@ export class SectionCharacterStatsCalculator {
     private getHeight: () => number,
     private getPageGap: () => number,
     public verticalMode: boolean,
+    private readonly rightToLeft: boolean,
     private readonly scrollEl: HTMLElement,
     private readonly document: Document
   ) {
@@ -55,12 +57,18 @@ export class SectionCharacterStatsCalculator {
     this.sectionIndex = sectionIndex;
 
     setTimeout(() => {
-      this.calculator?.updateParagraphPosIfNeeded(this.virtualScrollPos$.getValue());
+      if (!this.rightToLeft) {
+        this.calculator?.updateParagraphPosIfNeeded(this.virtualScrollPos$.getValue());
+      }
     });
   }
 
   updateParagraphPos() {
     if (!this.calculator) return;
+    if (this.rightToLeft) {
+      this.rtlPageStartCounts = this.calculator.getRtlPageStartCounts(this.screenSize);
+      return;
+    }
     this.calculator.updateParagraphPos(this.virtualScrollPos$.getValue());
   }
 
@@ -76,13 +84,18 @@ export class SectionCharacterStatsCalculator {
       );
     }
 
-    const offset = this.verticalMode ? 0 : -this.screenSize;
+    const offset = this.verticalMode || this.rightToLeft ? 0 : -this.screenSize;
     return this.getCharCountByScrollPos(this.virtualScrollPos$.getValue() + offset);
   }
 
   getCharCountByScrollPos(scrollPos: number) {
     if (!this.calculator) return -1;
     const startCount = this.getSectionStartCount();
+    if (this.rightToLeft) {
+      const page = Math.max(0, Math.round(scrollPos / this.screenSize));
+      const index = Math.min(page, this.rtlPageStartCounts.length - 1);
+      return startCount + this.rtlPageStartCounts[index];
+    }
     return this.calculator.getCharCountByScrollPos(scrollPos) + startCount;
   }
 
@@ -98,6 +111,9 @@ export class SectionCharacterStatsCalculator {
     const isEndChar = charCount === endCount && endCount - startCount > 0;
     if (mirroredCount < 0 || charCount > endCount || isEndChar) return -1;
     if (mirroredCount === 0) return 0;
+    if (this.rightToLeft) {
+      return binarySearchNoNegative(this.rtlPageStartCounts, mirroredCount) * this.screenSize;
+    }
 
     const index = binarySearchNoNegative(this.calculator.accumulatedCharCount, mirroredCount);
     const { accumulatedCharCount, paragraphPos } = this.calculator;
@@ -145,6 +161,17 @@ export class SectionCharacterStatsCalculator {
 
     if (this.verticalMode) {
       return 1 - rect.left / this.screenSizeMirrored;
+    }
+
+    if (this.rightToLeft) {
+      const viewport = this.scrollEl.getBoundingClientRect();
+      const columnWidth = this.screenSize / columns;
+      const column = Math.min(
+        columns - 1,
+        Math.max(0, Math.floor((viewport.right - rect.right) / columnWidth))
+      );
+      const fraction = (rect.bottom - viewport.top) / viewport.height;
+      return (column + Math.min(1, Math.max(0, fraction))) / columns;
     }
 
     const progressPerColumn = Math.floor(100 / columns);

@@ -42,7 +42,8 @@ export class BookmarkManagerContinuous implements BookmarkManager {
     return {
       dataId: bookId,
       exploredCharCount,
-      progress: exploredCharCount / bookCharCount,
+      includesArabicCharacters: true,
+      progress: bookCharCount ? exploredCharCount / bookCharCount : 0,
       [scrollAxis]: this.window[scrollAxis],
       lastBookmarkModified: new Date().getTime()
     };

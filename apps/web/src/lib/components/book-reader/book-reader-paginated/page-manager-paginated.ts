@@ -11,9 +11,10 @@ import {
   type SectionWithProgress
 } from '$lib/components/book-reader/book-toc/book-toc';
 import type { PageManager } from '../types';
+import { formatPos } from '$lib/functions/format-pos';
 
 export class PageManagerPaginated implements PageManager {
-  private translateX = 0;
+  private translated = false;
 
   private sectionData: Map<string, SectionWithProgress> = new Map();
 
@@ -27,6 +28,7 @@ export class PageManagerPaginated implements PageManager {
     private height: number,
     private pageGap: number,
     private verticalMode: boolean,
+    private rightToLeft: boolean,
     private pageChange$: Subject<boolean>,
     private sectionRenderComplete$: Subject<number>
   ) {
@@ -80,22 +82,14 @@ export class PageManagerPaginated implements PageManager {
     const offset = viewportSize + this.pageGap;
     const isUser = true;
 
-    if (this.translateX) {
-      const clearTranslateX = () => {
-        this.contentEl.style.removeProperty('transform');
-        this.translateX = 0;
-      };
-
+    if (this.translated) {
       if (multiplier < 0) {
-        const prevTranslateX = this.translateX;
-        clearTranslateX();
-        this.scrollToPos(-prevTranslateX - offset, isUser);
+        this.scrollToPos(this.virtualScrollPos$.getValue() - offset, isUser);
         return;
       }
 
       if (this.nextSection(isUser)) {
-        clearTranslateX();
-        return;
+        this.clearTranslation();
       }
       return;
     }
@@ -177,25 +171,33 @@ export class PageManagerPaginated implements PageManager {
       return;
     }
 
-    const screenRight = pos + viewportSize;
-    if (screenRight <= scrollSize) {
+    if (pos + viewportSize <= scrollSize) {
       this.scrollToPos(pos, isUser);
       return;
     }
-    this.translateXToPos(-pos, isUser);
+    this.translateXToPos(pos, isUser);
   }
 
   private scrollToPos(pos: number, isUser: boolean) {
+    this.clearTranslation();
     this.virtualScrollPos$.next(pos);
-    this.scrollEl.scrollTo({ [this.verticalMode ? 'top' : 'left']: pos });
+    const offset = formatPos(pos, this.rightToLeft ? 'rtl' : 'ltr');
+    this.scrollEl.scrollTo({ [this.verticalMode ? 'top' : 'left']: offset });
     this.pageChange$.next(isUser);
   }
 
   private translateXToPos(pos: number, isUser: boolean) {
-    this.virtualScrollPos$.next(-pos);
-    this.contentEl.style.transform = `translateX(${pos}px)`;
-    this.translateX = pos;
+    this.scrollEl.scrollTo({ left: 0 });
+    this.virtualScrollPos$.next(pos);
+    this.contentEl.style.transform = `translateX(${this.rightToLeft ? pos : -pos}px)`;
+    this.translated = true;
     this.pageChange$.next(isUser);
+  }
+
+  private clearTranslation() {
+    if (!this.translated) return;
+    this.contentEl.style.removeProperty('transform');
+    this.translated = false;
   }
 
   /**

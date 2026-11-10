@@ -146,6 +146,7 @@
   import { availableThemes } from '$lib/data/theme-option';
   import { ViewMode } from '$lib/data/view-mode';
   import loadBookData from '$lib/functions/book-data-loader/load-book-data';
+  import { getArabicBookMetrics } from '$lib/functions/book-data-loader/get-arabic-book-metrics';
   import { formatPageTitle } from '$lib/functions/format-page-title';
   import { iffBrowser } from '$lib/functions/rxjs/iff-browser';
   import {
@@ -332,7 +333,7 @@
         );
       }
 
-      return bookData;
+      return { ...bookData, arabicMetrics: getArabicBookMetrics(bookData, document) };
     }),
     share()
   );
@@ -349,7 +350,9 @@
   const initBookmarkData$ = rawBookData$.pipe(
     tap((rawBookData) => {
       if (!rawBookData) return;
-      bookmarkData = database.getBookmark(rawBookData.id);
+      bookmarkData = database
+        .getBookmark(rawBookData.id)
+        .then((bookmark) => rawBookData.arabicMetrics?.restoreBookmark(bookmark) ?? bookmark);
     }),
     reduceToEmptyString()
   );
@@ -358,7 +361,7 @@
     switchMap((rawBookData) => {
       if (!rawBookData) return EMPTY;
 
-      sectionList$.next(rawBookData.sections || []);
+      sectionList$.next(rawBookData.arabicMetrics?.sections ?? rawBookData.sections ?? []);
 
       return loadBookData(
         rawBookData,
@@ -525,6 +528,9 @@
   }
 
   $: isPaginated = $viewMode$ === ViewMode.Paginated;
+  $: rightToLeft =
+    !!$rawBookData$ &&
+    (/^ar(?:-|$)/i.test($rawBookData$.language ?? '') || !!$rawBookData$.arabicMetrics);
 
   $: firstDimensionMargin =
     browser && $enableTapEdgeToFlip$ && isPaginated && $verticalMode$
@@ -1692,6 +1698,7 @@
   <StyleSheetRenderer styleSheet={$bookData$.styleSheet} />
   <BookReader
     htmlContent={$bookData$.htmlContent}
+    {rightToLeft}
     width={$containerViewportWidth$ ?? 0}
     height={$containerViewportHeight$ ?? 0}
     {fontFeatureSettings}
@@ -1794,13 +1801,17 @@
 {#if $enableTapEdgeToFlip$ && isPaginated && !$skipKeyDownListener$}
   <button
     class="fixed left-0 z-10 w-5"
-    on:click={$verticalMode$ ? () => pageManager?.nextPage() : () => pageManager?.prevPage()}
+    on:click={$verticalMode$ || rightToLeft
+      ? () => pageManager?.nextPage()
+      : () => pageManager?.prevPage()}
     style:height={tapButtonHeight}
     style:top={tapButtonTop}
   />
   <button
     class="fixed right-0 z-10 w-5"
-    on:click={$verticalMode$ ? () => pageManager?.prevPage() : () => pageManager?.nextPage()}
+    on:click={$verticalMode$ || rightToLeft
+      ? () => pageManager?.prevPage()
+      : () => pageManager?.nextPage()}
     style:height={tapButtonHeight}
     style:top={tapButtonTop}
   />

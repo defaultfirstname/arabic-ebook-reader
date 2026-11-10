@@ -7,15 +7,30 @@
 import { isNodeGaiji } from './is-node-gaiji';
 
 export function getCharacterCount(node: Node) {
-  return isNodeGaiji(node) ? 1 : getRawCharacterCount(node);
+  return isNodeGaiji(node) ? 1 : countTextCharacters(node.textContent ?? '');
+}
+
+export function countTextCharacters(text: string) {
+  return countLegacyTextCharacters(text) + countArabicCharacters(text);
+}
+
+export function getLegacyCharacterCount(node: Node) {
+  return isNodeGaiji(node) ? 1 : countLegacyTextCharacters(node.textContent ?? '');
+}
+
+export function countArabicCharacters(text: string) {
+  // Count base letters and digits, leaving combining marks and tatweel uncounted.
+  return (
+    text.match(/(?!\u0640)(?=\p{Script_Extensions=Arabic})[\p{Letter}\p{Decimal_Number}]/gu)
+      ?.length ?? 0
+  );
 }
 
 const isNotJapaneseRegex =
   /[^0-9A-Z○◯々-〇〻ぁ-ゖゝ-ゞァ-ヺー０-９Ａ-Ｚｦ-ﾝ\p{Radical}\p{Unified_Ideograph}]+/gimu;
 
-function getRawCharacterCount(node: Node) {
-  if (!node.textContent) return 0;
-  return countUnicodeCharacters(node.textContent.replace(isNotJapaneseRegex, ''));
+function countLegacyTextCharacters(text: string) {
+  return countUnicodeCharacters(text.replace(isNotJapaneseRegex, ''));
 }
 
 /**

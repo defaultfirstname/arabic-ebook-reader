@@ -52,6 +52,7 @@ interface BooksDbV6BookmarkData {
   scrollX?: number;
   scrollY?: number;
   exploredCharCount?: number;
+  includesArabicCharacters?: boolean;
   progress: number | string | undefined;
   lastBookmarkModified: number;
 }

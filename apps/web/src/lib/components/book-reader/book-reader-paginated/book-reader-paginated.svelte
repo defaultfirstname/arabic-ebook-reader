@@ -50,6 +50,7 @@
   export let height: number;
 
   export let verticalMode: boolean;
+  export let rightToLeft: boolean;
 
   export let fontFeatureSettings: string;
 
@@ -221,6 +222,7 @@
         height,
         gap,
         verticalMode,
+        rightToLeft,
         pageChange$,
         sectionRenderComplete$
       );
@@ -462,7 +464,7 @@
       takeUntil(destroy$)
     )
     .subscribe((ev) => {
-      let multiplier = (ev.deltaX < 0 ? -1 : 1) * (verticalMode ? -1 : 1);
+      let multiplier = (ev.deltaX < 0 ? -1 : 1) * (verticalMode || rightToLeft ? -1 : 1);
       if (!ev.deltaX) {
         multiplier = ev.deltaY < 0 ? -1 : 1;
       }
@@ -495,16 +497,17 @@
       skipFirstHtmlLoad = false;
       return;
     }
-    if (!scrollEl) return;
+    if (!scrollEl || !contentEl) return;
 
     calculator = new SectionCharacterStatsCalculator(
-      scrollEl,
+      rightToLeft ? contentEl : scrollEl,
       sections,
       virtualScrollPos$,
       () => width,
       () => height,
       () => gap,
       verticalMode,
+      rightToLeft,
       scrollEl,
       document
     );
@@ -628,7 +631,7 @@
     if (!concretePageManager || $skipKeyDownListener$) return;
     if (ev.detail.direction !== 'left' && ev.detail.direction !== 'right') return;
     const swipeLeft = ev.detail.direction === 'left';
-    const nextPage = verticalMode ? !swipeLeft : swipeLeft;
+    const nextPage = verticalMode || rightToLeft ? !swipeLeft : swipeLeft;
     concretePageManager.flipPage(nextPage ? 1 : -1);
   }
 
@@ -646,11 +649,11 @@
     switch (ev.code) {
       case 'ArrowLeft':
       case 'KeyA':
-        concretePageManager[verticalMode ? 'nextPage' : 'prevPage']();
+        concretePageManager[verticalMode || rightToLeft ? 'nextPage' : 'prevPage']();
         break;
       case 'ArrowRight':
       case 'KeyD':
-        concretePageManager[verticalMode ? 'prevPage' : 'nextPage']();
+        concretePageManager[verticalMode || rightToLeft ? 'prevPage' : 'nextPage']();
         break;
       case 'ArrowUp':
         concretePageManager.prevPage();
@@ -676,6 +679,7 @@
 
 <div
   bind:this={scrollEl}
+  dir={rightToLeft ? 'rtl' : undefined}
   style:color={fontColor}
   style:font-size="{fontSize}px"
   style:line-height={lineHeight}

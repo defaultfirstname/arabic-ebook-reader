@@ -33,6 +33,7 @@
   import { onDestroy } from 'svelte';
 
   export let htmlContent: string;
+  export let rightToLeft: boolean;
 
   export let width: number;
 
@@ -331,6 +332,7 @@
   {:else}
     <BookReaderPaginated
       {htmlContent}
+      rightToLeft={rightToLeft && !verticalMode}
       width={$contentViewportWidth$ ?? 0}
       height={$contentViewportHeight$ ?? 0}
       {verticalMode}

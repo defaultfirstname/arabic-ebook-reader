@@ -60,7 +60,8 @@ export class BookmarkManagerPaginated implements BookmarkManager {
     return {
       dataId: bookId,
       exploredCharCount,
-      progress: exploredCharCount / bookCharCount,
+      includesArabicCharacters: true,
+      progress: bookCharCount ? exploredCharCount / bookCharCount : 0,
       lastBookmarkModified: new Date().getTime()
     };
   }
