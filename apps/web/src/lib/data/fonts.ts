@@ -6,9 +6,25 @@
 
 export enum LocalFont {
   NOTONASKHARABIC = 'Noto Naskh Arabic',
+  AMIRI = 'Amiri',
+  SCHEHERAZADENEW = 'Scheherazade New',
+  NOTOSANSARABIC = 'Noto Sans Arabic',
+  CAIRO = 'Cairo',
+  READEXPRO = 'Readex Pro',
+  IBMPLEXSANSARABIC = 'IBM Plex Sans Arabic',
   SERIF = 'Serif',
   SANSSERIF = 'Sans-Serif'
 }
+
+export const arabicReaderFonts = [
+  LocalFont.NOTONASKHARABIC,
+  LocalFont.AMIRI,
+  LocalFont.SCHEHERAZADENEW,
+  LocalFont.NOTOSANSARABIC,
+  LocalFont.CAIRO,
+  LocalFont.READEXPRO,
+  LocalFont.IBMPLEXSANSARABIC
+];
 
 export interface UserFont {
   name: string;

@@ -22,7 +22,7 @@
   import { inputClasses } from '$lib/css-classes';
   import { BlurMode } from '$lib/data/blur-mode';
   import { dialogManager } from '$lib/data/dialog-manager';
-  import { LocalFont } from '$lib/data/fonts';
+  import { arabicReaderFonts, LocalFont } from '$lib/data/fonts';
   import { ImportHTMLFixMode } from '$lib/data/import-html-fix-mode';
   import { logger } from '$lib/data/logger';
   import { MergeMode } from '$lib/data/merge-mode';
@@ -463,7 +463,7 @@
     <SettingsItemGroup title="Reading font">
       <div slot="header" class="flex items-center">
         <SettingsFontSelector
-          availableFonts={[LocalFont.NOTONASKHARABIC, LocalFont.SERIF]}
+          availableFonts={[...arabicReaderFonts, LocalFont.SERIF]}
           bind:fontValue={fontFamilyGroupOne}
         />
         {#if fontCacheSupported}
@@ -494,7 +494,7 @@
     <SettingsItemGroup title="Sans-serif text font">
       <div slot="header" class="flex items-center">
         <SettingsFontSelector
-          availableFonts={[LocalFont.NOTONASKHARABIC, LocalFont.SANSSERIF]}
+          availableFonts={[...arabicReaderFonts, LocalFont.SANSSERIF]}
           bind:fontValue={fontFamilyGroupTwo}
         />
         {#if fontCacheSupported}
