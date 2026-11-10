@@ -16,8 +16,6 @@ export interface ThemeOption {
   backgroundColor: string;
   selectionFontColor: string;
   selectionBackgroundColor: string;
-  hintFuriganaShadowColor: string;
-  hintFuriganaFontColor: string;
   tooltipTextFontColor: string;
 }
 
@@ -27,17 +25,7 @@ export interface CustomThemeValue {
   rgbaExpression: string;
 }
 
-function updateHintFuriganaFontColor(theme: Record<keyof ThemeOption, ColorObject>) {
-  return {
-    ...theme,
-    hintFuriganaFontColor: {
-      ...theme.fontColor,
-      a: theme.fontColor.a ? theme.fontColor.a * 0.38 : 0.38
-    }
-  };
-}
-
-const lightTheme = updateHintFuriganaFontColor({
+const lightTheme = {
   fontColor: {
     r: 0x00,
     g: 0x00,
@@ -59,26 +47,15 @@ const lightTheme = updateHintFuriganaFontColor({
     g: 0x97,
     b: 0x97
   },
-  hintFuriganaFontColor: {
-    r: 0x00,
-    g: 0x00,
-    b: 0x00
-  },
-  hintFuriganaShadowColor: {
-    r: 34,
-    g: 34,
-    b: 49,
-    a: 0.3
-  },
   tooltipTextFontColor: {
     r: 0x00,
     g: 0x00,
     b: 0x00,
     a: 0.6
   }
-});
+};
 
-const darkTheme = updateHintFuriganaFontColor({
+const darkTheme = {
   fontColor: {
     r: 0xff,
     g: 0xff,
@@ -102,24 +79,13 @@ const darkTheme = updateHintFuriganaFontColor({
     b: 220,
     a: 0.8
   },
-  hintFuriganaFontColor: {
-    r: 0x00,
-    g: 0x00,
-    b: 0x00
-  },
-  hintFuriganaShadowColor: {
-    r: 240,
-    g: 240,
-    b: 241,
-    a: 0.3
-  },
   tooltipTextFontColor: {
     r: 0xff,
     g: 0xff,
     b: 0xff,
     a: 0.6
   }
-});
+};
 
 function themeObjValueToStringValue<T extends string>(objValue: Record<T, ColorObject>) {
   return Object.entries(objValue).reduce<Record<T, string>>((acc, [key, value]) => {

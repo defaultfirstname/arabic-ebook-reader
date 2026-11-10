@@ -4,7 +4,7 @@
   import DomainHint from '$lib/components/domain-hint.svelte';
   import { basePath, clearConsoleOnReload } from '$lib/data/env';
   import { dialogManager, type Dialog } from '$lib/data/dialog-manager';
-  import { userFontsCacheName, type UserFont } from '$lib/data/fonts';
+  import { LocalFont, userFontsCacheName, type UserFont } from '$lib/data/fonts';
   import { fontFamilyGroupOne$, isOnline$, userFonts$ } from '$lib/data/store';
   import { dummyFn, isMobile, isMobile$ } from '$lib/functions/utils';
   import { MetaTags } from 'svelte-meta-tags';
@@ -132,6 +132,6 @@
   </div>
 {/if}
 
-<span style={`font-family: ${$fontFamilyGroupOne$ || 'Noto Serif JP'}`} />
+<span style={`font-family: ${$fontFamilyGroupOne$ || LocalFont.NOTONASKHARABIC}`} />
 
 <DomainHint />

@@ -23,7 +23,6 @@
   import { BlurMode } from '$lib/data/blur-mode';
   import { dialogManager } from '$lib/data/dialog-manager';
   import { LocalFont } from '$lib/data/fonts';
-  import { FuriganaStyle } from '$lib/data/furigana-style';
   import { ImportHTMLFixMode } from '$lib/data/import-html-fix-mode';
   import { logger } from '$lib/data/logger';
   import { MergeMode } from '$lib/data/merge-mode';
@@ -38,14 +37,11 @@
     horizontalCustomReadingPosition$,
     textMarginMode$,
     textMarginValue$,
-    theme$,
-    verticalCustomReadingPosition$
+    theme$
   } from '$lib/data/store';
   import type { TextMarginMode } from '$lib/data/text-margin-mode';
   import { availableThemes as availableThemesMap } from '$lib/data/theme-option';
-  import type { VerticalTextOrientation } from '$lib/data/vertical-text-orientation';
   import { ViewMode } from '$lib/data/view-mode';
-  import type { WritingMode } from '$lib/data/writing-mode';
   import { secondsToMinutes } from '$lib/functions/statistic-util';
   import { dummyFn } from '$lib/functions/utils';
   import {
@@ -77,18 +73,6 @@
   export let blurImage: boolean;
 
   export let blurImageMode: string;
-
-  export let hideFurigana: boolean;
-
-  export let furiganaStyle: FuriganaStyle;
-
-  export let writingMode: WritingMode;
-
-  export let enableFontKerning: boolean;
-
-  export let enableFontVPAL: boolean;
-
-  export let verticalTextOrientation: VerticalTextOrientation;
 
   export let prioritizeReaderStyles: boolean;
 
@@ -211,47 +195,6 @@
   }));
 
   onDestroy(() => dialogManager.dialogs$.next([]));
-
-  const optionsForFuriganaStyle: ToggleOption<FuriganaStyle>[] = [
-    {
-      id: FuriganaStyle.Hide,
-      text: 'Hide'
-    },
-    {
-      id: FuriganaStyle.Partial,
-      text: 'Partial'
-    },
-    {
-      id: FuriganaStyle.Toggle,
-      text: 'Toggle'
-    },
-    {
-      id: FuriganaStyle.Full,
-      text: 'Full'
-    }
-  ];
-
-  const optionsForWritingMode: ToggleOption<WritingMode>[] = [
-    {
-      id: 'horizontal-tb',
-      text: 'Horizontal'
-    },
-    {
-      id: 'vertical-rl',
-      text: 'Vertical'
-    }
-  ];
-
-  const optionsForVerticalTextOrientation: ToggleOption<VerticalTextOrientation>[] = [
-    {
-      id: 'mixed',
-      text: 'Mixed'
-    },
-    {
-      id: 'upright',
-      text: 'Upright'
-    }
-  ];
 
   const optionsForTextMarginMode: ToggleOption<TextMarginMode>[] = [
     {
@@ -387,7 +330,6 @@
   );
 
   let showSpinner = false;
-  let furiganaStyleTooltip = '';
   let importHTMLFixModeTooltip = '';
   let autoReplicationTypeTooltip = '';
   let trackerAutoPauseTooltip = '';
@@ -396,28 +338,9 @@
     $textMarginValue$ = 0;
   }
 
-  $: verticalTextOrientationTooltip =
-    verticalTextOrientation === 'mixed'
-      ? 'Rotates the characters of horizontal scripts 90° clockwise'
-      : 'Lays out the characters of horizontal scripts naturally (upright), as well as the glyphs for vertical scripts.';
   $: autoBookmarkTooltip = `If enabled sets a bookmark after ${autoBookmarkTime} seconds without scrolling/page change`;
   $: wakeLockSupported = browser && 'wakeLock' in navigator;
-  $: verticalMode = writingMode === 'vertical-rl';
   $: fontCacheSupported = browser && 'caches' in window;
-  $: switch (furiganaStyle) {
-    case FuriganaStyle.Hide:
-      furiganaStyleTooltip = 'Always hidden';
-      break;
-    case FuriganaStyle.Toggle:
-      furiganaStyleTooltip = 'Hidden by default, can be toggled on click';
-      break;
-    case FuriganaStyle.Full:
-      furiganaStyleTooltip = 'Hidden by default, show on hover or click';
-      break;
-    default:
-      furiganaStyleTooltip = 'Display furigana as grayed out text';
-      break;
-  }
   $: avoidPageBreakTooltip = avoidPageBreak
     ? 'Avoids breaking words/sentences into different pages'
     : 'Allow words/sentences to break into different pages';
@@ -537,18 +460,10 @@
         <ButtonToggleGroup options={optionsForViewMode} bind:selectedOptionId={viewMode} />
       </SettingsItemGroup>
     </div>
-    <SettingsItemGroup title="Font family (Group 1)">
+    <SettingsItemGroup title="Reading font">
       <div slot="header" class="flex items-center">
         <SettingsFontSelector
-          availableFonts={[
-            LocalFont.NOTOSERIFJP,
-            LocalFont.KZUDMINCHO,
-            LocalFont.GENEI,
-            LocalFont.SHIPPORIMINCHO,
-            LocalFont.KLEEONE,
-            LocalFont.KLEEONESEMIBOLD,
-            LocalFont.SERIF
-          ]}
+          availableFonts={[LocalFont.NOTONASKHARABIC, LocalFont.SERIF]}
           bind:fontValue={fontFamilyGroupOne}
         />
         {#if fontCacheSupported}
@@ -572,14 +487,14 @@
       <input
         type="text"
         class={inputClasses}
-        placeholder="Noto Serif JP"
+        placeholder={LocalFont.NOTONASKHARABIC}
         bind:value={fontFamilyGroupOne}
       />
     </SettingsItemGroup>
-    <SettingsItemGroup title="Font family (Group 2)">
+    <SettingsItemGroup title="Sans-serif text font">
       <div slot="header" class="flex items-center">
         <SettingsFontSelector
-          availableFonts={[LocalFont.NOTOSANSJP, LocalFont.KZUDGOTHIC, LocalFont.SANSSERIF]}
+          availableFonts={[LocalFont.NOTONASKHARABIC, LocalFont.SANSSERIF]}
           bind:fontValue={fontFamilyGroupTwo}
         />
         {#if fontCacheSupported}
@@ -602,7 +517,7 @@
       <input
         type="text"
         class={inputClasses}
-        placeholder="Noto Sans JP"
+        placeholder={LocalFont.NOTONASKHARABIC}
         bind:value={fontFamilyGroupTwo}
       />
     </SettingsItemGroup>
@@ -685,13 +600,11 @@
         />
       </SettingsItemGroup>
     {/if}
-    <SettingsItemGroup
-      title={verticalMode ? 'Reader Left/right margin' : 'Reader Top/bottom margin'}
-    >
+    <SettingsItemGroup title="Reader Top/bottom margin">
       <SettingsDimensionPopover
         slot="header"
         isFirstDimension
-        isVertical={verticalMode}
+        isVertical={false}
         bind:dimensionValue={firstDimensionMargin}
       />
       <input
@@ -702,10 +615,10 @@
         bind:value={firstDimensionMargin}
       />
     </SettingsItemGroup>
-    <SettingsItemGroup title={verticalMode ? 'Reader Max height' : 'Reader Max width'}>
+    <SettingsItemGroup title="Reader Max width">
       <SettingsDimensionPopover
         slot="header"
-        isVertical={verticalMode}
+        isVertical={false}
         bind:dimensionValue={secondDimensionMaxValue}
       />
       <input
@@ -746,29 +659,6 @@
               autoBookmarkTime = 3;
             }
           }}
-        />
-      </SettingsItemGroup>
-    {/if}
-    <SettingsItemGroup title="Writing mode">
-      <ButtonToggleGroup options={optionsForWritingMode} bind:selectedOptionId={writingMode} />
-    </SettingsItemGroup>
-    {#if verticalMode}
-      <SettingsItemGroup
-        title="Enable Font Kerning"
-        tooltip={'Can lead to better visual balance for vertical spacing of text if font and browser supports it'}
-      >
-        <ButtonToggleGroup options={optionsForToggle} bind:selectedOptionId={enableFontKerning} />
-      </SettingsItemGroup>
-      <SettingsItemGroup
-        title="Enable VPAL"
-        tooltip={'Can lead to more natural spacing for vertically laid-out text if font and browser supports it'}
-      >
-        <ButtonToggleGroup options={optionsForToggle} bind:selectedOptionId={enableFontVPAL} />
-      </SettingsItemGroup>
-      <SettingsItemGroup title="Text Orientation" tooltip={verticalTextOrientationTooltip}>
-        <ButtonToggleGroup
-          options={optionsForVerticalTextOrientation}
-          bind:selectedOptionId={verticalTextOrientation}
         />
       </SettingsItemGroup>
     {/if}
@@ -866,17 +756,6 @@
         <ButtonToggleGroup options={optionsForBlurMode} bind:selectedOptionId={blurImageMode} />
       </SettingsItemGroup>
     {/if}
-    <SettingsItemGroup title="Hide furigana">
-      <ButtonToggleGroup options={optionsForToggle} bind:selectedOptionId={hideFurigana} />
-    </SettingsItemGroup>
-    {#if hideFurigana}
-      <SettingsItemGroup title="Hide furigana style" tooltip={furiganaStyleTooltip}>
-        <ButtonToggleGroup
-          options={optionsForFuriganaStyle}
-          bind:selectedOptionId={furiganaStyle}
-        />
-      </SettingsItemGroup>
-    {/if}
     {#if statisticsEnabled}
       <SettingsItemGroup
         title="Custom Point pauses Tracker"
@@ -904,7 +783,6 @@
               role="button"
               class="ml-4 hover:underline"
               on:click={() => {
-                verticalCustomReadingPosition$.next(100);
                 horizontalCustomReadingPosition$.next(0);
               }}
               on:keyup={dummyFn}
@@ -939,11 +817,9 @@
       >
         <ButtonToggleGroup options={optionsForToggle} bind:selectedOptionId={enableTapEdgeToFlip} />
       </SettingsItemGroup>
-      {#if !verticalMode}
-        <SettingsItemGroup title="Page Columns" tooltip="# of text columns rendered">
-          <input type="number" class={inputClasses} step="1" min="0" bind:value={pageColumns} />
-        </SettingsItemGroup>
-      {/if}
+      <SettingsItemGroup title="Page Columns" tooltip="# of text columns rendered">
+        <input type="number" class={inputClasses} step="1" min="0" bind:value={pageColumns} />
+      </SettingsItemGroup>
     {/if}
   {:else if activeSettings === 'Data'}
     <SettingsItemGroup title="Persistent storage" tooltip={persistentStorageTooltip}>

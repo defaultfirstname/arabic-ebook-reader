@@ -32,16 +32,6 @@
       alphaValue: 1,
       rgbaExpression: 'rgba(255,255,255,1)'
     },
-    hintFuriganaShadowColor: {
-      hexExpression: '#ffffff',
-      alphaValue: 1,
-      rgbaExpression: 'rgba(255,255,255,1)'
-    },
-    hintFuriganaFontColor: {
-      hexExpression: '#ffffff',
-      alphaValue: 1,
-      rgbaExpression: 'rgba(255,255,255,1)'
-    },
     tooltipTextFontColor: {
       hexExpression: '#ffffff',
       alphaValue: 1,
@@ -218,20 +208,6 @@
         label="Background"
         attribute="backgroundColor"
         values={customTheme.backgroundColor}
-        on:color={handleColorValueChange}
-        on:alpha={handleAlphaValueChange}
-      />
-      <SettingsCustomThemeInput
-        label="Furigana Partial Hide Font"
-        attribute="hintFuriganaFontColor"
-        values={customTheme.hintFuriganaFontColor}
-        on:color={handleColorValueChange}
-        on:alpha={handleAlphaValueChange}
-      />
-      <SettingsCustomThemeInput
-        label="Furigana Partial/Full Hide Shadow"
-        attribute="hintFuriganaShadowColor"
-        values={customTheme.hintFuriganaShadowColor}
         on:color={handleColorValueChange}
         on:alpha={handleAlphaValueChange}
       />

@@ -4,7 +4,7 @@
 
 An online e-book reader that supports dictionary extensions like Yomitan, which is hosted on [https://reader.ttsu.app](https://reader.ttsu.app)
 
-**Note**: The reader was created for japanese (language learners) - while books in other languages may work to a specific degree other functionalites (e. g. character counter etc.) may have unsupported / unexpected results
+This edition adapts the original reader for Modern Standard Arabic, with right-to-left reading and an offline Arabic font.
 
 # Current Development Status
 
@@ -13,9 +13,9 @@ Please not that ッツ Ebook Reader is currently not actively worked on / Mainte
 # Features
 
 - [x] Supports HTMLZ, Plain Text and EPUB files
-- [x] Customizable environment (e. g. themes, font size, image blur, furigana settings etc.)
-- [x] Continuous / Pagination reader mode
-- [x] Vertical / Horizontal reading mode
+- [x] Themes, custom fonts, font size, line height, and image blur
+- [x] Horizontal right-to-left reading with paginated and continuous modes
+- [x] Bundled Noto Naskh Arabic font for offline reading
 - [x] Basic Time/Character and Reading Goals Tracker
 - [x] Reading Data Statistics
 - [x] Character count and progress display
@@ -64,13 +64,13 @@ You can find most of the reader controls in the reader header which you can open
 
 You may find the following controls in the reader footer:
 
-| Control                                                | Description                                                                                                                                                                                                                                                                                                                                                   |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ![Icon](assets/readme/control-reader-timer-paused.svg) | Indicates that the Reading Tracker is paused. Double Click/Tap to start tracking or single Click/Tap to show the Tracker menu                                                                                                                                                                                                                                 |
-| ![Icon](assets/readme/control-reader-timer.svg)        | Indicates that the Reading Tracker is running. Double Click/Tap to stop tracking or single Click/Tap to show the Tracker menu.<br/>Pulses in case you have an active Freeze Position                                                                                                                                                                          |
-| ![Icon](assets/readme/control-reader-sync.svg)         | Indicates that there is data which will be exported if a sync target and auto export is configured. Click/Tap to execute a manual export                                                                                                                                                                                                                      |
-| ![Icon](assets/readme/control-sync-error.svg)          | Indicates that multiple auto export attempts failed. Click/Tap to execute a manual export                                                                                                                                                                                                                                                                     |
-| ![Image](assets/readme/book-progress.png)              | Displays your reading progress (C = optional chapter progress, T = total book progress). Click/Tap on it to copy the current (total) progress to the clipboard.<br/>The book progress is calculated by dividing the current character location by total book characters. Characters counted are Japanese Glyphs without latin letters, punctuation or similar |
+| Control                                                | Description                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![Icon](assets/readme/control-reader-timer-paused.svg) | Indicates that the Reading Tracker is paused. Double Click/Tap to start tracking or single Click/Tap to show the Tracker menu                                                                                                                                                                                                                           |
+| ![Icon](assets/readme/control-reader-timer.svg)        | Indicates that the Reading Tracker is running. Double Click/Tap to stop tracking or single Click/Tap to show the Tracker menu.<br/>Pulses in case you have an active Freeze Position                                                                                                                                                                    |
+| ![Icon](assets/readme/control-reader-sync.svg)         | Indicates that there is data which will be exported if a sync target and auto export is configured. Click/Tap to execute a manual export                                                                                                                                                                                                                |
+| ![Icon](assets/readme/control-sync-error.svg)          | Indicates that multiple auto export attempts failed. Click/Tap to execute a manual export                                                                                                                                                                                                                                                               |
+| ![Image](assets/readme/book-progress.png)              | Displays your reading progress (C = optional chapter progress, T = total book progress). Click/Tap on it to copy the current (total) progress to the clipboard.<br/>Book progress divides your current character position by the total. Arabic letters and digits count toward progress, and diacritics, tatweel, punctuation, and spaces add no count. |
 
 Click/Tap on some free space in the footer to hide the reading progress.
 

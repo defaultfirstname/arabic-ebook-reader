@@ -17,7 +17,6 @@
   import BookReaderContinuous from '$lib/components/book-reader/book-reader-continuous/book-reader-continuous.svelte';
   import { pxReader } from '$lib/components/book-reader/css-classes';
   import type { BooksDbBookmarkData } from '$lib/data/database/books-db/versions/books-db';
-  import type { FuriganaStyle } from '$lib/data/furigana-style';
   import type { TextMarginMode } from '$lib/data/text-margin-mode';
   import { ViewMode } from '$lib/data/view-mode';
   import { iffBrowser } from '$lib/functions/rxjs/iff-browser';
@@ -34,16 +33,13 @@
 
   export let htmlContent: string;
   export let rightToLeft: boolean;
+  export let language: string | undefined;
 
   export let width: number;
 
   export let height: number;
 
   export let verticalMode: boolean;
-
-  export let fontFeatureSettings: string;
-
-  export let verticalTextOrientation: string;
 
   export let prioritizeReaderStyles: boolean;
 
@@ -61,10 +57,6 @@
 
   export let backgroundColor: string;
 
-  export let hintFuriganaFontColor: string;
-
-  export let hintFuriganaShadowColor: string;
-
   export let fontFamilyGroupOne: string;
 
   export let fontFamilyGroupTwo: string;
@@ -76,10 +68,6 @@
   export let lineHeight: number;
 
   export let hideSpoilerImage: boolean;
-
-  export let hideFurigana: boolean;
-
-  export let furiganaStyle: FuriganaStyle;
 
   export let secondDimensionMaxValue: number;
 
@@ -190,7 +178,6 @@
     mergeMap((document) => {
       const reactiveElementsFn = reactiveElements(
         document,
-        furiganaStyle,
         hideSpoilerImage,
         navigator.standalone || window.matchMedia('(display-mode: fullscreen)').matches
       );
@@ -281,22 +268,19 @@
     The reader is currently blurred due to an external application (e. g. exstatic)
   </div>
 {/if}
-<div bind:this={$containerEl$} class="{pxReader} py-8">
+<div bind:this={$containerEl$} class="{pxReader} py-8" lang={language}>
   {#if viewMode === ViewMode.Continuous}
     <BookReaderContinuous
       {htmlContent}
+      rightToLeft={rightToLeft && !verticalMode}
       width={$contentViewportWidth$ ?? 0}
       height={$contentViewportHeight$ ?? 0}
       {verticalMode}
-      {fontFeatureSettings}
-      {verticalTextOrientation}
       {prioritizeReaderStyles}
       {enableTextJustification}
       {enableTextWrapPretty}
       {fontColor}
       {backgroundColor}
-      {hintFuriganaFontColor}
-      {hintFuriganaShadowColor}
       {fontFamilyGroupOne}
       {fontFamilyGroupTwo}
       {fontWeight}
@@ -306,8 +290,6 @@
       {textMarginMode}
       {textMarginValue}
       {hideSpoilerImage}
-      {hideFurigana}
-      {furiganaStyle}
       {secondDimensionMaxValue}
       {firstDimensionMargin}
       {autoPositionOnResize}
@@ -336,15 +318,11 @@
       width={$contentViewportWidth$ ?? 0}
       height={$contentViewportHeight$ ?? 0}
       {verticalMode}
-      {fontFeatureSettings}
-      {verticalTextOrientation}
       {prioritizeReaderStyles}
       {enableTextJustification}
       {enableTextWrapPretty}
       {fontColor}
       {backgroundColor}
-      {hintFuriganaFontColor}
-      {hintFuriganaShadowColor}
       {fontFamilyGroupOne}
       {fontFamilyGroupTwo}
       {fontWeight}
@@ -354,8 +332,6 @@
       {textMarginMode}
       {textMarginValue}
       {hideSpoilerImage}
-      {hideFurigana}
-      {furiganaStyle}
       loadingState={$imageLoadingState$ ?? true}
       {avoidPageBreak}
       {pageColumns}

@@ -58,7 +58,7 @@ worker.addEventListener('fetch', (event) => {
     event.respondWith(
       caches
         .match(url.pathname)
-        .then((r) => r ?? createRedirectResponse('/fonts/noto-serif-v21-regular.woff2'))
+        .then((r) => r ?? createRedirectResponse('/fonts/NotoNaskhArabic.ttf'))
     );
     return;
   }

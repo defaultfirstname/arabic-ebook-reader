@@ -215,7 +215,8 @@ export default function generateEpubHtml(
       }
     }
 
-    const htmlClass = parsedContent.querySelector('html')?.className || '';
+    const html = parsedContent.documentElement;
+    const htmlClass = html.className;
     const bodyId = body.id || '';
     const bodyClass = body.className || '';
 
@@ -245,6 +246,7 @@ export default function generateEpubHtml(
 
     const childBodyDiv = document.createElement('div');
     childBodyDiv.className = `ttu-book-body-wrapper ${bodyClass}`;
+    copyLanguageAndDirection(body, childBodyDiv);
     if (bodyId) {
       childBodyDiv.id = bodyId;
     }
@@ -252,6 +254,7 @@ export default function generateEpubHtml(
 
     const childHtmlDiv = document.createElement('div');
     childHtmlDiv.className = `ttu-book-html-wrapper ${htmlClass}`;
+    copyLanguageAndDirection(html, childHtmlDiv);
     childHtmlDiv.appendChild(childBodyDiv);
 
     const childWrapperDiv = document.createElement('div');
@@ -314,6 +317,16 @@ export default function generateEpubHtml(
     characters: currentCharCount,
     sections: sectionData.filter((item: Section) => item.reference.startsWith(prependValue))
   };
+}
+
+function copyLanguageAndDirection(source: Element, target: HTMLElement) {
+  const language = source.getAttribute('lang') || source.getAttribute('xml:lang');
+  if (language) target.lang = language;
+
+  const direction = source.getAttribute('dir')?.toLowerCase();
+  if (direction === 'rtl' || direction === 'ltr' || direction === 'auto') {
+    target.dir = direction;
+  }
 }
 
 function countForElement(containerEl: Node) {

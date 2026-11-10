@@ -140,16 +140,16 @@
 
     if (sortProp.direction === SortDirection.ASC) {
       sortDiff = isTitleSort
-        ? card1.title.localeCompare(card2.title, 'ja-JP', { numeric: true })
+        ? card1.title.localeCompare(card2.title, 'ar', { numeric: true })
         : +card1Prop - +card2Prop;
     } else {
       sortDiff = isTitleSort
-        ? card2.title.localeCompare(card1.title, 'ja-JP', { numeric: true })
+        ? card2.title.localeCompare(card1.title, 'ar', { numeric: true })
         : +card2Prop - +card1Prop;
     }
 
     if (!sortDiff) {
-      sortDiff = card1.title.localeCompare(card2.title, 'ja-JP', { numeric: true });
+      sortDiff = card1.title.localeCompare(card2.title, 'ar', { numeric: true });
     }
 
     return sortDiff;

@@ -49,8 +49,6 @@
     fontFamilyGroupTwo$,
     fontSize$,
     fontWeight$,
-    furiganaStyle$,
-    hideFurigana$,
     hideSpoilerImage$,
     multiplier$,
     pageColumns$,
@@ -63,8 +61,6 @@
     textMarginValue$,
     theme$,
     trackerAutostartTime$,
-    verticalMode$,
-    writingMode$,
     viewMode$,
     selectionToBookmarkEnabled$,
     lineHeight$,
@@ -74,7 +70,6 @@
     replicationSaveBehavior$,
     cacheStorageData$,
     confirmClose$,
-    verticalCustomReadingPosition$,
     horizontalCustomReadingPosition$,
     customReadingPointEnabled$,
     statisticsEnabled$,
@@ -90,10 +85,7 @@
     pauseTrackerOnCustomPointChange$,
     hideSpoilerImageMode$,
     showCharacterCounter$,
-    showPercentage$,
-    enableVerticalFontKerning$,
-    enableFontVPAL$,
-    verticalTextOrientation$
+    showPercentage$
   } from '$lib/data/store';
   import BookCompletionConfetti from '$lib/components/book-reader/book-completion-confetti/book-completion-confetti.svelte';
   import BookReaderHeader from '$lib/components/book-reader/book-reader-header.svelte';
@@ -165,13 +157,7 @@
   } from '$lib/functions/replication/replication-progress';
   import { getDateKey } from '$lib/functions/statistic-util';
   import { clickOutside } from '$lib/functions/use-click-outside';
-  import {
-    convertRemToPixels,
-    dummyFn,
-    isMobile$,
-    limitToRange,
-    getWeightedAverage
-  } from '$lib/functions/utils';
+  import { dummyFn, isMobile$, getWeightedAverage } from '$lib/functions/utils';
   import { onKeydownReader } from './on-keydown-reader';
   import { onDestroy, onMount, tick } from 'svelte';
   import Fa from 'svelte-fa';
@@ -195,9 +181,7 @@
   let bookmarkData: Promise<BooksDbBookmarkData | undefined> = Promise.resolve(undefined);
   let customReadingPointTop = -2;
   let customReadingPointLeft = -2;
-  let customReadingPoint = $verticalMode$
-    ? $verticalCustomReadingPosition$
-    : $horizontalCustomReadingPosition$;
+  let customReadingPoint = $horizontalCustomReadingPosition$;
   let customReadingPointScrollOffset = 0;
   let customReadingPointRange: Range | undefined;
   let lastSelectedRange: Range | undefined;
@@ -229,14 +213,6 @@
     syncedResolver = resolver;
   });
   const queuedReaderImageGalleryPictures = new Map<string, boolean>();
-  const fontFeatureSettings = [
-    $enableVerticalFontKerning$ && '"vkrn"',
-    $enableFontVPAL$ && '"vpal"'
-  ]
-    .filter((f) => !!f && $verticalMode$)
-    .join(', ');
-  const verticalTextOrientation = $verticalMode$ ? $verticalTextOrientation$ : '';
-
   const bookId$ = iffBrowser(() => readableToObservable(page)).pipe(
     map((pageObj) => Number(pageObj.url.searchParams.get('id'))),
     shareReplay({ refCount: true, bufferSize: 1 })
@@ -295,10 +271,6 @@
         }
 
         bookData = await saveExternalLastRead(externalStorageHandler, bookData);
-
-        if (bookData.language) {
-          document.documentElement.lang = bookData.language;
-        }
       } catch (error: any) {
         const message = `Error loading book: ${error.message}`;
 
@@ -442,18 +414,6 @@
     takeWhenBrowser()
   );
 
-  const writingModeStyleName = 'writing-mode';
-  const setWritingMode$ = writingMode$.pipe(
-    tapDom(
-      () => document.documentElement,
-      (writingMode, documentElement) =>
-        documentElement.style.setProperty(writingModeStyleName, writingMode),
-      (documentElement) => documentElement.style.removeProperty(writingModeStyleName)
-    ),
-    reduceToEmptyString(),
-    takeWhenBrowser()
-  );
-
   const sectionData$ = iffBrowser(() => sectionProgress$).pipe(
     map((sectionProgress) => [...sectionProgress.values()])
   );
@@ -528,14 +488,12 @@
   }
 
   $: isPaginated = $viewMode$ === ViewMode.Paginated;
-  $: rightToLeft =
-    !!$rawBookData$ &&
-    (/^ar(?:-|$)/i.test($rawBookData$.language ?? '') || !!$rawBookData$.arabicMetrics);
+  $: bookLanguage = $rawBookData$?.language;
+  $: hasArabicLanguage = /^ar(?:-|$)/i.test(bookLanguage ?? '');
+  $: rightToLeft = hasArabicLanguage || !!$rawBookData$?.arabicMetrics;
+  $: readingLanguage = rightToLeft && !hasArabicLanguage ? 'ar' : bookLanguage;
 
-  $: firstDimensionMargin =
-    browser && $enableTapEdgeToFlip$ && isPaginated && $verticalMode$
-      ? limitToRange(convertRemToPixels(window, 0.5), window.innerWidth, $firstDimensionMargin$)
-      : ($firstDimensionMargin$ ?? 0);
+  $: firstDimensionMargin = $firstDimensionMargin$ ?? 0;
 
   $: tapButtonHeight = `calc(100% - ${showHeader ? 5 : 4}rem)`;
 
@@ -584,7 +542,6 @@
   onDestroy(() => {
     if (browser) {
       document.removeEventListener('ttu-action', handleAction, false);
-      document.documentElement.lang = 'ja';
     }
 
     readerImageGalleryPictures$.next([]);
@@ -1120,7 +1077,7 @@
       (x) => multiplier$.next(multiplier$.getValue() + x),
       autoScroller,
       pageManager,
-      $verticalMode$,
+      false,
       changeChapter,
       handleSetCustomReadingPoint,
       trackerDblClickHandler,
@@ -1465,7 +1422,7 @@
       elRightReferencePoint,
       elBottomReferencePoint,
       pointGap
-    } = getReferencePoints(window, contentEl, $verticalMode$, firstDimensionMargin);
+    } = getReferencePoints(window, contentEl, false, firstDimensionMargin);
 
     merge(fromEvent(document, 'pointerup'), fromEvent(document, 'pointermove'))
       // eslint-disable-next-line rxjs/no-ignored-takewhile-value
@@ -1480,8 +1437,7 @@
           isSelectingCustomReadingPoint = false;
 
           tick().then(() => {
-            customReadingPointLeft = $verticalMode$ ? event.x : customReadingPointLeft;
-            customReadingPointTop = $verticalMode$ ? customReadingPointTop : event.y;
+            customReadingPointTop = event.y;
 
             const result = getParagraphToPoint(customReadingPointLeft, customReadingPointTop);
 
@@ -1492,26 +1448,13 @@
             if (isPaginated) {
               customReadingPointRange = result?.range;
             } else {
-              let newPercentage = 0;
+              const newPercentage = Math.ceil(
+                (Math.max(0, customReadingPointTop - elTopReferencePoint) /
+                  (elBottomReferencePoint - elTopReferencePoint)) *
+                  100
+              );
 
-              if ($verticalMode$) {
-                newPercentage = Math.ceil(
-                  (Math.max(0, customReadingPointLeft - elLeftReferencePoint) /
-                    (elRightReferencePoint - elLeftReferencePoint)) *
-                    100
-                );
-
-                verticalCustomReadingPosition$.next(newPercentage);
-              } else {
-                newPercentage = Math.ceil(
-                  (Math.max(0, customReadingPointTop - elTopReferencePoint) /
-                    (elBottomReferencePoint - elTopReferencePoint)) *
-                    100
-                );
-
-                horizontalCustomReadingPosition$.next(newPercentage);
-              }
-
+              horizontalCustomReadingPosition$.next(newPercentage);
               customReadingPoint = newPercentage;
             }
 
@@ -1528,9 +1471,7 @@
           if (isPaginated) {
             customReadingPointTop = insideYBound ? event.y : customReadingPointTop;
             customReadingPointLeft = insideXBound ? event.x : customReadingPointLeft;
-          } else if ($verticalMode$ && insideXBound) {
-            customReadingPointLeft = event.x;
-          } else if (!$verticalMode$ && insideYBound) {
+          } else if (insideYBound) {
             customReadingPointTop = event.y;
           }
         }
@@ -1627,9 +1568,6 @@
 
         if (isPaginated) {
           customReadingPointRange = undefined;
-        } else if ($verticalMode$) {
-          verticalCustomReadingPosition$.next(100);
-          customReadingPoint = 100;
         } else {
           horizontalCustomReadingPosition$.next(0);
           customReadingPoint = 0;
@@ -1699,18 +1637,15 @@
   <BookReader
     htmlContent={$bookData$.htmlContent}
     {rightToLeft}
+    language={readingLanguage}
     width={$containerViewportWidth$ ?? 0}
     height={$containerViewportHeight$ ?? 0}
-    {fontFeatureSettings}
-    {verticalTextOrientation}
     prioritizeReaderStyles={$prioritizeReaderStyles$}
     enableTextJustification={$enableTextJustification$}
     enableTextWrapPretty={$enableTextWrapPretty$}
-    verticalMode={$verticalMode$}
+    verticalMode={false}
     fontColor={$themeOption$?.fontColor}
     backgroundColor={$backgroundColor$}
-    hintFuriganaFontColor={$themeOption$?.hintFuriganaFontColor}
-    hintFuriganaShadowColor={$themeOption$?.hintFuriganaShadowColor}
     fontFamilyGroupOne={$fontFamilyGroupOne$}
     fontFamilyGroupTwo={$fontFamilyGroupTwo$}
     fontWeight={$fontWeight$}
@@ -1720,8 +1655,6 @@
     textMarginMode={$textMarginMode$}
     textMarginValue={$textMarginValue$}
     hideSpoilerImage={$hideSpoilerImage$}
-    hideFurigana={$hideFurigana$}
-    furiganaStyle={$furiganaStyle$}
     viewMode={$viewMode$}
     secondDimensionMaxValue={$secondDimensionMaxValue$}
     {firstDimensionMargin}
@@ -1749,7 +1682,6 @@
   />
   {$initBookmarkData$ ?? ''}
   {$setBackgroundColor$ ?? ''}
-  {$setWritingMode$ ?? ''}
   {$textSelector$ ?? ''}
   {$replicator$ ?? ''}
   {$autoStartTracker$ ?? ''}
@@ -1772,7 +1704,7 @@
   >
     <BookToc
       sectionData={$sectionData$}
-      verticalMode={$verticalMode$}
+      verticalMode={false}
       {exploredCharCount}
       {wasTrackerPaused}
     />
@@ -1801,17 +1733,13 @@
 {#if $enableTapEdgeToFlip$ && isPaginated && !$skipKeyDownListener$}
   <button
     class="fixed left-0 z-10 w-5"
-    on:click={$verticalMode$ || rightToLeft
-      ? () => pageManager?.nextPage()
-      : () => pageManager?.prevPage()}
+    on:click={rightToLeft ? () => pageManager?.nextPage() : () => pageManager?.prevPage()}
     style:height={tapButtonHeight}
     style:top={tapButtonTop}
   />
   <button
     class="fixed right-0 z-10 w-5"
-    on:click={$verticalMode$ || rightToLeft
-      ? () => pageManager?.prevPage()
-      : () => pageManager?.nextPage()}
+    on:click={rightToLeft ? () => pageManager?.prevPage() : () => pageManager?.nextPage()}
     style:height={tapButtonHeight}
     style:top={tapButtonTop}
   />

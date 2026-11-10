@@ -66,8 +66,8 @@ export default async function loadEpub(
   }
 
   if (!displayData.language) {
-    displayData.language = 'ja';
-    console.warn(`no language data found for ${file.name} - fallback to ja`);
+    displayData.language = 'ar';
+    console.warn(`no language data found for ${file.name} - fallback to ar`);
   }
 
   const blobData = reduceObjToBlobs(data);

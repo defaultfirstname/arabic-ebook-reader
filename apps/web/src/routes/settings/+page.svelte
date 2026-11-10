@@ -17,20 +17,16 @@
     confirmClose$,
     customReadingPointEnabled$,
     disableWheelNavigation$,
-    enableFontVPAL$,
     enableReaderWakeLock$,
     enableTapEdgeToFlip$,
     enableTextJustification$,
     enableTextWrapPretty$,
-    enableVerticalFontKerning$,
     firstDimensionMargin$,
     fontFamilyGroupOne$,
     fontFamilyGroupTwo$,
     fontSize$,
     fontWeight$,
-    furiganaStyle$,
     hideExternalReadHint$,
-    hideFurigana$,
     hideSpoilerImage$,
     importHTMLFixMode$,
     lineHeight$,
@@ -65,9 +61,7 @@
     trackerIdleTime$,
     trackerPopupDetection$,
     trackerSkipThresholdAction$,
-    verticalTextOrientation$,
     viewMode$,
-    writingMode$,
     readingGoalsMergeMode$,
     hideSpoilerImageMode$
   } from '$lib/data/store';
@@ -159,12 +153,6 @@
       bind:textMarginValue={$textMarginValue$}
       bind:blurImage={$hideSpoilerImage$}
       bind:blurImageMode={$hideSpoilerImageMode$}
-      bind:hideFurigana={$hideFurigana$}
-      bind:furiganaStyle={$furiganaStyle$}
-      bind:writingMode={$writingMode$}
-      bind:enableFontKerning={$enableVerticalFontKerning$}
-      bind:enableFontVPAL={$enableFontVPAL$}
-      bind:verticalTextOrientation={$verticalTextOrientation$}
       bind:prioritizeReaderStyles={$prioritizeReaderStyles$}
       bind:enableTextJustification={$enableTextJustification$}
       bind:enableTextWrapPretty={$enableTextWrapPretty$}

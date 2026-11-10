@@ -9,7 +9,6 @@
   import HtmlRenderer from '$lib/components/html-renderer.svelte';
   import type { BooksDbBookmarkData } from '$lib/data/database/books-db/versions/books-db';
   import { isStoredFont } from '$lib/data/fonts';
-  import { FuriganaStyle } from '$lib/data/furigana-style';
   import { logger } from '$lib/data/logger';
   import {
     customReadingPointEnabled$,
@@ -56,10 +55,7 @@
   export let height: number;
 
   export let verticalMode: boolean;
-
-  export let fontFeatureSettings: string;
-
-  export let verticalTextOrientation: string;
+  export let rightToLeft: boolean;
 
   export let prioritizeReaderStyles: boolean;
 
@@ -70,10 +66,6 @@
   export let fontColor: string;
 
   export let backgroundColor: string;
-
-  export let hintFuriganaFontColor: string;
-
-  export let hintFuriganaShadowColor: string;
 
   export let fontFamilyGroupOne: string;
 
@@ -92,10 +84,6 @@
   export let textMarginValue: number;
 
   export let hideSpoilerImage: boolean;
-
-  export let hideFurigana: boolean;
-
-  export let furiganaStyle: FuriganaStyle;
 
   export let secondDimensionMaxValue: number;
 
@@ -577,7 +565,9 @@
     let fontLoaded = false;
 
     try {
-      fontLoaded = document.fonts.check(`${fontSize}px ${fontFamilyGroupOne || 'Noto Serif JP'}`);
+      fontLoaded = document.fonts.check(
+        `${fontSize}px ${fontFamilyGroupOne || 'Noto Naskh Arabic'}`
+      );
     } catch (error: any) {
       logger.error(`Error checking Font Load: ${error.message}`);
       fontLoaded = true;
@@ -678,26 +668,18 @@
   style:--font-family-serif={fontFamilyGroupOne}
   style:--font-family-sans-serif={fontFamilyGroupTwo}
   style:--font-weight={fontWeight}
-  style:--book-content-hint-furigana-font-color={hintFuriganaFontColor}
-  style:--book-content-hint-furigana-shadow-color={hintFuriganaShadowColor}
   style:--book-content-child-height="{maxHeight || height}px"
   style:--book-content-text-margin="{textMarginValue ?? 0}rem"
   style:--book-content-text-intendation="{textIndentation ?? 0}rem"
-  style:font-feature-settings={fontFeatureSettings}
-  style:text-orientation={verticalTextOrientation}
   class:book-content--writing-vertical-rl={verticalMode}
   class:book-content--writing-horizontal-rl={!verticalMode}
-  class:book-content--hide-furigana={hideFurigana}
   class:book-content--hide-spoiler-image={hideSpoilerImage}
-  class:book-content--furigana-style-hide={furiganaStyle === FuriganaStyle.Hide}
-  class:book-content--furigana-style-partial={furiganaStyle === FuriganaStyle.Partial}
-  class:book-content--furigana-style-toggle={furiganaStyle === FuriganaStyle.Toggle}
-  class:book-content--furigana-style-full={furiganaStyle === FuriganaStyle.Full}
   class:ttu-apply-font-weight={!!fontWeight}
   class:ttu-apply-important={prioritizeReaderStyles}
   class:ttu-apply-justification={enableTextJustification}
   class:ttu-margin-manual={textMarginMode === 'manual'}
   class:ttu-text-wrap-pretty={enableTextWrapPretty}
+  dir={rightToLeft ? 'rtl' : undefined}
   class="book-content m-auto"
 >
   <HtmlRenderer html={htmlContent} on:load={onHtmlLoad} />

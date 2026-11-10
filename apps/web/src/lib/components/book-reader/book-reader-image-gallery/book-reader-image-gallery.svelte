@@ -169,7 +169,7 @@
               aria-hidden="true"
               on:click={() => toggleGalleryPictureSpoiler(readerImageGalleryPicture.url)}
             >
-              ネタバレ
+              Show image
             </button>
           {/if}
         </button>
@@ -201,7 +201,7 @@
               aria-hidden="true"
               on:click={() => toggleGalleryPictureSpoiler(selectedImage.url)}
             >
-              ネタバレ
+              Show image
             </button>
           {/if}
         </div>
@@ -238,7 +238,7 @@
     padding: 12px 8px;
     border-radius: 20px;
     font-size: 15px;
-    font-family: 'Noto Sans JP', sans-serif;
+    font-family: system-ui, sans-serif;
     text-transform: uppercase;
     font-weight: 700;
     cursor: pointer;

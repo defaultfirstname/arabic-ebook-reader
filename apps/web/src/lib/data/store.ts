@@ -22,7 +22,7 @@ import {
   StatisticsReadingDataAggregationMode
 } from '$lib/components/statistics/statistics-types';
 import { BlurMode } from '$lib/data/blur-mode';
-import type { UserFont } from '$lib/data/fonts';
+import { LocalFont, retiredReaderFonts, type UserFont } from '$lib/data/fonts';
 import { MergeMode } from '$lib/data/merge-mode';
 import type { ReadingGoal } from '$lib/data/reading-goal';
 import { SortDirection, type SortOption } from '$lib/data/sort-types';
@@ -41,11 +41,9 @@ import {
   ReplicationSaveBehavior
 } from '$lib/functions/replication/replication-options';
 import { writableSubject } from '$lib/functions/svelte/store';
-import { map } from 'rxjs';
 import { BookReaderAvailableKeybind, type BookReaderKeybindMap } from './book-reader-keybind';
 import { DatabaseService } from './database/books-db/database.service';
 import { createBooksDb } from './database/books-db/factory';
-import { FuriganaStyle } from './furigana-style';
 import { ImportHTMLFixMode } from './import-html-fix-mode';
 import { writableBooleanLocalStorageSubject } from './internal/writable-boolean-local-storage-subject';
 import { writableNumberLocalStorageSubject } from './internal/writable-number-local-storage-subject';
@@ -56,11 +54,10 @@ import {
 } from './internal/writable-object-local-storage-subject';
 import type { TextMarginMode } from './text-margin-mode';
 import type { ThemeOption } from './theme-option';
-import type { VerticalTextOrientation } from './vertical-text-orientation';
 import { ViewMode } from './view-mode';
-import type { WritingMode } from './writing-mode';
 import { writableSetLocalStorageSubject } from './internal/writable-set-local-storage-subject';
 import { writableStringLocalStorageSubject } from './internal/writable-string-local-storage-subject';
+import { localStorage } from './window/local-storage';
 
 export const theme$ = writableStringLocalStorageSubject()('theme', 'light-theme');
 export const customThemes$ = writableObjectLocalStorageSubject<Record<string, ThemeOption>>()(
@@ -68,13 +65,26 @@ export const customThemes$ = writableObjectLocalStorageSubject<Record<string, Th
   {}
 );
 export const multiplier$ = writableNumberLocalStorageSubject()('autoScrollMultiplier', 20);
+export const userFonts$ = writableArrayLocalStorageSubject<UserFont>()('userfonts', []);
+
+for (const key of ['fontFamilyGroupOne', 'fontFamilyGroupTwo']) {
+  const savedFont = localStorage.getItem(key);
+  if (
+    savedFont &&
+    retiredReaderFonts.has(savedFont) &&
+    !userFonts$.getValue().some((font) => font.name === savedFont)
+  ) {
+    localStorage.setItem(key, LocalFont.NOTONASKHARABIC);
+  }
+}
+
 export const fontFamilyGroupOne$ = writableStringLocalStorageSubject()(
   'fontFamilyGroupOne',
-  'Noto Serif JP'
+  LocalFont.NOTONASKHARABIC
 );
 export const fontFamilyGroupTwo$ = writableStringLocalStorageSubject()(
   'fontFamilyGroupTwo',
-  'Noto Sans JP'
+  LocalFont.NOTONASKHARABIC
 );
 export const fontWeight$ = writableNumberOrNullLocalStorageSubject()('fontWeight', null);
 export const fontSize$ = writableNumberLocalStorageSubject()('fontSize', 20);
@@ -86,22 +96,6 @@ export const hideSpoilerImageMode$ = writableStringLocalStorageSubject<BlurMode>
   'hideSpoilerImageMode',
   BlurMode.AFTER_TOC
 );
-export const hideFurigana$ = writableBooleanLocalStorageSubject()('hideFurigana', false);
-export const furiganaStyle$ = writableStringLocalStorageSubject<FuriganaStyle>()(
-  'furiganaStyle',
-  FuriganaStyle.Partial
-);
-export const writingMode$ = writableStringLocalStorageSubject<WritingMode>()(
-  'writingMode',
-  'vertical-rl'
-);
-export const enableVerticalFontKerning$ = writableBooleanLocalStorageSubject()(
-  'enableVerticalFontKerning',
-  false
-);
-export const enableFontVPAL$ = writableBooleanLocalStorageSubject()('enableFontVPAL', false);
-export const verticalTextOrientation$ =
-  writableStringLocalStorageSubject<VerticalTextOrientation>()('verticalTextOrientation', 'mixed');
 export const prioritizeReaderStyles$ = writableBooleanLocalStorageSubject()(
   'prioritizeReaderStyles',
   false
@@ -122,7 +116,6 @@ export const enableReaderWakeLock$ = writableBooleanLocalStorageSubject()(
   'enableReaderWakeLock',
   false
 );
-export const verticalMode$ = writingMode$.pipe(map((writingMode) => writingMode === 'vertical-rl'));
 export const showCharacterCounter$ = writableBooleanLocalStorageSubject()(
   'showCharacterCounter',
   true
@@ -503,11 +496,6 @@ export const booklistSortOptions$ = writableObjectLocalStorageSubject<Record<str
   }
 );
 
-export const verticalCustomReadingPosition$ = writableNumberLocalStorageSubject()(
-  'verticalCustomReadingPosition',
-  100
-);
-
 export const horizontalCustomReadingPosition$ = writableNumberLocalStorageSubject()(
   'horizontalCustomReadingPosition',
   0
@@ -516,5 +504,3 @@ export const horizontalCustomReadingPosition$ = writableNumberLocalStorageSubjec
 export const isOnline$ = writableSubject<boolean>(true);
 
 export const skipKeyDownListener$ = writableSubject<boolean>(false);
-
-export const userFonts$ = writableArrayLocalStorageSubject<UserFont>()('userfonts', []);

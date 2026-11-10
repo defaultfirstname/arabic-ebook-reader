@@ -5,14 +5,7 @@
  */
 
 export enum LocalFont {
-  KZUDGOTHIC = 'KZ UDGothic',
-  KZUDMINCHO = 'KZ UDMincho',
-  GENEI = 'Genei Koburi Mincho v5',
-  KLEEONE = 'Klee One',
-  KLEEONESEMIBOLD = 'Klee One SemiBold',
-  NOTOSANSJP = 'Noto Sans JP',
-  NOTOSERIFJP = 'Noto Serif JP',
-  SHIPPORIMINCHO = 'Shippori Mincho',
+  NOTONASKHARABIC = 'Noto Naskh Arabic',
   SERIF = 'Serif',
   SANSSERIF = 'Sans-Serif'
 }
@@ -25,7 +18,9 @@ export interface UserFont {
 
 export const userFontsCacheName = 'ttu-userfonts';
 
-export const reservedFontNames = new Set([
+export const reservedFontNames = new Set<string>(Object.values(LocalFont));
+
+export const retiredReaderFonts = new Set([
   'KZ UDGothic',
   'KZ UDMincho',
   'Genei Koburi Mincho v5',
@@ -33,9 +28,7 @@ export const reservedFontNames = new Set([
   'Klee One SemiBold',
   'Noto Sans JP',
   'Noto Serif JP',
-  'Shippori Mincho',
-  'Serif',
-  'Sans-Serif'
+  'Shippori Mincho'
 ]);
 
 export function isStoredFont(fontName: string, userFonts: UserFont[]) {
