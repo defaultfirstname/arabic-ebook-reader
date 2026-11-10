@@ -8,7 +8,6 @@ import type { BehaviorSubject } from 'rxjs';
 import { CharacterStatsCalculator } from '$lib/components/book-reader/book-reader-continuous/character-stats-calculator';
 import { binarySearchNoNegative } from '$lib/functions/binary-search';
 import { dev } from '$app/environment';
-import { formatPos } from '$lib/functions/format-pos';
 import { getCharacterCount } from '$lib/functions/get-character-count';
 import { getParagraphNodes } from '../get-paragraph-nodes';
 
@@ -29,7 +28,6 @@ export class SectionCharacterStatsCalculator {
     private getWidth: () => number,
     private getHeight: () => number,
     private getPageGap: () => number,
-    public verticalMode: boolean,
     private readonly rightToLeft: boolean,
     private readonly scrollEl: HTMLElement,
     private readonly document: Document
@@ -47,13 +45,7 @@ export class SectionCharacterStatsCalculator {
   }
 
   updateCurrentSection(sectionIndex: number) {
-    this.calculator = new CharacterStatsCalculator(
-      this.containerEl,
-      this.verticalMode ? 'horizontal' : 'vertical',
-      'ltr',
-      this.scrollEl,
-      this.document
-    );
+    this.calculator = new CharacterStatsCalculator(this.containerEl, this.scrollEl, this.document);
     this.sectionIndex = sectionIndex;
 
     setTimeout(() => {
@@ -84,7 +76,7 @@ export class SectionCharacterStatsCalculator {
       );
     }
 
-    const offset = this.verticalMode || this.rightToLeft ? 0 : -this.screenSize;
+    const offset = this.rightToLeft ? 0 : -this.screenSize;
     return this.getCharCountByScrollPos(this.virtualScrollPos$.getValue() + offset);
   }
 
@@ -128,9 +120,7 @@ export class SectionCharacterStatsCalculator {
     const scrollPos = paragraphPos[bestFitIndex(index + 1, accumulatedCharCount.length - 1)];
 
     const { screenSize } = this;
-    const offsetCount = this.verticalMode ? -1 : 0;
-    const screenPos = screenSize * (Math.ceil(scrollPos / screenSize) + offsetCount);
-    return formatPos(screenPos, this.calculator.direction);
+    return screenSize * Math.ceil(scrollPos / screenSize);
   }
 
   checkBookmarkOnScreen(charCount: number) {
@@ -158,10 +148,6 @@ export class SectionCharacterStatsCalculator {
     }
 
     const rect = customReadingPointRange.getBoundingClientRect();
-
-    if (this.verticalMode) {
-      return 1 - rect.left / this.screenSizeMirrored;
-    }
 
     if (this.rightToLeft) {
       const viewport = this.scrollEl.getBoundingClientRect();
@@ -198,10 +184,10 @@ export class SectionCharacterStatsCalculator {
   }
 
   private get screenSize() {
-    return (this.verticalMode ? this.getHeight() : this.getWidth()) + this.getPageGap();
+    return this.getWidth() + this.getPageGap();
   }
 
   private get screenSizeMirrored() {
-    return (this.verticalMode ? this.getWidth() : this.getHeight()) + this.getPageGap();
+    return this.getHeight() + this.getPageGap();
   }
 }

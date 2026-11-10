@@ -27,7 +27,6 @@ export class AutoScrollerContinuous implements AutoScroller {
 
   constructor(
     public multiplier: number,
-    public verticalMode: boolean,
     destroy$: Observable<void>,
     document: Document,
     scheduler: SchedulerLike = animationFrameScheduler
@@ -59,14 +58,7 @@ export class AutoScrollerContinuous implements AutoScroller {
         takeUntil(destroy$)
       )
       .subscribe((scrollVal) => {
-        let scrollDirection: 'left' | 'top' = 'top';
-
-        if (verticalMode) {
-          scrollDirection = 'left';
-        }
-        document.documentElement.scrollBy({
-          [scrollDirection]: scrollVal
-        });
+        document.documentElement.scrollBy({ top: scrollVal });
       });
   }
 
@@ -79,11 +71,6 @@ export class AutoScrollerContinuous implements AutoScroller {
   }
 
   private calcNewPos([prevTick, curTick]: [number, number]) {
-    let scrollScale = 0.00365956;
-
-    if (this.verticalMode) {
-      scrollScale = -0.00091489;
-    }
-    return scrollScale * this.multiplier * (curTick - prevTick);
+    return 0.00365956 * this.multiplier * (curTick - prevTick);
   }
 }

@@ -48,7 +48,6 @@
 
   export let height: number;
 
-  export let verticalMode: boolean;
   export let rightToLeft: boolean;
 
   export let prioritizeReaderStyles: boolean;
@@ -143,8 +142,6 @@
 
   let bookmarkLeftAdjustment: string | undefined;
 
-  let bookmarkRightAdjustment: string | undefined;
-
   let fontLoadingAdded = false;
 
   let currentSectionId = '';
@@ -180,7 +177,7 @@
 
   $: if (height) height$.next(height);
 
-  $: columnCount = verticalMode ? 1 : pageColumns || Math.ceil(width / 1000);
+  $: columnCount = pageColumns || Math.ceil(width / 1000);
 
   $: {
     if (htmlContent) {
@@ -206,9 +203,7 @@
         sectionIndex$,
         virtualScrollPos$,
         width,
-        height,
         gap,
-        verticalMode,
         rightToLeft,
         pageChange$,
         sectionRenderComplete$
@@ -251,7 +246,7 @@
   }
 
   $: if (browser) {
-    // because Yomitan popup creates overflow on vertical-rl
+    // Keep dictionary popups from scrolling the paginated document
     document.body.classList.add(cssClassOverflowHidden);
   }
 
@@ -451,7 +446,7 @@
       takeUntil(destroy$)
     )
     .subscribe((ev) => {
-      let multiplier = (ev.deltaX < 0 ? -1 : 1) * (verticalMode || rightToLeft ? -1 : 1);
+      let multiplier = (ev.deltaX < 0 ? -1 : 1) * (rightToLeft ? -1 : 1);
       if (!ev.deltaX) {
         multiplier = ev.deltaY < 0 ? -1 : 1;
       }
@@ -493,7 +488,6 @@
       () => width,
       () => height,
       () => gap,
-      verticalMode,
       rightToLeft,
       scrollEl,
       document
@@ -563,19 +557,12 @@
     const result = calculator.checkBookmarkOnScreen(bookmarkCharCount);
 
     if (scrollEl && result.isBookmarkScreen) {
-      const dimentionAdjustment = Number(
-        getComputedStyle(scrollEl)[verticalMode ? 'marginTop' : 'marginRight'].replace(/px$/, '')
-      );
+      const dimentionAdjustment = Number(getComputedStyle(scrollEl).marginRight.replace(/px$/, ''));
 
       if (!result.bookmarkPos) {
         setDefaultBookmarkPositions(dimentionAdjustment);
-      } else if (verticalMode) {
-        bookmarkTopAdjustment = dimentionAdjustment ? `${dimentionAdjustment}px` : '0.5rem';
-        bookmarkLeftAdjustment = `${result.bookmarkPos.left}px`;
-        bookmarkRightAdjustment = undefined;
       } else {
         bookmarkTopAdjustment = `${result.bookmarkPos.top}px`;
-        bookmarkRightAdjustment = undefined;
         bookmarkLeftAdjustment =
           result.bookmarkPos.left > 0
             ? `calc(${result.bookmarkPos.left}px - ${$isMobile$ ? '15' : '20'}px)`
@@ -601,26 +588,17 @@
   }
 
   function setDefaultBookmarkPositions(dimensionAdjustment: number) {
-    if (verticalMode) {
-      bookmarkTopAdjustment = dimensionAdjustment ? `${dimensionAdjustment}px` : '0.5rem';
-      bookmarkLeftAdjustment = $firstDimensionMargin$
-        ? `${width - $firstDimensionMargin$}px`
-        : undefined;
-      bookmarkRightAdjustment = $firstDimensionMargin$ ? undefined : '0.75rem';
-    } else {
-      bookmarkTopAdjustment = $firstDimensionMargin$ ? `${$firstDimensionMargin$}px` : '0.5rem';
-      bookmarkLeftAdjustment = dimensionAdjustment
-        ? `calc(${dimensionAdjustment}px + 0.75rem)`
-        : '0.75rem';
-      bookmarkRightAdjustment = undefined;
-    }
+    bookmarkTopAdjustment = $firstDimensionMargin$ ? `${$firstDimensionMargin$}px` : '0.5rem';
+    bookmarkLeftAdjustment = dimensionAdjustment
+      ? `calc(${dimensionAdjustment}px + 0.75rem)`
+      : '0.75rem';
   }
 
   function onSwipe(ev: CustomEvent<{ direction: 'top' | 'right' | 'left' | 'bottom' }>) {
     if (!concretePageManager || $skipKeyDownListener$) return;
     if (ev.detail.direction !== 'left' && ev.detail.direction !== 'right') return;
     const swipeLeft = ev.detail.direction === 'left';
-    const nextPage = verticalMode || rightToLeft ? !swipeLeft : swipeLeft;
+    const nextPage = rightToLeft ? !swipeLeft : swipeLeft;
     concretePageManager.flipPage(nextPage ? 1 : -1);
   }
 
@@ -638,11 +616,11 @@
     switch (ev.code) {
       case 'ArrowLeft':
       case 'KeyA':
-        concretePageManager[verticalMode || rightToLeft ? 'nextPage' : 'prevPage']();
+        concretePageManager[rightToLeft ? 'nextPage' : 'prevPage']();
         break;
       case 'ArrowRight':
       case 'KeyD':
-        concretePageManager[verticalMode || rightToLeft ? 'prevPage' : 'nextPage']();
+        concretePageManager[rightToLeft ? 'prevPage' : 'nextPage']();
         break;
       case 'ArrowUp':
         concretePageManager.prevPage();
@@ -672,35 +650,20 @@
   style:color={fontColor}
   style:font-size="{fontSize}px"
   style:line-height={lineHeight}
-  style:padding-top={!verticalMode && firstDimensionMargin
-    ? `${firstDimensionMargin}px`
-    : undefined}
-  style:padding-bottom={!verticalMode && firstDimensionMargin
-    ? `${firstDimensionMargin}px`
-    : undefined}
-  style:padding-left={verticalMode && firstDimensionMargin
-    ? `${firstDimensionMargin}px`
-    : undefined}
-  style:padding-right={verticalMode && firstDimensionMargin
-    ? `${firstDimensionMargin}px`
-    : undefined}
+  style:padding-top={firstDimensionMargin ? `${firstDimensionMargin}px` : undefined}
+  style:padding-bottom={firstDimensionMargin ? `${firstDimensionMargin}px` : undefined}
   style:max-width={width ? `${width}px` : undefined}
-  style:max-height={verticalMode && height ? `${height}px` : undefined}
   style:--font-family-serif={fontFamilyGroupOne}
   style:--font-family-sans-serif={fontFamilyGroupTwo}
   style:--font-weight={fontWeight}
   style:--book-content-child-width="{width}px"
   style:--book-content-child-height="{height}px"
-  style:--book-content-child-column-width={!verticalMode && columnCount === 1 ? `${width}px` : ''}
+  style:--book-content-child-column-width={columnCount === 1 ? `${width}px` : ''}
   style:--book-content-column-count={columnCount}
-  style:--book-content-image-max-width="{verticalMode
-    ? width
-    : (width + gap) / columnCount - gap}px"
+  style:--book-content-image-max-width="{(width + gap) / columnCount - gap}px"
   style:--book-content-text-margin="{textMarginValue ?? 0}rem"
   style:--book-content-text-intendation="{textIndentation ?? 0}rem"
   class:book-content--avoid-page-break={avoidPageBreak}
-  class:book-content--writing-vertical-rl={verticalMode}
-  class:book-content--writing-horizontal-rl={!verticalMode}
   class:book-content--hide-spoiler-image={hideSpoilerImage}
   class:ttu-apply-font-weight={!!fontWeight}
   class:ttu-apply-important={prioritizeReaderStyles}
@@ -732,7 +695,6 @@
     style:color={fontColor}
     style:top={bookmarkTopAdjustment}
     style:left={bookmarkLeftAdjustment}
-    style:right={bookmarkRightAdjustment}
   >
     <Fa icon={faBookmark} />
   </div>
@@ -780,38 +742,6 @@
     :global(.ttu-img-container) {
       // Needed for Blink rendering engine
       break-inside: avoid;
-    }
-  }
-
-  .book-content--writing-vertical-rl {
-    .book-content-container {
-      column-width: var(--book-content-child-height, 100vh);
-      width: 100%;
-      height: auto;
-    }
-
-    :global(.book-content-container > *:not(.ttu-book-html-wrapper) > *:has(ruby):has(rt)),
-    :global(
-      .book-content-container
-        > div.ttu-book-html-wrapper
-        > div.ttu-book-body-wrapper
-        > *
-        > *:has(ruby):has(rt)
-    ) {
-      padding-right: 10px !important;
-    }
-  }
-
-  .book-content--writing-horizontal-rl {
-    :global(.book-content-container > *:not(.ttu-book-html-wrapper) > *:has(ruby):has(rt)),
-    :global(
-      .book-content-container
-        > div.ttu-book-html-wrapper
-        > div.ttu-book-body-wrapper
-        > *
-        > *:has(ruby):has(rt)
-    ) {
-      padding-top: 10px !important;
     }
   }
 </style>

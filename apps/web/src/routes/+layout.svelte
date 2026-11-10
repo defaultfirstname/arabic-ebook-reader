@@ -1,7 +1,7 @@
 <script lang="ts">
   import { browser } from '$app/environment';
   import { page } from '$app/stores';
-  import DomainHint from '$lib/components/domain-hint.svelte';
+  import { appName } from '$lib/functions/format-page-title';
   import { basePath, clearConsoleOnReload } from '$lib/data/env';
   import { dialogManager, type Dialog } from '$lib/data/dialog-manager';
   import { LocalFont, userFontsCacheName, type UserFont } from '$lib/data/fonts';
@@ -87,18 +87,20 @@
 <svelte:window bind:online={$isOnline$} />
 
 <MetaTags
-  title="ッツ Ebook Reader"
-  description="Online e-book reader that supports dictionary extensions like Yomitan"
-  canonical="{basePath}{path !== '/' ? path : ''}"
+  title={appName}
+  description="Offline-capable Arabic ebook reader with right-to-left reading and Yomitan support"
+  canonical={basePath ? `${basePath}${path !== '/' ? path : ''}` : undefined}
   openGraph={{
     type: 'website',
-    images: [
-      {
-        url: `${basePath}/icons/regular-icon@512x512.png`,
-        width: 512,
-        height: 512
-      }
-    ]
+    images: basePath
+      ? [
+          {
+            url: `${basePath}/icons/regular-icon@512x512.png`,
+            width: 512,
+            height: 512
+          }
+        ]
+      : undefined
   }}
 />
 
@@ -133,5 +135,3 @@
 {/if}
 
 <span style={`font-family: ${$fontFamilyGroupOne$ || LocalFont.NOTONASKHARABIC}`} />
-
-<DomainHint />

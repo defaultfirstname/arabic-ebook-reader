@@ -39,8 +39,6 @@
 
   export let height: number;
 
-  export let verticalMode: boolean;
-
   export let prioritizeReaderStyles: boolean;
 
   export let enableTextJustification: boolean;
@@ -128,9 +126,7 @@
   const containerEl$ = writableSubject<HTMLElement | null>(null);
 
   $: heightModifer =
-    firstDimensionMargin && ViewMode.Paginated === viewMode && !verticalMode
-      ? firstDimensionMargin * 2
-      : 0;
+    firstDimensionMargin && ViewMode.Paginated === viewMode ? firstDimensionMargin * 2 : 0;
 
   $: if ($enableReaderWakeLock$ && visibilityState === 'visible') {
     setTimeout(requestWakeLock, 500);
@@ -159,7 +155,7 @@
         width -
           parsePx(style.paddingLeft) -
           parsePx(style.paddingRight) -
-          ($enableTapEdgeToFlip$ && ViewMode.Paginated === viewMode && !verticalMode
+          ($enableTapEdgeToFlip$ && ViewMode.Paginated === viewMode
             ? convertRemToPixels(window, 1.75)
             : 0)
       )
@@ -167,10 +163,8 @@
   );
 
   const contentViewportHeight$ = computedStyle$.pipe(
-    map((style) =>
-      getAdjustedHeight(
-        height - parsePx(style.paddingTop) - parsePx(style.paddingBottom) - heightModifer
-      )
+    map(
+      (style) => height - parsePx(style.paddingTop) - parsePx(style.paddingBottom) - heightModifer
     )
   );
 
@@ -204,17 +198,10 @@
   $: height$.next(height);
 
   function getAdjustedWidth(widthValue: number) {
-    if (ViewMode.Paginated === viewMode && !verticalMode && secondDimensionMaxValue) {
+    if (ViewMode.Paginated === viewMode && secondDimensionMaxValue) {
       return Math.min(secondDimensionMaxValue, widthValue);
     }
     return widthValue;
-  }
-
-  function getAdjustedHeight(heightValue: number) {
-    if (ViewMode.Paginated === viewMode && verticalMode && secondDimensionMaxValue) {
-      return Math.min(secondDimensionMaxValue, heightValue);
-    }
-    return heightValue;
   }
 
   function parsePx(px: string) {
@@ -265,17 +252,16 @@
     style:background-color={backgroundColor}
     style:border-color={fontColor}
   >
-    The reader is currently blurred due to an external application (e. g. exstatic)
+    The reader is currently blurred by an external application
   </div>
 {/if}
 <div bind:this={$containerEl$} class="{pxReader} py-8" lang={language}>
   {#if viewMode === ViewMode.Continuous}
     <BookReaderContinuous
       {htmlContent}
-      rightToLeft={rightToLeft && !verticalMode}
+      {rightToLeft}
       width={$contentViewportWidth$ ?? 0}
       height={$contentViewportHeight$ ?? 0}
-      {verticalMode}
       {prioritizeReaderStyles}
       {enableTextJustification}
       {enableTextWrapPretty}
@@ -314,10 +300,9 @@
   {:else}
     <BookReaderPaginated
       {htmlContent}
-      rightToLeft={rightToLeft && !verticalMode}
+      {rightToLeft}
       width={$contentViewportWidth$ ?? 0}
       height={$contentViewportHeight$ ?? 0}
-      {verticalMode}
       {prioritizeReaderStyles}
       {enableTextJustification}
       {enableTextWrapPretty}

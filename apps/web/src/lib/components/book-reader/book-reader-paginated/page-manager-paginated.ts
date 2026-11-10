@@ -11,7 +11,6 @@ import {
   type SectionWithProgress
 } from '$lib/components/book-reader/book-toc/book-toc';
 import type { PageManager } from '../types';
-import { formatPos } from '$lib/functions/format-pos';
 
 export class PageManagerPaginated implements PageManager {
   private translated = false;
@@ -25,9 +24,7 @@ export class PageManagerPaginated implements PageManager {
     private sectionIndex$: BehaviorSubject<number>,
     private virtualScrollPos$: BehaviorSubject<number>,
     private width: number,
-    private height: number,
     private pageGap: number,
-    private verticalMode: boolean,
     private rightToLeft: boolean,
     private pageChange$: Subject<boolean>,
     private sectionRenderComplete$: Subject<number>
@@ -54,17 +51,11 @@ export class PageManagerPaginated implements PageManager {
   }
 
   updateSectionDataByOffset(offset = 0) {
-    const viewportSize = this.verticalMode ? this.height : this.width;
-    const currentPercentage =
-      (this.virtualScrollPos$.getValue() /
-        this.scrollEl[this.verticalMode ? 'scrollHeight' : 'scrollWidth']) *
-      100;
+    const currentPercentage = (this.virtualScrollPos$.getValue() / this.scrollEl.scrollWidth) * 100;
 
     if (offset) {
-      const nextPageOffset = this.virtualScrollPos$.getValue() + viewportSize + this.pageGap;
-      const diffPercentage =
-        (nextPageOffset / this.scrollEl[this.verticalMode ? 'scrollHeight' : 'scrollWidth']) * 100 -
-        currentPercentage;
+      const nextPageOffset = this.virtualScrollPos$.getValue() + this.width + this.pageGap;
+      const diffPercentage = (nextPageOffset / this.scrollEl.scrollWidth) * 100 - currentPercentage;
 
       this.updateSectionData(
         this.sections[this.sectionIndex$.getValue()]?.id,
@@ -76,10 +67,7 @@ export class PageManagerPaginated implements PageManager {
   }
 
   flipPage(multiplier: 1 | -1) {
-    const scrollSizeProp = this.verticalMode ? 'scrollHeight' : 'scrollWidth';
-    const viewportSize = this.verticalMode ? this.height : this.width;
-
-    const offset = viewportSize + this.pageGap;
+    const offset = this.width + this.pageGap;
     const isUser = true;
 
     if (this.translated) {
@@ -95,7 +83,7 @@ export class PageManagerPaginated implements PageManager {
     }
 
     const minValue = 0;
-    const maxValue = this.scrollEl[scrollSizeProp];
+    const maxValue = this.scrollEl.scrollWidth;
     const currentValue = this.virtualScrollPos$.getValue();
     const newValue = currentValue + offset * multiplier;
     const newValueCeil = Math.ceil(newValue);
@@ -106,7 +94,7 @@ export class PageManagerPaginated implements PageManager {
         return;
       }
 
-      this.prevSection(offset, scrollSizeProp, viewportSize, isUser);
+      this.prevSection(offset, isUser);
       return;
     }
     if (newValueCeil >= maxValue) {
@@ -114,31 +102,24 @@ export class PageManagerPaginated implements PageManager {
       return;
     }
 
-    this.scrollOrTranslateToPos(newValue, maxValue, viewportSize, isUser);
+    this.scrollOrTranslateToPos(newValue, maxValue, isUser);
   }
 
   scrollTo(scrollPos: number, isUser: boolean) {
-    const scrollSizeProp = this.verticalMode ? 'scrollHeight' : 'scrollWidth';
-    const viewportSize = this.verticalMode ? this.height : this.width;
-    this.scrollOrTranslateToPos(scrollPos, this.scrollEl[scrollSizeProp], viewportSize, isUser);
+    this.scrollOrTranslateToPos(scrollPos, this.scrollEl.scrollWidth, isUser);
   }
 
-  private prevSection(
-    offset: number,
-    scrollSizeProp: 'scrollWidth' | 'scrollHeight',
-    viewportSize: number,
-    isUser: boolean
-  ) {
+  private prevSection(offset: number, isUser: boolean) {
     const nextPage = this.sectionIndex$.getValue() - 1;
     if (nextPage < 0) return false;
 
     this.updateSectionIndex(nextPage).subscribe(() => {
-      const scrollSize = this.scrollEl[scrollSizeProp];
+      const scrollSize = this.scrollEl.scrollWidth;
       let scrollValue = offset * (Math.ceil(scrollSize / offset) - 1);
       if (Math.ceil(scrollValue) >= scrollSize) {
         scrollValue -= offset;
       }
-      this.scrollOrTranslateToPos(scrollValue, scrollSize, viewportSize, isUser);
+      this.scrollOrTranslateToPos(scrollValue, scrollSize, isUser);
     });
     return true;
   }
@@ -155,23 +136,13 @@ export class PageManagerPaginated implements PageManager {
     return true;
   }
 
-  private scrollOrTranslateToPos(
-    pos: number,
-    scrollSize: number,
-    viewportSize: number,
-    isUser: boolean
-  ) {
+  private scrollOrTranslateToPos(pos: number, scrollSize: number, isUser: boolean) {
     this.updateSectionData(
       this.sections[this.sectionIndex$.getValue()]?.id,
       (pos / scrollSize) * 100
     );
 
-    if (this.verticalMode) {
-      this.scrollToPos(pos, isUser);
-      return;
-    }
-
-    if (pos + viewportSize <= scrollSize) {
+    if (pos + this.width <= scrollSize) {
       this.scrollToPos(pos, isUser);
       return;
     }
@@ -181,8 +152,8 @@ export class PageManagerPaginated implements PageManager {
   private scrollToPos(pos: number, isUser: boolean) {
     this.clearTranslation();
     this.virtualScrollPos$.next(pos);
-    const offset = formatPos(pos, this.rightToLeft ? 'rtl' : 'ltr');
-    this.scrollEl.scrollTo({ [this.verticalMode ? 'top' : 'left']: offset });
+    const offset = this.rightToLeft ? -pos : pos;
+    this.scrollEl.scrollTo({ left: offset });
     this.pageChange$.next(isUser);
   }
 

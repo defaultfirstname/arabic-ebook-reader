@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
   import { faBookmark as farBookmark } from '@fortawesome/free-regular-svg-icons';
   import {
     faBookmark as fasBookmark,
@@ -22,7 +21,7 @@
   } from '$lib/css-classes';
   import { customReadingPointEnabled$, viewMode$ } from '$lib/data/store';
   import { ViewMode } from '$lib/data/view-mode';
-  import { dummyFn, isMobile$, isOnOldUrl } from '$lib/functions/utils';
+  import { dummyFn, isMobile$ } from '$lib/functions/utils';
   import { createEventDispatcher } from 'svelte';
   import Fa from 'svelte-fa';
 
@@ -47,7 +46,6 @@
     statisticsClick: void;
     readerImageGalleryClick: void;
     settingsClick: void;
-    domainHintClick: void;
     bookManagerClick: void;
   }>();
 
@@ -69,16 +67,8 @@
     title: string;
   }[] = [];
 
-  $: isOldUrl = browser && isOnOldUrl(window);
-
   $: {
-    const items = [];
-
-    if (isOldUrl) {
-      items.push(mergeEntries.DOMAIN_HINT);
-    } else {
-      items.push(mergeEntries.STATISTICS);
-    }
+    const items = [mergeEntries.STATISTICS];
 
     if (hasText) {
       items.push(mergeEntries.JUMP_TO_POSITION);
@@ -207,8 +197,6 @@
           dispatch('readerImageGalleryClick');
         } else if (detail === mergeEntries.SETTINGS.label) {
           dispatch('settingsClick');
-        } else if (detail === mergeEntries.DOMAIN_HINT.label) {
-          dispatch('domainHintClick');
         } else if (detail === mergeEntries.MANAGE.label) {
           dispatch('bookManagerClick');
         }

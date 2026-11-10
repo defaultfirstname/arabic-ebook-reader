@@ -32,7 +32,7 @@
   } from '$lib/data/store';
   import { inputAllowDirectory } from '$lib/functions/file-dom/input-allow-directory';
   import { inputFile } from '$lib/functions/file-dom/input-file';
-  import { dummyFn, isMobile$, isOnOldUrl } from '$lib/functions/utils';
+  import { dummyFn, isMobile$ } from '$lib/functions/utils';
   import {
     faArrowDownShortWide,
     faArrowDownWideShort,
@@ -62,7 +62,6 @@
   const dispatch = createEventDispatcher<{
     selectAllClick: void;
     removeClick: void;
-    domainHintClick: void;
     bugReportClick: void;
     backToBookClick: void;
     filesChange: FileList;
@@ -97,11 +96,9 @@
   let countImportElm: HTMLInputElement;
   let storageSourceElm: Popover;
   let sortOptionsElm: Popover;
-  let isOldUrl = false;
   let showLoadCount = false;
 
   $: if (browser) {
-    isOldUrl = isOnOldUrl(window);
     showLoadCount = new URLSearchParams(window.location.search).has('count');
 
     importMenuItems.push(
@@ -472,25 +469,15 @@
             out:scale={outAnimationParams}
           >
             <MergedHeaderIcon
-              items={isOldUrl
-                ? [
-                    mergeEntries.MANAGE,
-                    mergeEntries.DOMAIN_HINT,
-                    mergeEntries.BUG_REPORT,
-                    mergeEntries.SETTINGS
-                  ]
-                : [
-                    mergeEntries.MANAGE,
-                    mergeEntries.STATISTICS,
-                    mergeEntries.SETTINGS,
-                    mergeEntries.BUG_REPORT
-                  ]}
+              items={[
+                mergeEntries.MANAGE,
+                mergeEntries.STATISTICS,
+                mergeEntries.SETTINGS,
+                mergeEntries.BUG_REPORT
+              ]}
               on:action={({ detail }) => {
                 if (detail === mergeEntries.BUG_REPORT.label) {
                   dispatch('bugReportClick');
-                }
-                if (detail === mergeEntries.DOMAIN_HINT.label) {
-                  dispatch('domainHintClick');
                 }
               }}
             />

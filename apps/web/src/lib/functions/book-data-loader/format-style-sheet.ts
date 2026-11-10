@@ -26,12 +26,9 @@ export default function formatStyleSheet(bookData: BooksDbBookData, parentSelect
       (d) => !/line-height$/.test(d.property) && !/text-indent$/.test(d.property)
     );
 
-    const lineBreakFormatter = new LineBreakFormatter(rule.declarations, newDeclarations);
-
     rule.declarations.forEach((declaration) => {
       assignKeyValToObj(newDeclarations, convertPrefixedDeclaration(declaration));
       assignKeyValToObj(newDeclarations, convertFontFamily(declaration));
-      assignKeyValToObj(newDeclarations, lineBreakFormatter.convert(declaration));
       // Might also want to handle margin conversion
     });
 
@@ -104,36 +101,6 @@ function convertFontFamily(declaration: Declaration) {
     };
   }
   return undefined;
-}
-
-class LineBreakFormatter {
-  private hasLineBreakDefined?: boolean | undefined;
-
-  constructor(
-    private ruleDeclarations: Declaration[],
-    private newDeclarations: Readonly<Record<string, string>>
-  ) {}
-
-  convert(declaration: Declaration) {
-    if (
-      /(?:(?:-epub-)|(?:-webkit-))?word-break$/i.exec(declaration.property) &&
-      declaration.value === 'break-all'
-    ) {
-      if (this.hasLineBreakDefined === undefined) {
-        this.hasLineBreakDefined = this.ruleDeclarations.some(
-          (d) => d.type === 'declaration' && d.property === 'line-break'
-        );
-      }
-      if (!this.hasLineBreakDefined && !this.newDeclarations['line-break']) {
-        // to allow breaks one long string of periods
-        return {
-          key: 'line-break',
-          value: 'loose'
-        };
-      }
-    }
-    return undefined;
-  }
 }
 
 function getGeckoBrSolutionRule(): Rule {

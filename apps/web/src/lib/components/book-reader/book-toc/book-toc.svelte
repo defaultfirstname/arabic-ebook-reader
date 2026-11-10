@@ -17,7 +17,6 @@
 
   export let sectionData: SectionWithProgress[] = [];
   export let exploredCharCount = 0;
-  export let verticalMode: boolean;
   export let wasTrackerPaused: boolean;
 
   let chapters: SectionWithProgress[] = [];
@@ -26,12 +25,8 @@
   let currentChapterCharacterProgress = '0/0';
   let currentChapterProgress = '0.00';
 
-  $: prevChapterAvailable = verticalMode
-    ? currentChapterIndex < chapters.length - 1
-    : !!currentChapterIndex;
-  $: nextChapterAvailable = verticalMode
-    ? !!currentChapterIndex
-    : currentChapterIndex < chapters.length - 1;
+  $: prevChapterAvailable = currentChapterIndex > 0;
+  $: nextChapterAvailable = currentChapterIndex < chapters.length - 1;
 
   $: if (sectionData) {
     const [mainChapters, chapterIndex, referenceId] = getChapterData(sectionData);
@@ -167,9 +162,9 @@
   <div
     tabindex="0"
     role="button"
-    title={prevChapterAvailable ? `${verticalMode ? 'Next' : 'Previous'} Chapter` : ''}
+    title={prevChapterAvailable ? 'Previous Chapter' : ''}
     class:opacity-30={!prevChapterAvailable}
-    on:click={() => changeChapter(prevChapterAvailable, verticalMode ? 1 : -1)}
+    on:click={() => changeChapter(prevChapterAvailable, -1)}
     on:keyup={dummyFn}
   >
     <Fa icon={faChevronLeft} />
@@ -177,9 +172,9 @@
   <div
     tabindex="0"
     role="button"
-    title={nextChapterAvailable ? `${verticalMode ? 'Previous' : 'Next'} Chapter` : ''}
+    title={nextChapterAvailable ? 'Next Chapter' : ''}
     class:opacity-30={!nextChapterAvailable}
-    on:click={() => changeChapter(nextChapterAvailable, verticalMode ? -1 : 1)}
+    on:click={() => changeChapter(nextChapterAvailable, 1)}
     on:keyup={dummyFn}
   >
     <Fa icon={faChevronRight} />
