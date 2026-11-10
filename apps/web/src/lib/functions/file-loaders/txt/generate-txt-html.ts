@@ -8,7 +8,7 @@ import { getCharacterCount } from '$lib/functions/get-character-count';
 
 export function getFormattedElementTxt(data: string) {
   const result = document.createElement('div');
-  const punctuationRegex = /[。.）」？！!?]+/;
+  const punctuationRegex = /[.!?؟…»]/;
   const lines = data.split(/\r?\n/);
   const addedSections = new Set<string>();
 

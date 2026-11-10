@@ -10,7 +10,6 @@ import {
   binarySearchNodeInRange
 } from '$lib/functions/binary-search';
 
-import { formatPos } from '$lib/functions/format-pos';
 import { countTextCharacters, getCharacterCount } from '$lib/functions/get-character-count';
 import { getNodeBoundingRect } from '$lib/functions/range-util';
 import { getParagraphNodes } from '$lib/components/book-reader/get-paragraph-nodes';
@@ -30,8 +29,6 @@ export class CharacterStatsCalculator {
 
   constructor(
     public readonly containerEl: HTMLElement,
-    private readonly axis: 'horizontal' | 'vertical',
-    public readonly direction: 'ltr' | 'rtl',
     private readonly scrollEl: HTMLElement,
     private readonly document: Document
   ) {
@@ -47,10 +44,6 @@ export class CharacterStatsCalculator {
     this.charCount = exploredCharCount;
   }
 
-  get verticalMode() {
-    return this.axis === 'vertical';
-  }
-
   updateParagraphPosIfNeeded(scrollPos = 0) {
     clearTimeout(this.forcedInitTimer);
 
@@ -63,17 +56,8 @@ export class CharacterStatsCalculator {
 
   updateParagraphPos(scrollPos = 0) {
     window.clearTimeout(this.forcedInitTimer);
-    const scrollElRect = this.scrollEl.getBoundingClientRect();
-    const scrollElRight = formatPos(
-      this.verticalMode ? scrollElRect.right : scrollElRect.top,
-      this.direction
-    );
-    const dimensionAdjustment = Number(
-      getComputedStyle(this.containerEl)[this.verticalMode ? 'paddingRight' : 'paddingTop'].replace(
-        /px$/,
-        ''
-      )
-    );
+    const viewportTop = this.scrollEl.getBoundingClientRect().top;
+    const dimensionAdjustment = Number.parseFloat(getComputedStyle(this.containerEl).paddingTop);
     const paragraphPosToIndices = new Map<number, number[]>();
     for (let i = 0; i < this.paragraphs.length; i += 1) {
       const node = this.paragraphs[i];
@@ -81,16 +65,8 @@ export class CharacterStatsCalculator {
       const nodeRect = getNodeBoundingRect(this.document, node);
 
       const getParagraphPos = () => {
-        const paragraphSize = this.verticalMode ? nodeRect.width : nodeRect.height;
-        if (paragraphSize <= 0) {
-          return this.paragraphPos[i - 1] || 0;
-        }
-        const nodeLeft = formatPos(
-          this.verticalMode ? nodeRect.left : nodeRect.bottom,
-          this.direction
-        );
-
-        return nodeLeft - scrollElRight - dimensionAdjustment + scrollPos;
+        if (nodeRect.height <= 0) return this.paragraphPos[i - 1] || 0;
+        return nodeRect.bottom - viewportTop - dimensionAdjustment + scrollPos;
       };
       const paragraphPos = getParagraphPos();
       this.paragraphPos[i] = paragraphPos;
@@ -109,7 +85,7 @@ export class CharacterStatsCalculator {
   }
 
   calcExploredCharCount(customReadingPointScrollOffset = 0) {
-    return this.getCharCountByScrollPos(this.scrollPos + customReadingPointScrollOffset);
+    return this.getCharCountByScrollPos(this.scrollEl.scrollTop + customReadingPointScrollOffset);
   }
 
   getRtlPageStartCounts(pageSize: number) {
@@ -185,7 +161,7 @@ export class CharacterStatsCalculator {
 
   getScrollPosByCharCount(charCount: number) {
     const index = binarySearchNoNegative(this.accumulatedCharCount, charCount);
-    return formatPos(this.paragraphPos[index], this.direction) || 0;
+    return this.paragraphPos[index] || 0;
   }
 
   getCharCountToPoint(customReadingPoint: Range) {
@@ -205,19 +181,11 @@ export class CharacterStatsCalculator {
         container = container.parentElement.closest('p') || container.parentElement;
       }
 
-      const { top, right, left } = getNodeBoundingRect(this.document, container);
+      const { top, left } = getNodeBoundingRect(this.document, container);
 
-      bookmarkPos = this.axis === 'horizontal' ? { left: right } : { top, left };
+      bookmarkPos = { top, left };
     }
 
     return bookmarkPos;
-  }
-
-  private get scrollPos() {
-    return formatPos(this.scrollEl[this.scrollPosProp], this.direction);
-  }
-
-  private get scrollPosProp() {
-    return this.verticalMode ? 'scrollLeft' : 'scrollTop';
   }
 }

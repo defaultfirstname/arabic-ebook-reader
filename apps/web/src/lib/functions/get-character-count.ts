@@ -26,17 +26,10 @@ export function countArabicCharacters(text: string) {
   );
 }
 
-const isNotJapaneseRegex =
+// Keep the original counting rule so saved character offsets remain valid.
+const excludedLegacyCharacters =
   /[^0-9A-Z○◯々-〇〻ぁ-ゖゝ-ゞァ-ヺー０-９Ａ-Ｚｦ-ﾝ\p{Radical}\p{Unified_Ideograph}]+/gimu;
 
 function countLegacyTextCharacters(text: string) {
-  return countUnicodeCharacters(text.replace(isNotJapaneseRegex, ''));
-}
-
-/**
- * Because '𠮟る'.length = 3
- * Reference: https://dmitripavlutin.com/what-every-javascript-developer-should-know-about-unicode/#length-and-surrogate-pairs
- */
-function countUnicodeCharacters(s: string) {
-  return Array.from(s).length;
+  return Array.from(text.replace(excludedLegacyCharacters, '')).length;
 }

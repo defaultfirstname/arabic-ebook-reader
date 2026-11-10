@@ -2,7 +2,6 @@
   import { onMount, tick } from 'svelte';
 
   export let dimensionValue = 0;
-  export let isVertical = true;
   export let isFirstDimension = false;
 
   const progressStep = 5;
@@ -17,10 +16,6 @@
   $: quarter = isFirstDimension ? 25 : 75;
 
   function getDimension() {
-    if (isVertical) {
-      return isFirstDimension ? 'innerWidth' : 'innerHeight';
-    }
-
     return isFirstDimension ? 'innerHeight' : 'innerWidth';
   }
 

@@ -35,10 +35,6 @@ export function isMobile(window: Window) {
   return userAgentRegex.test(UA);
 }
 
-export function isOnOldUrl(window: Window) {
-  return window.location.href.startsWith('https://ttu-ebook.web.app');
-}
-
 export function dummyFn() {}
 
 export const isMobile$ = writableSubject<boolean>(false);
@@ -110,14 +106,10 @@ export function convertRemToPixels(window: Window, rem: number) {
   return rem * parseFloat(window.getComputedStyle(document.documentElement).fontSize);
 }
 
-export function getExternalTargetElement(
-  source: Document | Element,
-  selector: string,
-  uselast = true
-) {
+export function getExternalTargetElement(source: Document | Element, selector: string) {
   const elements = [...source.querySelectorAll<HTMLSpanElement>(selector)].filter(
     externalTargetFilterFunction
   );
 
-  return uselast ? elements[elements.length - 1] : elements[0];
+  return elements[elements.length - 1];
 }

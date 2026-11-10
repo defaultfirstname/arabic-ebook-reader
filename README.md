@@ -1,14 +1,8 @@
 <img src="assets/readme/icon.png" align="left" style="margin-right: 1rem;" alt="logo">
 
-## ッツ Ebook Reader
+## Arabic Ebook Reader
 
-An online e-book reader that supports dictionary extensions like Yomitan, which is hosted on [https://reader.ttsu.app](https://reader.ttsu.app)
-
-This edition adapts the original reader for Modern Standard Arabic, with right-to-left reading and an offline Arabic font.
-
-# Current Development Status
-
-Please not that ッツ Ebook Reader is currently not actively worked on / Maintenance only. Feel free to report further bugs / feature requests and / or open pull requests but don't expect (timely) responses on them
+An offline-capable reader for Modern Standard Arabic with right-to-left reading, an offline Arabic font, and support for dictionary extensions such as Yomitan. It is based on the original [ッツ Ebook Reader](https://github.com/ttu-ttu/ebook-reader).
 
 # Features
 
@@ -38,7 +32,7 @@ In case you are facing issues for epub files like this (non closing anchor tags)
 
 you can try to (temporarily) enable standard or extendend mode for the "Epub Import Fixes" setting under "Data" and (re) import the file to verify potential auto fixes.
 
-**Note for Text Files**: The book title (which is also used to check for duplicates) will be the name of the file. The text will be splitted into paragraphs by punctuation (。？！) and closing brackets/parenthesis (」）). Sections will be splitted around 10000 characters each. The file content will be parsed as plain text - any html tags (e. g. links) will therefore be printed out as text and not elements.
+**Note for Text Files**: The book title (which is also used to check for duplicates) will be the name of the file. The text will be splitted into paragraphs at punctuation such as periods and Arabic question marks (؟). Sections will be splitted around 10000 characters each. The file content will be parsed as plain text - any html tags (e. g. links) will therefore be printed out as text and not elements.
 
 **Note**: The character count is mainly based on paragraph nodes in the book. Configuring e. g. a very high line height or similar may update the counter more slowly
 
@@ -152,7 +146,7 @@ You may find the following controls in the manager:
 
 # Reading Tracker
 
-ッツ Ebook Reader provides a basic time/character and reading goal tracker. You can open your data while reading a book and single click/tap on the tracker icon in the left bottom page corner. It gives an Overview about occured update errors, your reading goal progress, some timer controls and respective Data for your current Reading Session (across days), data of the current Day (across Sessions) and all Time (across sessions and days). If you are using the Continuous Mode with Autoscroll you will find an additional Autoscroller Section with a separate Set of Reading Data which is not persisted and reset between Autoscroll Pauses. Tracking Data will be persisted around every 10 seconds or when tracking gets paused.
+Arabic Ebook Reader provides a basic time/character and reading goal tracker. You can open your data while reading a book and single click/tap on the tracker icon in the left bottom page corner. It gives an Overview about occured update errors, your reading goal progress, some timer controls and respective Data for your current Reading Session (across days), data of the current Day (across Sessions) and all Time (across sessions and days). If you are using the Continuous Mode with Autoscroll you will find an additional Autoscroller Section with a separate Set of Reading Data which is not persisted and reset between Autoscroll Pauses. Tracking Data will be persisted around every 10 seconds or when tracking gets paused.
 
 Clicking on a tracker item label will toggle a blur effect in case you don't want to see the respective value.
 
@@ -244,7 +238,7 @@ The configured Start / End Dates for a Reading Goal are inclusive. Example: A Re
 
 # Statistics
 
-In the Statistics Tab of ッツ Ebook Reader you can find various visualizations of your tracked Reading Data. You can reach it via the Book Reader (prefilters Data to the current opened Book), Book Manager (displays all Reading Data) and Book Manager Card Selection (prefilters Data to the selected Books).
+In the Statistics Tab of Arabic Ebook Reader you can find various visualizations of your tracked Reading Data. You can reach it via the Book Reader (prefilters Data to the current opened Book), Book Manager (displays all Reading Data) and Book Manager Card Selection (prefilters Data to the selected Books).
 
 You may find the following controls in the statistics page header:
 
@@ -351,7 +345,7 @@ Other Data which can be imported/exported include:
 
 # Storage Sources
 
-ッツ Ebook Reader provides default storage sources for data import/export via GDrive or OneDrive which requires a reauthentication every 50 minutes in order to be functional.
+Arabic Ebook Reader provides default storage sources for data import/export via GDrive or OneDrive which requires a reauthentication every 50 minutes in order to be functional.
 Storage Sources under Settings => Data let you add additional custom sources for the filesystem target and/or a custom set of credentials for an external hoster which
 may can create persistent sessions and therefore asks for reauthentication less often in case you add a client secret.
 
@@ -381,36 +375,34 @@ To create such custom credentials follow these steps for the hoster you want to 
 17. If you don't want to restrict the credentials to your user click on "PUBLISH APP" and "CONFIRM"
 18. Navigate to "Credentials" and click on "CREATE CREDENTIALS" - select "OAuth client ID"
 19. Select "Web Application" as "Application type" and choose a name
-20. Click on "ADD URI" under "Authorized JavaScript origins" and add "https://reader.ttsu.app"
-21. Repeat Step 20 for "https://ttu-ebook.web.app"
-22. If you develop locally or self host the reader repeat step 20 for "http://localhost:5173" + "http://127.0.0.1:5173" and/or adjust ports etc. depending on your needs
-23. Click on "ADD URI" under "Authorized redirect URIs" and add "https://reader.ttsu.app/auth"
-24. Repeat Step 23 for "https://ttu-ebook.web.app/auth"
-25. If you develop locally or self host the reader repeat step 23 for "http://localhost:5173/auth" + "http://127.0.0.1:5173/auth" and/or adjust ports etc. depending on your needs
-26. Click on "CREATE" and copy Client Id and Client Secret values for the next step
-27. Create a new GDrive source on ッツ Ebook Reader with the client id and/or client secret you just have created
+20. Add the origin of your Arabic Ebook Reader deployment under "Authorized JavaScript origins"
+21. If you develop locally or self host the reader repeat step 20 for "http://localhost:5173" + "http://127.0.0.1:5173" and/or adjust ports etc. depending on your needs
+22. Add your reader deployment URL with /auth appended under "Authorized redirect URIs"
+23. For local development, add the matching redirect URL, such as "http://localhost:5173/auth"
+24. Click on "CREATE" and copy Client Id and Client Secret values for the next step
+25. Create a new GDrive source on Arabic Ebook Reader with the client id and/or client secret you just have created
 </details>
 <br/>
 <details>
     <summary>OneDrive</summary>
 
-28. Register an account for microsoft azure if required
-29. Go to the [project page](https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade) and register a new application
-30. Choose a name, select "Personal Microsoft accounts only" as type and click on "Register"
-31. Navigate to the menu item "Authentication"
-32. Click on "Add a Platform" in the "Platform configurations" section
-33. Choose "Single-page application"
-34. Enter "https://reader.ttsu.app/auth" or "https://ttu-ebook.web.app/auth" as value for "Redirect URIs" (depending on which site you use)
-35. Check "Access tokens (used for implicit flows)" and click on "Configure"
-36. If you develop locally or self host the reader click on "Add URI" inside the "Single-page Application" box and add "http://localhost:5173/auth" and/or adjust ports etc. depending on your needs
-37. Navigate to the menu item "Overview"
-38. Copy the "Application (client) ID" for later
-39. Navigate to the menu item "Certificates & secrets"
-40. Click on "New client secret"
-41. Fill out available options as you wish
-42. Click on "Add"
-43. Copy the value for later
-44. Create a new OneDrive source on ッツ Ebook Reader with the client id and/or client secret you just have created
+26. Register an account for microsoft azure if required
+27. Go to the [project page](https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade) and register a new application
+28. Choose a name, select "Personal Microsoft accounts only" as type and click on "Register"
+29. Navigate to the menu item "Authentication"
+30. Click on "Add a Platform" in the "Platform configurations" section
+31. Choose "Single-page application"
+32. Enter your reader deployment URL with /auth appended under "Redirect URIs"
+33. Check "Access tokens (used for implicit flows)" and click on "Configure"
+34. If you develop locally or self host the reader click on "Add URI" inside the "Single-page Application" box and add "http://localhost:5173/auth" and/or adjust ports etc. depending on your needs
+35. Navigate to the menu item "Overview"
+36. Copy the "Application (client) ID" for later
+37. Navigate to the menu item "Certificates & secrets"
+38. Click on "New client secret"
+39. Fill out available options as you wish
+40. Click on "Add"
+41. Copy the value for later
+42. Create a new OneDrive source on Arabic Ebook Reader with the client id and/or client secret you just have created
 </details>
 <br/>
 
@@ -465,21 +457,21 @@ VITE_ONEDRIVE_CLIENT_SECRET1="gfedcba"
 </details>
 <br/>
 
-**General Note**: Depending on your settings data from storage sources can be cached locally. In case you read and/or modifiy your library on a different device/tab it is recommended to refresh ッツ Ebook Reader tabs or start a new one after you have switched devices/tabs to ensure having all the latest data. The related "Cache Storage Data" option under settings only covers the list of files - in case you delete and readd files on a different device/ tab you should always refresh the tab in order to prevent issues
+**General Note**: Depending on your settings data from storage sources can be cached locally. In case you read and/or modifiy your library on a different device/tab it is recommended to refresh Arabic Ebook Reader tabs or start a new one after you have switched devices/tabs to ensure having all the latest data. The related "Cache Storage Data" option under settings only covers the list of files - in case you delete and readd files on a different device/ tab you should always refresh the tab in order to prevent issues
 
 **Cover Note**: When caching for storage data is enabled and/or you are using an external storage source links for book cover may expire. If you notice issues with loading covers refresh the current tab to renew them
 
-**GDrive Note**: Permissions are scoped to the client id and client secret which means different GDrive storage sources can only see their own data and will create their own "ttu-reader-data" folder. Also data added by you manually on the google website will not be displayed - you should use the functionality provided by ッツ Ebook Reader in order to add/delete books etc.
+**GDrive Note**: Permissions are scoped to the client id and client secret which means different GDrive storage sources can only see their own data and will create their own "ttu-reader-data" folder. Also data added by you manually on the google website will not be displayed - you should use the functionality provided by Arabic Ebook Reader in order to add/delete books etc.
 
 **OneDrive Note**: OneDrive only allows to add localhost addresses - in case you host or develop on 127.0.0.1 you should either switch to localhost or need to manually type in the localhost address in the address bar in order to use OneDrive. The maximum file size of a book for this storage source is currently 60 MB. In case you encounter an ETag Error simply retry your export attempt - typically it should work the 2nd time
 
 ## Security Considerations
 
-ッツ Ebook Reader has no backend component to store/retrieve your storage source data like refresh tokens in a secure way at runtime. Access to data like the refresh tokens allows to access external hosted Data on your behalf without you potentially even noticing it. You are therefore asked to provide a password for storage sources of external hoster which is used to secure and encrypt the data locally. As this password is only known to you and will not be stored you will have to (re)enter it whenever you want to delete/edit the storage source or ッツ Ebook Reader needs to access data from the storage source. For the same reason the password can't be restored - if you forget it you will not be able to interact with this storage source anymore. The password should follow common best practices in terms of complexity and length though there are currently no rules enforced on the site for it.
+Arabic Ebook Reader has no backend component to store/retrieve your storage source data like refresh tokens in a secure way at runtime. Access to data like the refresh tokens allows to access external hosted Data on your behalf without you potentially even noticing it. You are therefore asked to provide a password for storage sources of external hoster which is used to secure and encrypt the data locally. As this password is only known to you and will not be stored you will have to (re)enter it whenever you want to delete/edit the storage source or Arabic Ebook Reader needs to access data from the storage source. For the same reason the password can't be restored - if you forget it you will not be able to interact with this storage source anymore. The password should follow common best practices in terms of complexity and length though there are currently no rules enforced on the site for it.
 
 ### Password Manager
 
-Available if your browser supports the [PasswordCredentials Api](https://caniuse.com/mdn-api_passwordcredential) (or by using it manually). In order to use the "Store in Manager" setting you need to have password save settings in your browser enabled (at the time of creation/update of a storage source - it can be disabled afterwards). New passwords will trigger a native save dialog, in case there is already a password under the same name stored it will be updated automatically. Depending on your "Autofill" browser settings you will be presented with a browser dialog to select a pair of credentials or a notification about the usage of credentials is displayed whenever ッツ Ebook Reader needs to access the storage source data. You can always check the stored passwords in the browser password manager site.
+Available if your browser supports the [PasswordCredentials Api](https://caniuse.com/mdn-api_passwordcredential) (or by using it manually). In order to use the "Store in Manager" setting you need to have password save settings in your browser enabled (at the time of creation/update of a storage source - it can be disabled afterwards). New passwords will trigger a native save dialog, in case there is already a password under the same name stored it will be updated automatically. Depending on your "Autofill" browser settings you will be presented with a browser dialog to select a pair of credentials or a notification about the usage of credentials is displayed whenever Arabic Ebook Reader needs to access the storage source data. You can always check the stored passwords in the browser password manager site.
 
 **Note**: The API does not expose methods to delete credentials. In case you update the name of a storage source or delete it you need to manually remove the stored credentials in your password manager.
 
@@ -512,7 +504,7 @@ Data like books or bookmarks will be (depending on the storage source and data t
 > When the available disk space is filled up, the quota manager will start clearing out data based on an LRU policy — the least recently used origin will be
 > deleted first, then the next one, until the browser is no longer over the limit.
 
-Therefore your data can be lost based on the amount you stored and how much storage is available. In order to overcome this limitation ッツ Ebook Reader
+Therefore your data can be lost based on the amount you stored and how much storage is available. In order to overcome this limitation Arabic Ebook Reader
 will try to request for persistant storage during data insertion to the browser db. Based on your browser you will
 see different behavior. E. g. firefox will ask you for your confirmation while chrome will not display any dialog but automatically grant the permissions if you frequently interacted with / bookmarked the page and / or have granted notification permissions to the site.
 You can see the current status of persistant storage (and estimated storage usage) in the reader data settings.

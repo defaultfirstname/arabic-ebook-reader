@@ -1077,7 +1077,6 @@
       (x) => multiplier$.next(multiplier$.getValue() + x),
       autoScroller,
       pageManager,
-      false,
       changeChapter,
       handleSetCustomReadingPoint,
       trackerDblClickHandler,
@@ -1149,20 +1148,6 @@
       return;
     }
     fullscreenManager.exitFullscreen();
-  }
-
-  function onDomainHintClick() {
-    dialogManager.dialogs$.next([
-      {
-        component: MessageDialog,
-        props: {
-          title: 'Old Domain',
-          message:
-            'You are currently using the old domain of ッツ Reader - consider switching to https://reader.ttsu.app to prevent issues and to ensure full features'
-        },
-        disableCloseOnClick: true
-      }
-    ]);
   }
 
   function changeChapter(offset: number) {
@@ -1422,7 +1407,7 @@
       elRightReferencePoint,
       elBottomReferencePoint,
       pointGap
-    } = getReferencePoints(window, contentEl, false, firstDimensionMargin);
+    } = getReferencePoints(window, contentEl, firstDimensionMargin);
 
     merge(fromEvent(document, 'pointerup'), fromEvent(document, 'pointermove'))
       // eslint-disable-next-line rxjs/no-ignored-takewhile-value
@@ -1595,7 +1580,6 @@
         showReaderImageGallery = true;
       }}
       on:settingsClick={() => leaveReader(mergeEntries.SETTINGS.routeId, false)}
-      on:domainHintClick={onDomainHintClick}
       on:bookManagerClick={() => leaveReader(mergeEntries.MANAGE.routeId)}
     />
   </div>
@@ -1643,7 +1627,6 @@
     prioritizeReaderStyles={$prioritizeReaderStyles$}
     enableTextJustification={$enableTextJustification$}
     enableTextWrapPretty={$enableTextWrapPretty$}
-    verticalMode={false}
     fontColor={$themeOption$?.fontColor}
     backgroundColor={$backgroundColor$}
     fontFamilyGroupOne={$fontFamilyGroupOne$}
@@ -1702,12 +1685,7 @@
       tocIsOpen$.next(false);
     }}
   >
-    <BookToc
-      sectionData={$sectionData$}
-      verticalMode={false}
-      {exploredCharCount}
-      {wasTrackerPaused}
-    />
+    <BookToc sectionData={$sectionData$} {exploredCharCount} {wasTrackerPaused} />
   </div>
 {/if}
 

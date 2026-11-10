@@ -79,30 +79,21 @@ export function clearRange(window: Window, timeout = 250) {
 export function getReferencePoints(
   window: Window,
   element: Element,
-  verticalMode: boolean,
   firstDimensionMarginValue: number,
   bottomGap = 0
 ) {
   const firstDimensionMargin = Math.min(
     Math.max(firstDimensionMarginValue, 0),
-    verticalMode ? window.innerWidth / 4 : window.innerHeight / 4
+    window.innerHeight / 4
   );
   const rect = element.getBoundingClientRect();
-  const elLeftReferencePoint = verticalMode ? firstDimensionMargin : rect.left;
-  const elRightReferencePoint = verticalMode
-    ? window.innerWidth - firstDimensionMargin
-    : rect.right;
-  const elTopReferencePoint = verticalMode ? rect.top : firstDimensionMargin;
-  const elBottomReferencePoint = verticalMode
-    ? rect.bottom
-    : window.innerHeight - firstDimensionMargin - bottomGap;
   const pointGap = Number(getComputedStyle(element).lineHeight.replace(/px$/, ''));
 
   return {
-    elLeftReferencePoint,
-    elRightReferencePoint,
-    elTopReferencePoint,
-    elBottomReferencePoint,
+    elLeftReferencePoint: rect.left,
+    elRightReferencePoint: rect.right,
+    elTopReferencePoint: firstDimensionMargin,
+    elBottomReferencePoint: window.innerHeight - firstDimensionMargin - bottomGap,
     firstDimensionMargin,
     pointGap
   };

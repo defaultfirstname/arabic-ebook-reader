@@ -604,7 +604,6 @@
       <SettingsDimensionPopover
         slot="header"
         isFirstDimension
-        isVertical={false}
         bind:dimensionValue={firstDimensionMargin}
       />
       <input
@@ -616,11 +615,7 @@
       />
     </SettingsItemGroup>
     <SettingsItemGroup title="Reader Max width">
-      <SettingsDimensionPopover
-        slot="header"
-        isVertical={false}
-        bind:dimensionValue={secondDimensionMaxValue}
-      />
+      <SettingsDimensionPopover slot="header" bind:dimensionValue={secondDimensionMaxValue} />
       <input
         type="number"
         class={inputClasses}

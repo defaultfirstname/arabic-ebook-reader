@@ -26,7 +26,6 @@ export function onKeydownReader(
   multiplierOffsetFn: (offset: number) => void,
   autoScroller: AutoScroller | undefined,
   pageManager: PageManager | undefined,
-  isVertical: boolean,
   changeChapter: (offset: number) => void,
   handleSetCustomReadingPoint: () => void,
   toggleTracker: () => void,
@@ -58,10 +57,10 @@ export function onKeydownReader(
       pageManager?.prevPage();
       return true;
     case BookReaderAvailableKeybind.PREV_CHAPTER:
-      changeChapter(isVertical ? 1 : -1);
+      changeChapter(-1);
       return true;
     case BookReaderAvailableKeybind.NEXT_CHAPTER:
-      changeChapter(isVertical ? -1 : 1);
+      changeChapter(1);
       return true;
     case BookReaderAvailableKeybind.SET_READING_POINT:
       handleSetCustomReadingPoint();

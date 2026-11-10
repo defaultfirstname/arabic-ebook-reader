@@ -4,8 +4,9 @@
  * All rights reserved.
  */
 
+export const appName = 'Arabic Ebook Reader';
+
 export function formatPageTitle(title: string) {
-  const appName = 'ッツ Ebook Reader';
   if (!title) return appName;
   return `${title} | ${appName}`;
 }
