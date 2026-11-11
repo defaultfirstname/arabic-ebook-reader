@@ -30,5 +30,16 @@ jobs:
       - name: Lint
         run: pnpm eslint .
 
+      - name: Type checks
+        run: |
+          pnpm --filter web check
+          pnpm --filter web check:types
+
       - name: Test build
         run: pnpm build
+
+      - name: Install Chromium
+        run: pnpm --filter web exec playwright install --with-deps --only-shell chromium
+
+      - name: Arabic reader smoke test
+        run: pnpm --filter web test:smoke

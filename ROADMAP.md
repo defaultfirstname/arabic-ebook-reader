@@ -17,7 +17,7 @@
 - [x] Save a bookmark, go offline, reopen the app, and verify the passage, progress, and chosen font. Check whether font or column changes reproduce the slight resume offset seen in continuous mode.
 - [x] Export a ZIP backup and restore it into a fresh profile. Confirm books, bookmarks, and statistics come back.
 - [ ] After the counting cleanup, check Arabic EPUB, TXT, and HTMLZ in both modes and restore a backup made before the change.
-- [ ] Resolve the existing project-wide type-check errors separately so the check can catch future regressions.
+- [x] Resolve the project-wide type-check errors. Both web type-check commands pass.
 
 ## Simplify after verification
 
