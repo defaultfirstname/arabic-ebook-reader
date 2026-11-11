@@ -5,6 +5,7 @@
 An offline-capable reader for Modern Standard Arabic with right-to-left reading, an offline Arabic font, and support for dictionary extensions such as Yomitan. It is based on the original [ッツ Ebook Reader](https://github.com/ttu-ttu/ebook-reader).
 
 See the [project checklist](ROADMAP.md) for the current baseline and the next cleanup steps.
+See the [Svelte migration goals](GOALS.md) for target versions, milestones, and verification.
 
 # Features
 
