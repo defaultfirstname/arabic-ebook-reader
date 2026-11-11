@@ -368,11 +368,9 @@
   }
 </script>
 
-<div class="mb-8 sm:col-span-2 lg:col-span-3">
+<section class="border-t border-gray-500/25 pt-4">
   <div class="flex flex-grow">
-    <h1 class="mb-2 text-xl font-medium w-full">
-      <span class="capitalize">Reading Goals</span>
-    </h1>
+    <h2 class="mb-3 w-full text-lg font-semibold">Reading goals</h2>
     {#if isInEditMode}
       <button class={`${buttonClasses} mr-4`} disabled={saveDisabled} on:click={saveReadingGoal}>
         <div
@@ -541,4 +539,4 @@
       <div>You have no archived Reading Goals yet</div>
     {/if}
   </details>
-</div>
+</section>

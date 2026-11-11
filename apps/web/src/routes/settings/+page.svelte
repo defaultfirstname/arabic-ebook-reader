@@ -138,8 +138,9 @@
   <SettingsHeader leavePageLink={prevPage} bind:activeSettings />
 </div>
 
-<div class="{pxScreen} h-full pt-16 xl:pt-14">
-  <div class="max-w-5xl">
+<main class="{pxScreen} pb-8 pt-16 xl:pt-14">
+  <div class="mx-auto max-w-5xl">
+    <h1 class="sr-only">Settings</h1>
     <SettingsContent
       {activeSettings}
       {storageQuota}
@@ -204,5 +205,5 @@
       bind:adjustStatisticsAfterIdleTime={$adjustStatisticsAfterIdleTime$}
     />
   </div>
-</div>
+</main>
 {$setPersistentStorage$ ?? ''}

@@ -5,8 +5,6 @@
     faRightLong,
     faXmark
   } from '@fortawesome/free-solid-svg-icons';
-  import ButtonToggleGroup from '$lib/components/button-toggle-group/button-toggle-group.svelte';
-  import { optionsForToggle } from '$lib/components/button-toggle-group/toggle-option';
   import Popover from '$lib/components/popover/popover.svelte';
   import SettingsItemGroup from '$lib/components/settings/settings-item-group.svelte';
   import {
@@ -247,12 +245,9 @@
     </select>
   </div>
   <div class="mt-4">
-    <SettingsItemGroup title="Confirm Statistics Deletion" applyHeaderClasses={false}>
-      <ButtonToggleGroup
-        invertColors
-        options={optionsForToggle}
-        bind:selectedOptionId={$confirmStatisticsDeletion$}
-      />
-    </SettingsItemGroup>
+    <SettingsItemGroup
+      title="Confirm Statistics Deletion"
+      bind:checked={$confirmStatisticsDeletion$}
+    />
   </div>
 </div>
