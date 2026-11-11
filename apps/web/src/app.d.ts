@@ -9,6 +9,11 @@ declare namespace App {
   // interface Stuff {}
 }
 
+declare module 'svelte' {
+  // SvelteKit generates LayoutProps with Snippet, which the Svelte 4 app cannot use.
+  export type Snippet = never;
+}
+
 declare global {
   interface HTMLElement {
     scrollIntoViewIfNeeded(arg?: boolean): void;

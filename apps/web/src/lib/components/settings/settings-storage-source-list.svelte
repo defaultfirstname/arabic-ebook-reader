@@ -214,12 +214,12 @@
   }
 </script>
 
-<div class="mb-8 sm:col-span-2 lg:col-span-3">
+<section class="border-t border-gray-500/25 pt-4">
   <div class="flex">
     <div class="flex grow">
-      <h1 class="mb-2 text-xl font-medium">
+      <h2 class="mb-3 text-lg font-semibold">
         <span class="capitalize">Storage Sources</span>
-      </h1>
+      </h2>
       <Popover contentText={listTooltip} contentStyles="padding: 0.5rem;">
         <Fa icon={faCircleQuestion} slot="icon" class="mx-2" />
       </Popover>
@@ -335,5 +335,4 @@
       </div>
     {/if}
   </div>
-  <div />
-</div>
+</section>

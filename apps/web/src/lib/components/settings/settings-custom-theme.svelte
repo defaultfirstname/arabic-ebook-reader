@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { ToggleOption } from '$lib/components/button-toggle-group/toggle-option';
   import DialogTemplate from '$lib/components/dialog-template.svelte';
   import Ripple from '$lib/components/ripple.svelte';
   import SettingsCustomThemeInput from '$lib/components/settings/settings-custom-theme-input.svelte';
@@ -13,8 +12,8 @@
   } from '$lib/data/theme-option';
   import { createEventDispatcher, onMount } from 'svelte';
 
-  export let selectedTheme: string;
-  export let existingThemes: ToggleOption<string>[] = [];
+  export let selectedTheme: string | undefined;
+  export let existingThemes: { id: string; name: string }[];
 
   const dispatch = createEventDispatcher<{
     close: void;
@@ -51,6 +50,8 @@
   $: themeStyle = `color: ${customTheme.fontColor.rgbaExpression}; background-color: ${customTheme.backgroundColor.rgbaExpression}`;
 
   onMount(() => {
+    if (!selectedTheme) return;
+
     const existingThemeObject = $customThemes$[selectedTheme];
 
     if (!existingThemeObject) {
@@ -188,10 +189,10 @@
     <div
       class="grid grid-cols-1 gap-2 items-center overflow-auto max-h-[60vh] sm:grid-cols-[auto_auto_5rem] sm:gap-4"
     >
-      <select class="sm:col-span-2" bind:value={themeToCopy}>
+      <select aria-label="Theme to copy" class="sm:col-span-2" bind:value={themeToCopy}>
         {#each existingThemes as theme (theme.id)}
           <option value={theme.id}>
-            {theme.id}
+            {theme.name}
           </option>
         {/each}
       </select>
