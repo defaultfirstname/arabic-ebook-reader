@@ -4,18 +4,17 @@
  * All rights reserved.
  */
 
-import { isNodeGaiji } from './is-node-gaiji';
-
 export function getCharacterCount(node: Node) {
-  return isNodeGaiji(node) ? 1 : countTextCharacters(node.textContent ?? '');
+  return countTextCharacters(node.textContent ?? '');
 }
 
 export function countTextCharacters(text: string) {
-  return countLegacyTextCharacters(text) + countArabicCharacters(text);
+  return countLatinLettersAndDigits(text) + countArabicCharacters(text);
 }
 
-export function getLegacyCharacterCount(node: Node) {
-  return isNodeGaiji(node) ? 1 : countLegacyTextCharacters(node.textContent ?? '');
+export function countLatinLettersAndDigits(text: string) {
+  // Keep the same Latin letters and digits as the original bookmark counter.
+  return text.match(/[0-9a-z０-９ａ-ｚ]/giu)?.length ?? 0;
 }
 
 export function countArabicCharacters(text: string) {
@@ -24,12 +23,4 @@ export function countArabicCharacters(text: string) {
     text.match(/(?!\u0640)(?=\p{Script_Extensions=Arabic})[\p{Letter}\p{Decimal_Number}]/gu)
       ?.length ?? 0
   );
-}
-
-// Keep the original counting rule so saved character offsets remain valid.
-const excludedLegacyCharacters =
-  /[^0-9A-Z○◯々-〇〻ぁ-ゖゝ-ゞァ-ヺー０-９Ａ-Ｚｦ-ﾝ\p{Radical}\p{Unified_Ideograph}]+/gimu;
-
-function countLegacyTextCharacters(text: string) {
-  return Array.from(text.replace(excludedLegacyCharacters, '')).length;
 }

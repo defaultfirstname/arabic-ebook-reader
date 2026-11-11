@@ -4,6 +4,8 @@
  * All rights reserved.
  */
 
+export const themePreviewText = 'أب';
+
 export interface ColorObject {
   r: number;
   g: number;

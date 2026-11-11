@@ -9,7 +9,7 @@ import type {
   BooksDbBookData,
   BooksDbBookmarkData
 } from '$lib/data/database/books-db/versions/books-db';
-import { countArabicCharacters, getLegacyCharacterCount } from '../get-character-count';
+import { countArabicCharacters, countLatinLettersAndDigits } from '../get-character-count';
 
 export function getArabicBookMetrics(book: BooksDbBookData, document: Document) {
   if (!/\p{Script_Extensions=Arabic}/u.test(book.elementHtml)) return undefined;
@@ -27,12 +27,13 @@ export function getArabicBookMetrics(book: BooksDbBookData, document: Document) 
   for (const element of container.content.children) {
     const start = newCount;
     for (const node of getParagraphNodes(element)) {
-      const legacy = getLegacyCharacterCount(node);
-      const arabic = countArabicCharacters(node.textContent ?? '');
-      oldCount += legacy;
-      newCount += legacy + arabic;
+      const text = node.textContent ?? '';
+      const latin = countLatinLettersAndDigits(text);
+      const arabic = countArabicCharacters(text);
+      oldCount += latin;
+      newCount += latin + arabic;
       arabicCount += arabic;
-      if (legacy) bookmarkOffsets.set(oldCount, newCount);
+      if (latin) bookmarkOffsets.set(oldCount, newCount);
     }
 
     const section = sections.get(element.id);

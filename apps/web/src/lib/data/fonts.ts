@@ -36,16 +36,13 @@ export const userFontsCacheName = 'ttu-userfonts';
 
 export const reservedFontNames = new Set<string>(Object.values(LocalFont));
 
-export const retiredReaderFonts = new Set([
-  'KZ UDGothic',
-  'KZ UDMincho',
-  'Genei Koburi Mincho v5',
-  'Klee One',
-  'Klee One SemiBold',
-  'Noto Sans JP',
-  'Noto Serif JP',
-  'Shippori Mincho'
-]);
+export function getReaderFontStack(fontName: string, generic: 'serif' | 'sans-serif') {
+  const preferred = fontName.trim();
+  const fallback = `"${LocalFont.NOTONASKHARABIC}", ${generic}`;
+  return preferred && preferred !== LocalFont.NOTONASKHARABIC
+    ? `${preferred}, ${fallback}`
+    : fallback;
+}
 
 export function isStoredFont(fontName: string, userFonts: UserFont[]) {
   return (

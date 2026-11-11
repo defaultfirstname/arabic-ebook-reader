@@ -4,7 +4,7 @@
   import HtmlRenderer from '$lib/components/html-renderer.svelte';
   import type { BooksDbBookmarkData } from '$lib/data/database/books-db/versions/books-db';
   import { SECTION_CHANGE } from '$lib/data/events';
-  import { isStoredFont } from '$lib/data/fonts';
+  import { getReaderFontStack, isStoredFont } from '$lib/data/fonts';
   import { logger } from '$lib/data/logger';
   import {
     disableWheelNavigation$,
@@ -500,7 +500,7 @@
 
     try {
       fontLoaded = document.fonts.check(
-        `${fontSize}px ${fontFamilyGroupOne || 'Noto Naskh Arabic'}`
+        `${fontSize}px ${getReaderFontStack(fontFamilyGroupOne, 'serif')}`
       );
     } catch (error: any) {
       logger.error(`Error checking Font Load: ${error.message}`);
@@ -653,8 +653,8 @@
   style:padding-top={firstDimensionMargin ? `${firstDimensionMargin}px` : undefined}
   style:padding-bottom={firstDimensionMargin ? `${firstDimensionMargin}px` : undefined}
   style:max-width={width ? `${width}px` : undefined}
-  style:--font-family-serif={fontFamilyGroupOne}
-  style:--font-family-sans-serif={fontFamilyGroupTwo}
+  style:--font-family-serif={getReaderFontStack(fontFamilyGroupOne, 'serif')}
+  style:--font-family-sans-serif={getReaderFontStack(fontFamilyGroupTwo, 'sans-serif')}
   style:--font-weight={fontWeight}
   style:--book-content-child-width="{width}px"
   style:--book-content-child-height="{height}px"
