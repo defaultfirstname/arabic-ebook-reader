@@ -22,7 +22,7 @@ import {
   StatisticsReadingDataAggregationMode
 } from '$lib/components/statistics/statistics-types';
 import { BlurMode } from '$lib/data/blur-mode';
-import { LocalFont, retiredReaderFonts, type UserFont } from '$lib/data/fonts';
+import { LocalFont, type UserFont } from '$lib/data/fonts';
 import { MergeMode } from '$lib/data/merge-mode';
 import type { ReadingGoal } from '$lib/data/reading-goal';
 import { SortDirection, type SortOption } from '$lib/data/sort-types';
@@ -57,7 +57,6 @@ import type { ThemeOption } from './theme-option';
 import { ViewMode } from './view-mode';
 import { writableSetLocalStorageSubject } from './internal/writable-set-local-storage-subject';
 import { writableStringLocalStorageSubject } from './internal/writable-string-local-storage-subject';
-import { localStorage } from './window/local-storage';
 
 export const theme$ = writableStringLocalStorageSubject()('theme', 'light-theme');
 export const customThemes$ = writableObjectLocalStorageSubject<Record<string, ThemeOption>>()(
@@ -66,17 +65,6 @@ export const customThemes$ = writableObjectLocalStorageSubject<Record<string, Th
 );
 export const multiplier$ = writableNumberLocalStorageSubject()('autoScrollMultiplier', 20);
 export const userFonts$ = writableArrayLocalStorageSubject<UserFont>()('userfonts', []);
-
-for (const key of ['fontFamilyGroupOne', 'fontFamilyGroupTwo']) {
-  const savedFont = localStorage.getItem(key);
-  if (
-    savedFont &&
-    retiredReaderFonts.has(savedFont) &&
-    !userFonts$.getValue().some((font) => font.name === savedFont)
-  ) {
-    localStorage.setItem(key, LocalFont.NOTONASKHARABIC);
-  }
-}
 
 export const fontFamilyGroupOne$ = writableStringLocalStorageSubject()(
   'fontFamilyGroupOne',

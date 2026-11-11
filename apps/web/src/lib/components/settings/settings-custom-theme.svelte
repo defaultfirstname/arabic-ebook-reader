@@ -5,7 +5,12 @@
   import SettingsCustomThemeInput from '$lib/components/settings/settings-custom-theme-input.svelte';
   import { buttonClasses } from '$lib/css-classes';
   import { customThemes$, theme$ } from '$lib/data/store';
-  import { availableThemes, type CustomThemeValue, type ThemeOption } from '$lib/data/theme-option';
+  import {
+    availableThemes,
+    themePreviewText,
+    type CustomThemeValue,
+    type ThemeOption
+  } from '$lib/data/theme-option';
   import { createEventDispatcher, onMount } from 'svelte';
 
   export let selectedTheme: string;
@@ -229,7 +234,7 @@
         class="flex justify-center items-center rounded-md border-2 border-gray-400 p-2 text-lg"
         style={themeStyle}
       >
-        ぁあ
+        <span lang="ar" dir="rtl">{themePreviewText}</span>
         <Ripple />
       </button>
     </div>

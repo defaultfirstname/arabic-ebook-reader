@@ -106,8 +106,7 @@
     nextChapter$,
     sectionList$,
     sectionProgress$,
-    tocIsOpen$,
-    type SectionWithProgress
+    tocIsOpen$
   } from '$lib/components/book-reader/book-toc/book-toc';
   import BookToc from '$lib/components/book-reader/book-toc/book-toc.svelte';
   import ConfirmDialog from '$lib/components/confirm-dialog.svelte';
@@ -157,7 +156,8 @@
   } from '$lib/functions/replication/replication-progress';
   import { getDateKey } from '$lib/functions/statistic-util';
   import { clickOutside } from '$lib/functions/use-click-outside';
-  import { dummyFn, isMobile$, getWeightedAverage } from '$lib/functions/utils';
+  import { dummyFn, isMobile$ } from '$lib/functions/utils';
+  import { formatChapterProgress } from './format-chapter-progress';
   import { onKeydownReader } from './on-keydown-reader';
   import { onDestroy, onMount, tick } from 'svelte';
   import Fa from 'svelte-fa';
@@ -499,7 +499,11 @@
 
   $: tapButtonTop = `${showHeader ? 3 : 2}rem`;
 
-  $: footerChapterProgress = getCurrentChapterProgress($sectionData$);
+  $: footerChapterProgress = formatChapterProgress($sectionData$, {
+    exploredCharCount,
+    showCharacterCounter: $showFooterChapterCharacterCounter$,
+    showPercentage: $showFooterChapterPercentage$
+  });
 
   $: upSyncEnabled =
     externalStorageHandler &&
@@ -795,46 +799,6 @@
         }
       ]);
     }
-  }
-
-  function getCurrentChapterProgress(sectionData: SectionWithProgress[]) {
-    if (
-      (!$showFooterChapterCharacterCounter$ && !$showFooterChapterPercentage$) ||
-      !sectionData?.length
-    ) {
-      return '';
-    }
-
-    let chapterProgress = '';
-    let chapterCharacters = '';
-
-    const [mainChapters, chapterIndex, referenceId] = getChapterData($sectionData$);
-
-    if ($showFooterChapterPercentage$) {
-      const relevantSections = sectionData.filter(
-        (section) => section.reference === referenceId || section.parentChapter === referenceId
-      );
-
-      chapterProgress = `${getWeightedAverage(
-        relevantSections.map((section) => section.progress),
-        relevantSections.map((section) => section.charactersWeight)
-      ).toFixed(2)}%`;
-    }
-
-    if ($showFooterChapterCharacterCounter$) {
-      const currentChapter = mainChapters[chapterIndex];
-
-      if (currentChapter) {
-        const endCharacter = currentChapter.characters as number;
-
-        chapterCharacters = `${Math.min(
-          Math.max(exploredCharCount - (currentChapter.startCharacter as number), 0),
-          endCharacter
-        )} / ${endCharacter}`;
-      }
-    }
-
-    return [chapterCharacters, chapterProgress, 'C'].filter(Boolean).join(' ');
   }
 
   function copyCurrentProgress(currentProgress: string) {

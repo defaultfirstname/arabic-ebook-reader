@@ -40,7 +40,7 @@
     theme$
   } from '$lib/data/store';
   import type { TextMarginMode } from '$lib/data/text-margin-mode';
-  import { availableThemes as availableThemesMap } from '$lib/data/theme-option';
+  import { availableThemes as availableThemesMap, themePreviewText } from '$lib/data/theme-option';
   import { ViewMode } from '$lib/data/view-mode';
   import { secondsToMinutes } from '$lib/functions/statistic-util';
   import { dummyFn } from '$lib/functions/utils';
@@ -185,7 +185,7 @@
 
   $: optionsForTheme = availableThemes.map(({ theme, option }) => ({
     id: theme,
-    text: 'ぁあ',
+    text: themePreviewText,
     style: {
       color: option.fontColor,
       'background-color': option.backgroundColor
@@ -1068,7 +1068,7 @@
       {#if trackerAutoPause !== TrackerAutoPause.OFF}
         <SettingsItemGroup
           title="Dictionary Detection"
-          tooltip={`If enabled auto pause is skipped if open yomitan/jpdb-browser-reader was detected - yomitan requires disabled 'Secure Container' settings`}
+          tooltip="When enabled, the tracker keeps running while a detected Yomitan popup is open. Detection works when Yomitan’s Secure Container setting is off."
         >
           <ButtonToggleGroup
             options={optionsForToggle}

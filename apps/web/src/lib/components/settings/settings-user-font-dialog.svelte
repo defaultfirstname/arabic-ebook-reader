@@ -2,9 +2,9 @@
   import DialogTemplate from '$lib/components/dialog-template.svelte';
   import SvelteUserFontAdd from '$lib/components/settings/settings-user-font-add.svelte';
   import { dialogManager } from '$lib/data/dialog-manager';
-  import { userFontsCacheName } from '$lib/data/fonts';
+  import { LocalFont, userFontsCacheName } from '$lib/data/fonts';
   import { logger } from '$lib/data/logger';
-  import { userFonts$ } from '$lib/data/store';
+  import { fontFamilyGroupOne$, fontFamilyGroupTwo$, userFonts$ } from '$lib/data/store';
   import { dummyFn } from '$lib/functions/utils';
   import { faSpinner, faTrashCan } from '@fortawesome/free-solid-svg-icons';
   import type { BehaviorSubject } from 'rxjs';
@@ -63,12 +63,13 @@
     try {
       await fontCache.delete(path);
 
+      const removedFont = $userFonts$.find((userFont) => userFont.path === path);
       $userFonts$ = $userFonts$.filter((userFont) => userFont.path !== path);
 
-      const currentFontName = fontFamily.getValue();
-
-      if (!$userFonts$.find((userFont) => userFont.name === currentFontName)) {
-        fontFamily.next('');
+      for (const fontSetting of [fontFamilyGroupOne$, fontFamilyGroupTwo$]) {
+        if (fontSetting.getValue() === removedFont?.name) {
+          fontSetting.next(LocalFont.NOTONASKHARABIC);
+        }
       }
     } catch (error: any) {
       logger.error(`Error deleting Font: ${error.message}`);

@@ -244,8 +244,8 @@
     }
   }
 
+  const yomitanPopupSelector = '.yomitan-popup,.yomitan-float';
   let yomiPopover: HTMLElement | null;
-  let jpdbPopover: HTMLElement | null;
   let actionInProgress = false;
   let hadError = false;
   let pausedByAutoPause = false;
@@ -363,9 +363,7 @@
   }
 
   $: if ($trackerAutoPause$ !== TrackerAutoPause.OFF && !yomiPopover) {
-    yomiPopover = document.querySelector(
-      '.yomichan-popup,.yomichan-float,.yomitan-popup,.yomitan-float'
-    );
+    yomiPopover = document.querySelector(yomitanPopupSelector);
 
     if (!yomiPopover) {
       yomiObserver.observe(document.body, { childList: true, subtree: false });
@@ -374,14 +372,8 @@
     yomiObserver.disconnect();
   }
 
-  $: if ($trackerAutoPause$ !== TrackerAutoPause.OFF && !$trackerPopupDetection$) {
-    if (yomiPopover) {
-      dictionaryObserver.observe(yomiPopover, { attributes: true });
-    }
-
-    if (jpdbPopover) {
-      dictionaryObserver.observe(jpdbPopover, { attributes: true });
-    }
+  $: if ($trackerAutoPause$ !== TrackerAutoPause.OFF && !$trackerPopupDetection$ && yomiPopover) {
+    dictionaryObserver.observe(yomiPopover, { attributes: true });
   } else {
     dictionaryObserver.disconnect();
   }
@@ -394,9 +386,7 @@
   });
 
   function handleYomiMutation() {
-    yomiPopover = document.querySelector(
-      '.yomichan-popup,.yomichan-float,.yomitan-popup,.yomitan-float'
-    );
+    yomiPopover = document.querySelector(yomitanPopupSelector);
 
     if (yomiPopover) {
       yomiObserver.disconnect();
@@ -404,7 +394,7 @@
   }
 
   function handleMutation() {
-    if (!jpdbPopover && !yomiPopover) {
+    if (!yomiPopover) {
       return;
     }
 
@@ -420,10 +410,7 @@
   }
 
   function isDictionaryDisplayed() {
-    return (
-      (yomiPopover && yomiPopover.style.visibility !== 'hidden') ||
-      (jpdbPopover && jpdbPopover.style.opacity !== '0')
-    );
+    return !!yomiPopover && yomiPopover.style.visibility !== 'hidden';
   }
 
   function handleBlur() {
@@ -549,7 +536,6 @@
   async function init() {
     try {
       todayKey = getDateKey($startDayHoursForTracker$);
-      jpdbPopover = document.getElementById('jpdb-popup');
 
       const statisticsForTitle = await database.getStatisticsForBook(bookTitle);
       const setFirstBookReadResult = await database.setFirstBookRead(

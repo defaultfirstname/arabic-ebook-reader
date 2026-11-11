@@ -9,7 +9,6 @@ import type { BooksDbBookData } from '$lib/data/database/books-db/versions/books
 import { Observable } from 'rxjs';
 import { BaseStorageHandler } from '$lib/data/storage/handler/base-handler';
 import buildDummyBookImage from '$lib/functions/file-loaders/utils/build-dummy-book-image';
-import { isElementGaiji } from '$lib/functions/is-element-gaiji';
 import { map } from 'rxjs/operators';
 import {
   readerImageGalleryPictures$,
@@ -82,15 +81,9 @@ function getHtmlWithImageSource(bookData: BooksDbBookData, isPaginated: boolean)
 }
 
 function addImageContainerClass(el: HTMLElement) {
-  Array.from(el.getElementsByTagName('img'))
-    .map((imgEl) => ({ parentEl: imgEl.parentElement, isGaiji: isElementGaiji(imgEl) }))
-    .forEach(({ parentEl, isGaiji }) => {
-      parentEl?.classList.add('ttu-img-container');
-
-      if (!isGaiji) {
-        parentEl?.classList.add('ttu-illustration-container');
-      }
-    });
+  Array.from(el.getElementsByTagName('img')).forEach((img) => {
+    img.parentElement?.classList.add('ttu-img-container', 'ttu-illustration-container');
+  });
 }
 
 function removeSvgDimensions(el: HTMLElement) {
@@ -126,9 +119,9 @@ function addSpoilerTags(el: HTMLElement, document: Document, blurMode: BlurMode)
     ? getChildNodesAfterTableOfContents()
     : [...el.children]
   ).forEach((childNode) => {
-    Array.from(childNode.getElementsByTagName('img'))
-      .filter((tag) => !isElementGaiji(tag))
-      .forEach((tag) => createWrapper(tag, childNode));
+    Array.from(childNode.getElementsByTagName('img')).forEach((tag) =>
+      createWrapper(tag, childNode)
+    );
 
     Array.from(childNode.getElementsByTagName('svg'))
       .filter((tag) => tag.getElementsByTagName('image').length)
