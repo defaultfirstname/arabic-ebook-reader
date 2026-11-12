@@ -13,6 +13,10 @@
 </script>
 
 <Popover>
-  <Fa icon={faArrowDown19} slot="icon" class="mx-2" />
-  <SettingsDimensionContent slot="content" {isFirstDimension} bind:dimensionValue />
+  {#snippet icon()}
+    <Fa icon={faArrowDown19} class="mx-2" />
+  {/snippet}
+  {#snippet content()}
+    <SettingsDimensionContent {isFirstDimension} bind:dimensionValue />
+  {/snippet}
 </Popover>

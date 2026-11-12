@@ -1,25 +1,24 @@
 <script lang="ts">
-  import { browser } from '$app/env';
-  import { afterNavigate } from '$app/navigation';
   import { page } from '$app/state';
   import { appName } from '#lib/functions/format-page-title';
   import { basePath, clearConsoleOnReload } from '#lib/data/env';
-  import { dialogManager, type Dialog } from '#lib/data/dialog-manager';
+  import { dialogManager } from '#lib/data/dialog-manager';
   import { LocalFont, userFontsCacheName, type UserFont } from '#lib/data/fonts';
   import { fontFamilyGroupOne$, isOnline$, userFonts$ } from '#lib/data/store';
   import { dummyFn, isMobile, isMobile$ } from '#lib/functions/utils';
   import { MetaTags } from 'svelte-meta-tags';
+  import { onMount, type Snippet } from 'svelte';
   import '../app.scss';
-
-  let path = page.url.pathname;
-  let dialogs: Dialog[] = [];
-  let clickOnCloseDisabled = false;
-  let zIndex = '';
-
-  $: if (browser) {
-    isMobile$.next(isMobile(window));
-    addUserFonts($userFonts$);
+  interface Props {
+    children: Snippet;
   }
+
+  let { children }: Props = $props();
+
+  const { dialogs$ } = dialogManager;
+  let path = $derived(page.url.pathname);
+  let clickOnCloseDisabled = $derived($dialogs$[0]?.disableCloseOnClick ?? false);
+  let zIndex = $derived($dialogs$[0]?.zIndex ?? '');
 
   if (clearConsoleOnReload && import.meta.hot) {
     // eslint-disable-next-line no-console
@@ -71,19 +70,12 @@
   }
 
   function closeAllDialogs() {
-    dialogManager.dialogs$.next([]);
-    clickOnCloseDisabled = false;
-    zIndex = '';
+    dialogs$.next([]);
   }
 
-  dialogManager.dialogs$.subscribe((d) => {
-    clickOnCloseDisabled = d[0]?.disableCloseOnClick ?? false;
-    zIndex = d[0]?.zIndex ?? '';
-    dialogs = d;
-  });
-
-  afterNavigate(({ to }) => {
-    if (to) path = to.url.pathname;
+  onMount(() => isMobile$.next(isMobile(window)));
+  $effect(() => {
+    addUserFonts($userFonts$);
   });
 </script>
 
@@ -107,34 +99,34 @@
   }}
 />
 
-<slot />
+{@render children()}
 
-{#if dialogs.length > 0}
+{#if $dialogs$.length > 0}
   <div class="writing-horizontal-tb fixed inset-0 z-50 h-full w-full" style:z-index={zIndex}>
     <div
       tabindex="0"
       role="button"
       class="tap-highlight-transparent absolute inset-0 bg-black/[.32]"
-      on:click={() => {
+      onclick={() => {
         if (!clickOnCloseDisabled) {
           closeAllDialogs();
         }
       }}
-      on:keyup={dummyFn}
-    />
+      onkeyup={dummyFn}
+    ></div>
 
     <div
       class="relative top-1/2 left-1/2 inline-block max-w-[80vw] -translate-x-1/2 -translate-y-1/2"
     >
-      {#each dialogs as dialog}
+      {#each $dialogs$ as dialog}
         {#if typeof dialog.component === 'string'}
           {@html dialog.component}
         {:else}
-          <svelte:component this={dialog.component} {...dialog.props} on:close={closeAllDialogs} />
+          <dialog.component {...dialog.props} onClose={closeAllDialogs} />
         {/if}
       {/each}
     </div>
   </div>
 {/if}
 
-<span style={`font-family: ${$fontFamilyGroupOne$ || LocalFont.NOTONASKHARABIC}`} />
+<span style={`font-family: ${$fontFamilyGroupOne$ || LocalFont.NOTONASKHARABIC}`}></span>

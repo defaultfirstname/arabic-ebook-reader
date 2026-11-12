@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import { browser } from '$app/env';
   import DialogTemplate from '#lib/components/dialog-template.svelte';
   import Ripple from '#lib/components/ripple.svelte';
@@ -18,54 +19,67 @@
   import { StorageKey } from '#lib/data/storage/storage-types';
   import { database, isOnline$ } from '#lib/data/store';
   import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
-  import { createEventDispatcher } from 'svelte';
   import Fa from 'svelte-fa';
 
-  export let configuredName: string;
-  export let configuredIsSyncTarget: boolean;
-  export let configuredIsStorageSourceDefault: boolean;
-  export let configuredType: StorageKey;
-  export let configuredRemoteData: StorageUnlockAction;
-  export let configuredFSData: FsHandle;
-  export let configuredStoredInManager: boolean;
-  export let configuredEncryptionDisabled: boolean;
-  export let resolver: (arg0: StorageSourceSaveResult | undefined) => void;
-
-  const dispatch = createEventDispatcher<{
-    close: void;
-  }>();
-
-  const storageSourceRefreshToken = configuredRemoteData?.refreshToken || '';
-
-  let containerElm: HTMLElement;
-  let nameElm: HTMLInputElement;
-  let pwElm: HTMLInputElement;
-  let pwConfirmElm: HTMLInputElement;
-  let error = '';
-  const passwordManagerAvailable = 'PasswordCredential' in window;
-  let storageSourceName = configuredName || '';
-  let storageSourceIsSyncTarget = configuredIsSyncTarget || false;
-  let storageSourceIsSourceDefault = configuredIsStorageSourceDefault || false;
-  let storageSourceType = configuredType || StorageKey.GDRIVE;
-  let storageSourceClientId = configuredRemoteData?.clientId || '';
-  let storageSourceClientSecret = configuredRemoteData?.clientSecret || '';
-  let directoryHandle: FileSystemDirectoryHandle | undefined = configuredFSData?.directoryHandle;
-  let handleFsPath = configuredFSData?.fsPath || '';
-  let storageSourceStoredInManager =
-    (passwordManagerAvailable && configuredStoredInManager) || false;
-  let storageSourceEncryptionDisabled = configuredEncryptionDisabled || false;
-  let storageSourceTypes = [
-    { key: StorageKey.GDRIVE, label: 'GDrive' },
-    { key: StorageKey.ONEDRIVE, label: 'OneDrive' }
-  ];
-
-  $: if (browser && 'showDirectoryPicker' in window) {
-    storageSourceTypes = [...storageSourceTypes, { key: StorageKey.FS, label: 'Filesystem' }];
+  interface Props {
+    onClose: () => void;
+    configuredName: string;
+    configuredIsSyncTarget: boolean;
+    configuredIsStorageSourceDefault: boolean;
+    configuredType: StorageKey;
+    configuredRemoteData: StorageUnlockAction | undefined;
+    configuredFSData: FsHandle | undefined;
+    configuredStoredInManager: boolean;
+    configuredEncryptionDisabled: boolean;
+    resolver: (arg0: StorageSourceSaveResult | undefined) => void;
   }
 
-  $: setInitialPassword(pwElm);
+  let {
+    onClose,
+    configuredName,
+    configuredIsSyncTarget,
+    configuredIsStorageSourceDefault,
+    configuredType,
+    configuredRemoteData,
+    configuredFSData,
+    configuredStoredInManager,
+    configuredEncryptionDisabled,
+    resolver
+  }: Props = $props();
 
-  $: setInitialPassword(pwConfirmElm);
+  const storageSourceRefreshToken = untrack(() => configuredRemoteData?.refreshToken || '');
+
+  let containerElm = $state<HTMLElement>();
+  let nameElm = $state<HTMLInputElement>();
+  let pwElm = $state<HTMLInputElement>();
+  let pwConfirmElm = $state<HTMLInputElement>();
+  let error = $state('');
+  const passwordManagerAvailable = browser && 'PasswordCredential' in window;
+  let storageSourceName = $state(untrack(() => configuredName || ''));
+  let storageSourceIsSyncTarget = $state(untrack(() => configuredIsSyncTarget || false));
+  let storageSourceIsSourceDefault = $state(
+    untrack(() => configuredIsStorageSourceDefault || false)
+  );
+  let storageSourceType = $state(untrack(() => configuredType || StorageKey.GDRIVE));
+  let storageSourceClientId = $state(untrack(() => configuredRemoteData?.clientId || ''));
+  let storageSourceClientSecret = $state(untrack(() => configuredRemoteData?.clientSecret || ''));
+  let directoryHandle: FileSystemDirectoryHandle | undefined = $state(
+    untrack(() => configuredFSData?.directoryHandle)
+  );
+  let handleFsPath = $state(untrack(() => configuredFSData?.fsPath || ''));
+  let storageSourceStoredInManager = $state(
+    untrack(() => (passwordManagerAvailable && configuredStoredInManager) || false)
+  );
+  let storageSourceEncryptionDisabled = $state(
+    untrack(() => configuredEncryptionDisabled || false)
+  );
+  const storageSourceTypes = [
+    { key: StorageKey.GDRIVE, label: 'GDrive' },
+    { key: StorageKey.ONEDRIVE, label: 'OneDrive' },
+    ...(browser && 'showDirectoryPicker' in window
+      ? [{ key: StorageKey.FS, label: 'Filesystem' }]
+      : [])
+  ];
 
   async function selectDirectory() {
     resetCustomValidity();
@@ -92,6 +106,8 @@
   }
 
   async function save() {
+    if (!containerElm || !nameElm) return;
+
     resetCustomValidity();
 
     if (
@@ -110,8 +126,8 @@
             nameElm.setCustomValidity('Please select a different name');
             isValid = false;
           }
-        } else if (elm === pwConfirmElm && pwElm.value !== pwConfirmElm.value) {
-          pwConfirmElm.setCustomValidity('Password does not match');
+        } else if (elm === pwConfirmElm && pwElm?.value !== pwConfirmElm?.value) {
+          pwConfirmElm?.setCustomValidity('Password does not match');
           isValid = false;
         }
 
@@ -137,7 +153,7 @@
             new PasswordCredential({
               id: storageSourceName,
               name: `${storageSourceName} (${storageSourceType})`,
-              password: pwConfirmElm.value
+              password: pwConfirmElm?.value ?? ''
             })
           )
           .catch(({ message }: any) => {
@@ -180,7 +196,7 @@
               clientSecret: storageSourceClientSecret,
               refreshToken: invalidateToken ? '' : storageSourceRefreshToken
             }),
-            pwConfirmElm.value
+            pwConfirmElm?.value ?? ''
           );
         }
       }
@@ -233,155 +249,166 @@
 
   function resetCustomValidity() {
     error = '';
-    nameElm.setCustomValidity('');
+    nameElm?.setCustomValidity('');
     pwConfirmElm?.setCustomValidity('');
   }
 
   function closeDialog(data?: StorageSourceSaveResult) {
     resolver(data);
-    dispatch('close');
+    onClose();
   }
 
-  function setInitialPassword(element: HTMLInputElement) {
-    if (element && configuredStoredInManager && configuredRemoteData.secret) {
+  function setInitialPassword(element: HTMLInputElement | undefined) {
+    if (element && configuredStoredInManager && configuredRemoteData?.secret) {
       const elm = element;
 
       elm.value = configuredRemoteData.secret;
     }
   }
+  $effect(() => {
+    const element = pwElm;
+    untrack(() => setInitialPassword(element));
+  });
+  $effect(() => {
+    const element = pwConfirmElm;
+    untrack(() => setInitialPassword(element));
+  });
 </script>
 
 <DialogTemplate>
-  <div
-    class="flex flex-col p-2 max-h-[50vh] overflow-auto sm:max-h-[75vh]"
-    slot="content"
-    bind:this={containerElm}
-  >
-    <input
-      required
-      type="text"
-      placeholder="Name"
-      bind:value={storageSourceName}
-      bind:this={nameElm}
-    />
-    <div class="mt-4 flex items-center">
-      <input id="cbx-source" type="checkbox" bind:checked={storageSourceIsSyncTarget} />
-      <label for="cbx-source" class="ml-2 mr-6">Is Sync Target</label>
-      <input id="cbx-manager" type="checkbox" bind:checked={storageSourceIsSourceDefault} />
-      <label for="cbx-source" class="ml-2">Is Source Default</label>
-    </div>
-    <select
-      class="my-4"
-      bind:value={storageSourceType}
-      on:change={() => {
-        if (storageSourceType === StorageKey.FS) {
-          storageSourceClientId = '';
-          storageSourceClientSecret = '';
-          storageSourceStoredInManager = false;
-          storageSourceEncryptionDisabled = false;
-        } else {
-          directoryHandle = undefined;
-          handleFsPath = '';
-        }
-      }}
+  {#snippet content()}
+    <div
+      class="flex flex-col p-2 max-h-[50vh] overflow-auto sm:max-h-[75vh]"
+      bind:this={containerElm}
     >
-      {#each storageSourceTypes as sourceType (sourceType.key)}
-        <option value={sourceType.key}>
-          {sourceType.label}
-        </option>
-      {/each}
-    </select>
-    {#if storageSourceType === StorageKey.FS}
-      <button class={buttonClasses} on:click={selectDirectory}>
-        Select Directory
-        <Ripple />
-      </button>
-      <div class="my-4 text-center">{handleFsPath || 'Nothing selected'}</div>
-    {:else}
-      <input required type="text" placeholder="Client ID" bind:value={storageSourceClientId} />
       <input
-        class="mt-4"
+        required
         type="text"
-        placeholder="Client Secret"
-        bind:value={storageSourceClientSecret}
+        placeholder="Name"
+        bind:value={storageSourceName}
+        bind:this={nameElm}
       />
-      <input
-        class="mt-4"
-        type="password"
-        placeholder="Password"
-        required={!storageSourceEncryptionDisabled}
-        disabled={storageSourceEncryptionDisabled}
-        bind:this={pwElm}
-      />
-      <input
-        class="mt-4"
-        type="password"
-        placeholder="Confirm Password"
-        required={!storageSourceEncryptionDisabled}
-        disabled={storageSourceEncryptionDisabled}
-        bind:this={pwConfirmElm}
-      />
-      {#if passwordManagerAvailable}
+      <div class="mt-4 flex items-center">
+        <input id="cbx-source" type="checkbox" bind:checked={storageSourceIsSyncTarget} />
+        <label for="cbx-source" class="ml-2 mr-6">Is Sync Target</label>
+        <input id="cbx-manager" type="checkbox" bind:checked={storageSourceIsSourceDefault} />
+        <label for="cbx-source" class="ml-2">Is Source Default</label>
+      </div>
+      <select
+        class="my-4"
+        bind:value={storageSourceType}
+        onchange={() => {
+          if (storageSourceType === StorageKey.FS) {
+            storageSourceClientId = '';
+            storageSourceClientSecret = '';
+            storageSourceStoredInManager = false;
+            storageSourceEncryptionDisabled = false;
+          } else {
+            directoryHandle = undefined;
+            handleFsPath = '';
+          }
+        }}
+      >
+        {#each storageSourceTypes as sourceType (sourceType.key)}
+          <option value={sourceType.key}>
+            {sourceType.label}
+          </option>
+        {/each}
+      </select>
+      {#if storageSourceType === StorageKey.FS}
+        <button class={buttonClasses} onclick={selectDirectory}>
+          Select Directory
+          <Ripple />
+        </button>
+        <div class="my-4 text-center">{handleFsPath || 'Nothing selected'}</div>
+      {:else}
+        <input required type="text" placeholder="Client ID" bind:value={storageSourceClientId} />
+        <input
+          class="mt-4"
+          type="text"
+          placeholder="Client Secret"
+          bind:value={storageSourceClientSecret}
+        />
+        <input
+          class="mt-4"
+          type="password"
+          placeholder="Password"
+          required={!storageSourceEncryptionDisabled}
+          disabled={storageSourceEncryptionDisabled}
+          bind:this={pwElm}
+        />
+        <input
+          class="mt-4"
+          type="password"
+          placeholder="Confirm Password"
+          required={!storageSourceEncryptionDisabled}
+          disabled={storageSourceEncryptionDisabled}
+          bind:this={pwConfirmElm}
+        />
+        {#if passwordManagerAvailable}
+          <div class="mt-4">
+            <input
+              id="cbx-store-in-manager"
+              type="checkbox"
+              bind:checked={storageSourceStoredInManager}
+              onchange={() => {
+                if (storageSourceStoredInManager && storageSourceEncryptionDisabled) {
+                  storageSourceEncryptionDisabled = false;
+                }
+              }}
+            />
+            <label for="cbx-store-in-manager" class="ml-2 mr-6">Store in Password Manager</label>
+          </div>
+        {/if}
         <div class="mt-4">
           <input
-            id="cbx-store-in-manager"
+            id="cbx-disable-encryption"
             type="checkbox"
-            bind:checked={storageSourceStoredInManager}
-            on:change={() => {
-              if (storageSourceStoredInManager && storageSourceEncryptionDisabled) {
-                storageSourceEncryptionDisabled = false;
+            bind:checked={storageSourceEncryptionDisabled}
+            onchange={() => {
+              if (storageSourceEncryptionDisabled) {
+                storageSourceStoredInManager = false;
+                if (pwElm) pwElm.value = '';
+                if (pwConfirmElm) pwConfirmElm.value = '';
               }
             }}
           />
-          <label for="cbx-store-in-manager" class="ml-2 mr-6">Store in Password Manager</label>
+          <label for="cbx-disable-encryption" class="ml-2 mr-6">Disable Password Encryption</label>
         </div>
       {/if}
-      <div class="mt-4">
-        <input
-          id="cbx-disable-encryption"
-          type="checkbox"
-          bind:checked={storageSourceEncryptionDisabled}
-          on:change={() => {
-            if (storageSourceEncryptionDisabled) {
-              storageSourceStoredInManager = false;
-              pwElm.value = '';
-              pwConfirmElm.value = '';
-            }
-          }}
-        />
-        <label for="cbx-disable-encryption" class="ml-2 mr-6">Disable Password Encryption</label>
-      </div>
-    {/if}
-    {#if storageSourceStoredInManager || storageSourceEncryptionDisabled}
-      <div class="flex items-center my-4 max-w-xs">
-        <Fa icon={faTriangleExclamation} />
-        <span class="ml-2">
-          Make sure to understand the
-          <a
-            class="text-red-500"
-            href="https://github.com/ttu-ttu/ebook-reader?tab=readme-ov-file#security-considerations"
-            target="_blank"
-          >
-            Implications
-          </a>
-          of your choosen Settings
-        </span>
-      </div>
-    {/if}
-    {#if error}
-      <div class="text-red-500">Error: {error}</div>
-    {/if}
-  </div>
-  <div class="mt-4 flex grow justify-between" slot="footer">
-    <button class={buttonClasses} on:click={() => closeDialog()}>
-      Cancel
-      <Ripple />
-    </button>
-    <button class={buttonClasses} on:click={save}>
-      Save
-      <Ripple />
-    </button>
-  </div>
+      {#if storageSourceStoredInManager || storageSourceEncryptionDisabled}
+        <div class="flex items-center my-4 max-w-xs">
+          <Fa icon={faTriangleExclamation} />
+          <span class="ml-2">
+            Make sure to understand the
+            <a
+              class="text-red-500"
+              href="https://github.com/ttu-ttu/ebook-reader?tab=readme-ov-file#security-considerations"
+              target="_blank"
+            >
+              Implications
+            </a>
+            of your choosen Settings
+          </span>
+        </div>
+      {/if}
+      {#if error}
+        <div class="text-red-500">Error: {error}</div>
+      {/if}
+    </div>
+  {/snippet}
+  {#snippet footer()}
+    <div class="mt-4 flex grow justify-between">
+      <button class={buttonClasses} onclick={() => closeDialog()}>
+        Cancel
+        <Ripple />
+      </button>
+      <button class={buttonClasses} onclick={save}>
+        Save
+        <Ripple />
+      </button>
+    </div>
+  {/snippet}
 </DialogTemplate>
 
 <style>

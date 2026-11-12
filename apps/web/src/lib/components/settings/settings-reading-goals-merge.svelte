@@ -20,56 +20,29 @@
     secondsToMinutes
   } from '#lib/functions/statistic-util';
   import { pluralize } from '#lib/functions/utils';
-  import { createEventDispatcher, onMount, tick } from 'svelte';
+  import { onMount, tick, untrack } from 'svelte';
   import Fa from 'svelte-fa';
 
-  export let newReadingGoal: ReadingGoal;
-  export let resolver: (arg0: ReadingGoalSaveResult) => void;
+  interface Props {
+    onClose: () => void;
+    newReadingGoal: ReadingGoal;
+    resolver: (arg0: ReadingGoalSaveResult) => void;
+  }
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-  }>();
+  let { onClose, newReadingGoal, resolver }: Props = $props();
 
-  let showSpinner = true;
-  let newStartDate = newReadingGoal.goalStartDate;
-  let archiveReadingGoal = false;
-  let archiveDateEditable = false;
-  let archivalOptions: ReadingGoalArchivalOption[] = [];
-  let selectedArchiveOption = '';
+  let showSpinner = $state(true);
+  let newStartDate = $state(untrack(() => newReadingGoal.goalStartDate));
+  let archiveReadingGoal = $state(false);
+  let archiveDateEditable = $state(false);
+  let archivalOptions: ReadingGoalArchivalOption[] = $state([]);
+  let selectedArchiveOption = $state('');
   let archivalMaxDate: string;
-  let archivalStartDate = '';
-  let archivalEndDate = '';
+  let archivalStartDate = $state('');
+  let archivalEndDate = $state('');
   let archivalOriginalEndDate = '';
   let error = '';
-  let existingReadingGoals: BooksDbReadingGoal[] = [];
-  let readingGoalsToReplace: BooksDbReadingGoal[] = [];
-
-  $: selectedArchiveOptionObject = archivalOptions.find(
-    (opt) => opt.label === selectedArchiveOption
-  );
-
-  $: readingGoalsToReplace = existingReadingGoals.filter(
-    (readingGoal) => readingGoal.goalStartDate !== $readingGoal$.goalStartDate
-  );
-
-  $: readingGoalToReplaceMessage = readingGoalsToReplace.length
-    ? `${pluralize(readingGoalsToReplace.length, 'Item')} will be replaced`
-    : '';
-
-  $: if (selectedArchiveOptionObject) {
-    ({ archivalStartDate, archivalEndDate } = selectedArchiveOptionObject);
-    archiveDateEditable = selectedArchiveOptionObject.editable;
-    updateNextReadingGoalStartDate();
-  }
-
-  $: if (newReadingGoal.goalStartDate) {
-    if (!archiveReadingGoal) {
-      newStartDate = newReadingGoal.goalStartDate;
-      archivalStartDate = $readingGoal$.goalStartDate;
-    } else {
-      updateNextReadingGoalStartDate();
-    }
-  }
+  let existingReadingGoals: BooksDbReadingGoal[] = $state.raw([]);
 
   onMount(init);
 
@@ -108,7 +81,7 @@
 
     if (exitEarly) {
       resolver(resultObject);
-      dispatch('close');
+      onClose();
     }
 
     await tick();
@@ -146,7 +119,7 @@
     ];
 
     resolver(resultObject);
-    dispatch('close');
+    onClose();
   }
 
   function updateNextReadingGoalStartDate() {
@@ -263,17 +236,49 @@
       existingReadingGoals = [];
     }
   }
+  let selectedArchiveOptionObject = $derived(
+    archivalOptions.find((opt) => opt.label === selectedArchiveOption)
+  );
+  let readingGoalsToReplace = $derived(
+    existingReadingGoals.filter(
+      (readingGoal) => readingGoal.goalStartDate !== $readingGoal$.goalStartDate
+    )
+  );
+  let readingGoalToReplaceMessage = $derived(
+    readingGoalsToReplace.length
+      ? `${pluralize(readingGoalsToReplace.length, 'Item')} will be replaced`
+      : ''
+  );
+  $effect(() => {
+    if (selectedArchiveOptionObject) {
+      ({ archivalStartDate, archivalEndDate } = selectedArchiveOptionObject);
+      archiveDateEditable = selectedArchiveOptionObject.editable;
+      untrack(updateNextReadingGoalStartDate);
+    }
+  });
+  $effect(() => {
+    if (newReadingGoal.goalStartDate) {
+      if (!archiveReadingGoal) {
+        newStartDate = newReadingGoal.goalStartDate;
+        archivalStartDate = $readingGoal$.goalStartDate;
+      } else {
+        untrack(updateNextReadingGoalStartDate);
+      }
+    }
+  });
 </script>
 
 {#if showSpinner}
-  <div class="tap-highlight-transparent absolute inset-0 bg-black/[.2]" />
+  <div class="tap-highlight-transparent absolute inset-0 bg-black/[.2]"></div>
   <div class="fixed inset-0 flex h-full w-full items-center justify-center text-7xl">
     <Fa icon={faSpinner} spin />
   </div>
 {/if}
 <DialogTemplate>
-  <svelte:fragment slot="header">Save Reading Goal</svelte:fragment>
-  <svelte:fragment slot="content">
+  {#snippet header()}
+    Save Reading Goal
+  {/snippet}
+  {#snippet content()}
     {#if newReadingGoal.goalStartDate}
       <div>
         <span>New Reading Goal starts from</span>
@@ -287,7 +292,7 @@
       </div>
     {/if}
     {#if archivalOptions.length}
-      <input type="checkbox" bind:checked={archiveReadingGoal} on:change={checkDates} />
+      <input type="checkbox" bind:checked={archiveReadingGoal} onchange={checkDates} />
       <span class:opacity-50={!archiveReadingGoal}>
         <span class="mr-2">Archive Reading Goal from</span>
         <input
@@ -295,7 +300,7 @@
           type="date"
           disabled={!archiveReadingGoal || !archiveDateEditable}
           bind:value={archivalStartDate}
-          on:change={checkDates}
+          onchange={checkDates}
         />
         <span class="mx-2">-</span>
         <input
@@ -303,7 +308,7 @@
           type="date"
           disabled={!archiveReadingGoal || !archiveDateEditable}
           bind:value={archivalEndDate}
-          on:change={checkDates}
+          onchange={checkDates}
         />
       </span>
       <div
@@ -320,7 +325,7 @@
               disabled={!archiveReadingGoal}
               value={archivalOption.label}
               bind:group={selectedArchiveOption}
-              on:change={checkDates}
+              onchange={checkDates}
             />
             <span class:opacity-50={!archiveReadingGoal}>{archivalOption.label}</span>
           </div>
@@ -340,15 +345,17 @@
         {/each}
       </details>
     {/if}
-  </svelte:fragment>
-  <div class="flex grow justify-between" slot="footer">
-    <button class={buttonClasses} on:click={() => closeDialog(true)}>
-      Cancel
-      <Ripple />
-    </button>
-    <button class={buttonClasses} on:click={() => closeDialog()}>
-      Confirm
-      <Ripple />
-    </button>
-  </div>
+  {/snippet}
+  {#snippet footer()}
+    <div class="flex grow justify-between">
+      <button class={buttonClasses} onclick={() => closeDialog(true)}>
+        Cancel
+        <Ripple />
+      </button>
+      <button class={buttonClasses} onclick={() => closeDialog()}>
+        Confirm
+        <Ripple />
+      </button>
+    </div>
+  {/snippet}
 </DialogTemplate>

@@ -1,6 +1,5 @@
 <script lang="ts">
   import Fa from 'svelte-fa';
-  import { createEventDispatcher } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { mergeEntries } from '#lib/components/merged-header-icon/merged-entries';
@@ -9,24 +8,36 @@
   import { pagePath } from '#lib/data/env';
   import { dummyFn } from '#lib/functions/utils';
 
-  export let leavePageLink = '';
-  export let items = [mergeEntries.MANAGE, mergeEntries.SETTINGS, mergeEntries.BUG_REPORT];
-  export let mergeTo = mergeEntries.MANAGE;
-  export let disableRouteNavigation = false;
+  interface Props {
+    onAction?: (value: string) => void;
+    leavePageLink?: string;
+    items?: (typeof mergeEntries)[keyof typeof mergeEntries][];
+    mergeTo?: (typeof mergeEntries)[keyof typeof mergeEntries];
+    disableRouteNavigation?: boolean;
+  }
 
-  const dispatch = createEventDispatcher<{ action: string }>();
+  let {
+    onAction,
+    leavePageLink = '',
+    items = [mergeEntries.MANAGE, mergeEntries.SETTINGS, mergeEntries.BUG_REPORT],
+    mergeTo = mergeEntries.MANAGE,
+    disableRouteNavigation = false
+  }: Props = $props();
 
-  const actionItems = items.filter((item) => item.routeId !== page.route.id);
+  let actionItems = $derived(items.filter((item) => item.routeId !== page.route.id));
+  let backLink = $derived(
+    actionItems.length === 1 && actionItems[0].routeId ? actionItems[0].routeId : leavePageLink
+  );
 
-  let menuElm: Popover;
+  let menuElm = $state<ReturnType<typeof Popover>>();
 
   function handleActionMenuItem(target: string) {
-    dispatch('action', target);
+    onAction?.(target);
 
     if (
       !(target === mergeEntries.FILE_IMPORT.label || target === mergeEntries.FOLDER_IMPORT.label)
     ) {
-      menuElm.toggleOpen();
+      menuElm?.toggleOpen();
     }
 
     if (!disableRouteNavigation) {
@@ -37,14 +48,10 @@
       }
     }
   }
-
-  if (actionItems.length === 1 && actionItems[0].routeId) {
-    leavePageLink = actionItems[0].routeId;
-  }
 </script>
 
-{#if leavePageLink}
-  <a href={leavePageLink}>
+{#if backLink}
+  <a href={backLink}>
     <div class={baseIconClasses}>
       <Fa icon={mergeTo.icon} />
     </div>
@@ -57,8 +64,8 @@
         role="button"
         title={actionItem.title}
         class={baseIconClasses}
-        on:click={() => handleActionMenuItem(actionItem.label)}
-        on:keyup={dummyFn}
+        onclick={() => handleActionMenuItem(actionItem.label)}
+        onkeyup={dummyFn}
       >
         <Fa icon={actionItem.icon} />
       </div>
@@ -71,23 +78,27 @@
       yOffset={0}
       bind:this={menuElm}
     >
-      <div slot="icon" class={baseIconClasses}>
-        <Fa icon={mergeTo.icon} />
-      </div>
-      <div class="w-40 bg-gray-700 md:w-32" slot="content">
-        {#each actionItems as actionItem (actionItem.label)}
-          <div
-            tabindex="0"
-            role="button"
-            class="px-4 py-2 text-sm hover:bg-white hover:text-gray-700"
-            title={actionItem.title}
-            on:click={() => handleActionMenuItem(actionItem.label)}
-            on:keyup={dummyFn}
-          >
-            {actionItem.label}
-          </div>
-        {/each}
-      </div>
+      {#snippet icon()}
+        <div class={baseIconClasses}>
+          <Fa icon={mergeTo.icon} />
+        </div>
+      {/snippet}
+      {#snippet content()}
+        <div class="w-40 bg-gray-700 md:w-32">
+          {#each actionItems as actionItem (actionItem.label)}
+            <div
+              tabindex="0"
+              role="button"
+              class="px-4 py-2 text-sm hover:bg-white hover:text-gray-700"
+              title={actionItem.title}
+              onclick={() => handleActionMenuItem(actionItem.label)}
+              onkeyup={dummyFn}
+            >
+              {actionItem.label}
+            </div>
+          {/each}
+        </div>
+      {/snippet}
     </Popover>
   </div>
 {/if}

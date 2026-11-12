@@ -15,7 +15,7 @@ export interface SyncSelection {
 }
 
 export interface Dialog {
-  component: Component<any> | (new (...args: any[]) => any) | string;
+  component: Component<any> | string;
   props?: Record<string, any>;
   disableCloseOnClick?: boolean;
   zIndex?: string;

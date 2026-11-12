@@ -1,18 +1,18 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { untrack } from 'svelte';
   import { quintOut } from 'svelte/easing';
   import { fade } from 'svelte/transition';
 
-  let diameter = 0;
-  let rippleLeft = 0;
-  let rippleTop = 0;
+  let diameter = $state(0);
+  let rippleLeft = $state(0);
+  let rippleTop = $state(0);
   let ripples: {
     id: number;
-  }[] = [];
-  let hold = false;
-  let focus = false;
+  }[] = $state([]);
+  let hold = $state(false);
+  let focus = $state(false);
 
-  let containerEl: HTMLElement | undefined;
+  let containerEl: HTMLElement | undefined = $state();
 
   let listeners: {
     el: HTMLElement;
@@ -20,39 +20,15 @@
     listener: (event: any) => void;
   }[] = [];
 
-  $: target = containerEl?.parentElement;
-
-  $: {
-    if (target) {
-      target.classList.add('relative', 'overflow-hidden');
-      clearEventListeners();
-      const el = target;
-      addEventListener(el, 'focusin', () => (focus = true));
-      addEventListener(el, 'focusout', () => (focus = false));
-      addEventListener(el, 'mouseenter', () => (focus = true));
-      addEventListener(el, 'mouseleave', () => {
-        hold = false;
-        focus = false;
-      });
-      addEventListener(el, 'mousedown', (ev) => createRippleFromMouseEvent(ev, el));
-      addEventListener(el, 'mouseup', () => (hold = false));
-      addEventListener(el, 'touchstart', (ev) => createRippleFromTouchEvent(ev, el));
-      addEventListener(el, 'touchend', () => (hold = false));
-      addEventListener(el, 'touchcancel', () => (hold = false));
-    }
-  }
-
-  onDestroy(() => {
-    clearEventListeners();
-  });
-
   function addEventListener<K extends keyof HTMLElementEventMap>(
     el: HTMLElement,
     type: K,
     listener: (event: HTMLElementEventMap[K]) => void
   ) {
-    el.addEventListener(type, listener);
-    listeners.push({ el, type, listener });
+    // Removing a focused button can fire focusout during Svelte's DOM update.
+    const handleEvent = (event: HTMLElementEventMap[K]) => untrack(() => listener(event));
+    el.addEventListener(type, handleEvent);
+    listeners.push({ el, type, listener: handleEvent });
   }
 
   function clearEventListeners() {
@@ -102,6 +78,25 @@
         `
     };
   }
+  let target = $derived(containerEl?.parentElement);
+  $effect(() => {
+    if (!target) return;
+    target.classList.add('relative', 'overflow-hidden');
+    const el = target;
+    addEventListener(el, 'focusin', () => (focus = true));
+    addEventListener(el, 'focusout', () => (focus = false));
+    addEventListener(el, 'mouseenter', () => (focus = true));
+    addEventListener(el, 'mouseleave', () => {
+      hold = false;
+      focus = false;
+    });
+    addEventListener(el, 'mousedown', (ev) => createRippleFromMouseEvent(ev, el));
+    addEventListener(el, 'mouseup', () => (hold = false));
+    addEventListener(el, 'touchstart', (ev) => createRippleFromTouchEvent(ev, el));
+    addEventListener(el, 'touchend', () => (hold = false));
+    addEventListener(el, 'touchcancel', () => (hold = false));
+    return clearEventListeners;
+  });
 </script>
 
 <span bind:this={containerEl} class="absolute inset-0 h-full w-full">
@@ -113,19 +108,19 @@
       style:top="{rippleTop}px"
       style:left="{rippleLeft}px"
       in:animateRipple|local
-      on:introend={() => (ripples = [])}
-    />
+      onintroend={() => (ripples = [])}
+    ></span>
   {/each}
   {#if hold}
     <span
       class="absolute inset-0 h-full w-full bg-gray-400/25"
       transition:fade|local={{ easing: quintOut }}
-    />
+    ></span>
   {/if}
   {#if hold || focus}
     <span
       class="absolute inset-0 h-full w-full bg-gray-400/[.10]"
       transition:fade|local={{ easing: quintOut }}
-    />
+    ></span>
   {/if}
 </span>

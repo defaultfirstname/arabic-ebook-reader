@@ -75,7 +75,7 @@
     ...(hasCustomReadingPoint ? [{ label: 'Reset Point', action: onResetCustomReadingPoint }] : [])
   ]);
 
-  let customReadingPointMenuElm = $state<Popover>();
+  let customReadingPointMenuElm = $state<ReturnType<typeof Popover>>();
 
   let menuItems = $derived([
     mergeEntries.STATISTICS,
@@ -156,22 +156,26 @@
           yOffset={0}
           bind:this={customReadingPointMenuElm}
         >
-          <div slot="icon" title="Open Custom Point Actions" class={baseIconClasses}>
-            <Fa icon={faCrosshairs} />
-          </div>
-          <div slot="content" class="w-40 bg-gray-700 md:w-32">
-            {#each customReadingPointMenuItems as actionItem (actionItem.label)}
-              <div
-                tabindex="0"
-                role="button"
-                class="px-4 py-2 text-sm hover:bg-white hover:text-gray-700"
-                onclick={() => runCustomReadingPointAction(actionItem.action)}
-                onkeyup={dummyFn}
-              >
-                {actionItem.label}
-              </div>
-            {/each}
-          </div>
+          {#snippet icon()}
+            <div title="Open Custom Point Actions" class={baseIconClasses}>
+              <Fa icon={faCrosshairs} />
+            </div>
+          {/snippet}
+          {#snippet content()}
+            <div class="w-40 bg-gray-700 md:w-32">
+              {#each customReadingPointMenuItems as actionItem (actionItem.label)}
+                <div
+                  tabindex="0"
+                  role="button"
+                  class="px-4 py-2 text-sm hover:bg-white hover:text-gray-700"
+                  onclick={() => runCustomReadingPointAction(actionItem.action)}
+                  onkeyup={dummyFn}
+                >
+                  {actionItem.label}
+                </div>
+              {/each}
+            </div>
+          {/snippet}
         </Popover>
       </div>
     {/if}
@@ -190,7 +194,7 @@
     <MergedHeaderIcon
       disableRouteNavigation
       items={menuItems}
-      on:action={({ detail }) => {
+      onAction={(detail) => {
         if (detail === mergeEntries.STATISTICS.label) {
           onStatisticsClick();
         } else if (detail === mergeEntries.JUMP_TO_POSITION.label) {

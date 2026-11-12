@@ -1,12 +1,8 @@
 <script lang="ts">
-  import { browser } from '$app/env';
+  import { onMount } from 'svelte';
   import { faSpinner } from '@fortawesome/free-solid-svg-icons';
   import { convertAuthErrorResponse } from '#lib/functions/replication/error-handler';
   import Fa from 'svelte-fa';
-
-  $: if (browser) {
-    handleAuthRequest();
-  }
 
   async function handleAuthRequest() {
     const url = new URL(window.location.href);
@@ -196,6 +192,9 @@
       window.opener.postMessage(payload, origin, [channel.port2]);
     });
   }
+  onMount(() => {
+    handleAuthRequest();
+  });
 </script>
 
 <div class="fixed inset-0 flex h-full w-full items-center justify-center text-7xl">

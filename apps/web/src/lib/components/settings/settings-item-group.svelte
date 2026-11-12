@@ -35,14 +35,15 @@
     {/if}
     {#if tooltip}
       <Popover contentText={tooltip} contentStyles="padding: 0.5rem;">
-        <button
-          slot="icon"
-          type="button"
-          class="flex h-8 w-8 items-center justify-center rounded opacity-70 hover:opacity-100"
-          aria-label={`Help for ${title}`}
-        >
-          <Fa icon={faCircleQuestion} />
-        </button>
+        {#snippet icon()}
+          <button
+            type="button"
+            class="flex h-8 w-8 items-center justify-center rounded opacity-70 hover:opacity-100"
+            aria-label={`Help for ${title}`}
+          >
+            <Fa icon={faCircleQuestion} />
+          </button>
+        {/snippet}
       </Popover>
     {/if}
     {@render header?.()}

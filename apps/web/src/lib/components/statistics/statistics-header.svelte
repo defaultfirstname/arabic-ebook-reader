@@ -35,7 +35,7 @@
     { key: 'charactersRead', label: 'Characters Read' }
   ];
 
-  let copyStatisticsDataPopover = $state<Popover>();
+  let copyStatisticsDataPopover = $state<ReturnType<typeof Popover>>();
 </script>
 
 <div class="elevation-4 fixed inset-x-0 top-0 z-10">
@@ -48,22 +48,26 @@
           yOffset={0}
           bind:this={copyStatisticsDataPopover}
         >
-          <div slot="icon" title="Copy Data in TMW Log Format" class={baseIconClasses}>
-            <Fa icon={faCopy} />
-          </div>
-          <div slot="content" class="flex flex-col justify-center w-36 bg-gray-700">
-            {#each copyStatisticsDataItems as copyStatisticsDataItem (copyStatisticsDataItem.key)}
-              <button
-                class="p-2 hover:bg-white hover:text-gray-700"
-                onclick={() => {
-                  copyStatisticsData$.next(copyStatisticsDataItem.key);
-                  copyStatisticsDataPopover?.toggleOpen();
-                }}
-              >
-                {copyStatisticsDataItem.label}
-              </button>
-            {/each}
-          </div>
+          {#snippet icon()}
+            <div title="Copy Data in TMW Log Format" class={baseIconClasses}>
+              <Fa icon={faCopy} />
+            </div>
+          {/snippet}
+          {#snippet content()}
+            <div class="flex flex-col justify-center w-36 bg-gray-700">
+              {#each copyStatisticsDataItems as copyStatisticsDataItem (copyStatisticsDataItem.key)}
+                <button
+                  class="p-2 hover:bg-white hover:text-gray-700"
+                  onclick={() => {
+                    copyStatisticsData$.next(copyStatisticsDataItem.key);
+                    copyStatisticsDataPopover?.toggleOpen();
+                  }}
+                >
+                  {copyStatisticsDataItem.label}
+                </button>
+              {/each}
+            </div>
+          {/snippet}
         </Popover>
       </div>
       <div

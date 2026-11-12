@@ -40,14 +40,15 @@
   import { replicateData } from '#lib/functions/replication/replicator';
   import { isOnlineSourceAvailable, pluralize } from '#lib/functions/utils';
   import { getDateKey, secondsToMinutes } from '#lib/functions/statistic-util';
-  import { createEventDispatcher, onMount, tick } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import Fa from 'svelte-fa';
 
-  export let storageSources: BooksDbStorageSource[] = [];
+  interface Props {
+    onSpinner: (value: boolean) => void;
+    storageSources?: BooksDbStorageSource[];
+  }
 
-  const dispatch = createEventDispatcher<{
-    spinner: boolean;
-  }>();
+  let { onSpinner, storageSources = [] }: Props = $props();
 
   const readingGoalFrequencies = [
     {
@@ -61,41 +62,44 @@
     { id: ReadingGoalFrequency.MONTHLY, label: 'Monthly (30 Days)' }
   ];
 
-  let currentTimeGoal = 0;
-  let currentCharacterGoal = 0;
-  let currentReadingGoalFrequency = ReadingGoalFrequency.DAILY;
-  let currentReadingGoalStartDate = '';
-  let isInEditMode = false;
-  let readingGoals: BooksDbReadingGoal[] = [];
-  let sortedReadingGoals: BooksDbReadingGoal[] = [];
-  let historyIndex = 0;
+  let currentTimeGoal = $state(0);
+  let currentCharacterGoal = $state(0);
+  let currentReadingGoalFrequency = $state(ReadingGoalFrequency.DAILY);
+  let currentReadingGoalStartDate = $state('');
+  let isInEditMode = $state(false);
+  let readingGoals: BooksDbReadingGoal[] = $state([]);
+  let sortedReadingGoals: BooksDbReadingGoal[] = $state([]);
+  let historyIndex = $state(0);
   const itemsPerPage = 1;
 
-  $: availableSources = storageSources.filter((source) =>
-    isOnlineSourceAvailable($isOnline$, source.type)
+  let availableSources = $derived(
+    storageSources.filter((source) => isOnlineSourceAvailable($isOnline$, source.type))
   );
 
-  $: saveDisabled = !!((currentTimeGoal || currentCharacterGoal) && !currentReadingGoalStartDate);
-
-  $: currentTimeGoalInMin = secondsToMinutes(currentTimeGoal);
-
-  $: currentHistoryIndex = Math.max(0, historyIndex * itemsPerPage);
-
-  $: historyReadingGoals = sortedReadingGoals.slice(
-    currentHistoryIndex,
-    currentHistoryIndex + itemsPerPage
+  let saveDisabled = $derived(
+    !!((currentTimeGoal || currentCharacterGoal) && !currentReadingGoalStartDate)
   );
 
-  $: hasNextHistoryPage = sortedReadingGoals.length > currentHistoryIndex + itemsPerPage;
+  let currentTimeGoalInMin = $derived(secondsToMinutes(currentTimeGoal));
 
-  $: if ($readingGoal$) {
-    ({
-      timeGoal: currentTimeGoal,
-      characterGoal: currentCharacterGoal,
-      goalFrequency: currentReadingGoalFrequency,
-      goalStartDate: currentReadingGoalStartDate
-    } = $readingGoal$);
-  }
+  let currentHistoryIndex = $derived(Math.max(0, historyIndex * itemsPerPage));
+
+  let historyReadingGoals = $derived(
+    sortedReadingGoals.slice(currentHistoryIndex, currentHistoryIndex + itemsPerPage)
+  );
+
+  let hasNextHistoryPage = $derived(sortedReadingGoals.length > currentHistoryIndex + itemsPerPage);
+
+  $effect(() => {
+    if ($readingGoal$) {
+      ({
+        timeGoal: currentTimeGoal,
+        characterGoal: currentCharacterGoal,
+        goalFrequency: currentReadingGoalFrequency,
+        goalStartDate: currentReadingGoalStartDate
+      } = $readingGoal$);
+    }
+  });
 
   onMount(init);
 
@@ -180,7 +184,7 @@
         throw new Error(error);
       }
 
-      dispatch('spinner', true);
+      onSpinner(true);
 
       await database.updateReadingGoals(readingGoalsToDelete, readingGoalsToInsert);
     } catch (error: any) {
@@ -196,7 +200,7 @@
         ])
       );
     } finally {
-      dispatch('spinner', false);
+      onSpinner(false);
       isInEditMode = false;
       await updateReadingGoalsData().catch(() => {
         // no-op
@@ -223,7 +227,7 @@
       return;
     }
 
-    dispatch('spinner', true);
+    onSpinner(true);
 
     try {
       const error = await replicateData(
@@ -268,7 +272,7 @@
         }
       ]);
     } finally {
-      dispatch('spinner', false);
+      onSpinner(false);
     }
   }
 
@@ -318,7 +322,7 @@
       return;
     }
 
-    dispatch('spinner', true);
+    onSpinner(true);
 
     try {
       await database.deleteReadingGoal(readingGoalToDelete?.goalStartDate);
@@ -334,13 +338,13 @@
         }
       ]);
     } finally {
-      dispatch('spinner', false);
+      onSpinner(false);
     }
   }
 
   async function init() {
     try {
-      dispatch('spinner', true);
+      onSpinner(true);
       await updateReadingGoalsData();
     } catch (error: any) {
       dialogManager.dialogs$.next([
@@ -353,7 +357,7 @@
         }
       ]);
     } finally {
-      dispatch('spinner', false);
+      onSpinner(false);
     }
   }
 
@@ -372,7 +376,7 @@
   <div class="flex flex-grow">
     <h2 class="mb-3 w-full text-lg font-semibold">Reading goals</h2>
     {#if isInEditMode}
-      <button class={`${buttonClasses} mr-4`} disabled={saveDisabled} on:click={saveReadingGoal}>
+      <button class={`${buttonClasses} mr-4`} disabled={saveDisabled} onclick={saveReadingGoal}>
         <div
           class="flex items-center justify-center hover:opacity-50"
           class:cursor-not-allowed={saveDisabled}
@@ -383,7 +387,7 @@
       </button>
       <button
         class={buttonClasses}
-        on:click={() => {
+        onclick={() => {
           ({
             timeGoal: currentTimeGoal,
             characterGoal: currentCharacterGoal,
@@ -400,13 +404,13 @@
         </div>
       </button>
     {:else}
-      <button class={buttonClasses} on:click={syncReadingGoals}>
+      <button class={buttonClasses} onclick={syncReadingGoals}>
         <div class="flex items-center justify-center hover:opacity-50">
           <span class="mr-2">Sync</span>
           <Fa icon={faRotate} />
         </div>
       </button>
-      <button class={buttonClasses} on:click={() => (isInEditMode = true)}>
+      <button class={buttonClasses} onclick={() => (isInEditMode = true)}>
         <div class="flex items-center justify-center hover:opacity-50">
           <span class="mr-2">Edit</span>
           <Fa icon={faEdit} />
@@ -415,7 +419,7 @@
       <button
         class={buttonClasses}
         disabled={!readingGoals.length}
-        on:click={() => deleteReadingGoals()}
+        onclick={() => deleteReadingGoals()}
       >
         <div
           title="Delete all Reading Goals"
@@ -438,7 +442,7 @@
         class:cursor-not-allowed={!isInEditMode}
         disabled={!isInEditMode}
         bind:value={currentTimeGoalInMin}
-        on:blur={(event) => handleReadingGoalChange(event, true)}
+        onblur={(event) => handleReadingGoalChange(event, true)}
       />
     </div>
     <div class="flex flex-col">
@@ -449,7 +453,7 @@
         class:cursor-not-allowed={!isInEditMode}
         disabled={!isInEditMode}
         bind:value={currentCharacterGoal}
-        on:blur={(event) => handleReadingGoalChange(event, false)}
+        onblur={(event) => handleReadingGoalChange(event, false)}
       />
     </div>
     <div class="flex flex-col">
@@ -490,7 +494,7 @@
           <div>{historyGoal.characterGoal} characters</div>
           <div>{historyGoal.goalFrequency}</div>
           <button
-            on:click={() => deleteReadingGoals(historyGoal, dateRangeLabel)}
+            onclick={() => deleteReadingGoals(historyGoal, dateRangeLabel)}
             title="Delete Reading Goal"
           >
             <Fa icon={faTrash} />
@@ -507,7 +511,7 @@
             {dateRangeLabel} / {secondsToMinutes(historyGoal.timeGoal)} min / {historyGoal.characterGoal}
             characters / {historyGoal.goalFrequency}
             <button
-              on:click={() => deleteReadingGoals(historyGoal, dateRangeLabel)}
+              onclick={() => deleteReadingGoals(historyGoal, dateRangeLabel)}
               title="Delete Reading Goal"
             >
               <Fa icon={faTrash} />
@@ -521,7 +525,7 @@
           disabled={currentHistoryIndex === 0}
           class:opacity-50={currentHistoryIndex === 0}
           class:cursor-not-allowed={currentHistoryIndex === 0}
-          on:click={() => (historyIndex -= 1)}
+          onclick={() => (historyIndex -= 1)}
         >
           <Fa icon={faChevronLeft} />
         </button>
@@ -530,7 +534,7 @@
           disabled={!hasNextHistoryPage}
           class:opacity-50={!hasNextHistoryPage}
           class:cursor-not-allowed={!hasNextHistoryPage}
-          on:click={() => (historyIndex += 1)}
+          onclick={() => (historyIndex += 1)}
         >
           <Fa icon={faChevronRight} />
         </button>

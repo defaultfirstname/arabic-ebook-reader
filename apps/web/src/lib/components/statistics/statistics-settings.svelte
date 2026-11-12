@@ -182,7 +182,9 @@
         contentText={'Reading Time Attribute which should be used for the Summary Tab'}
         contentStyles="padding: 0.5rem;"
       >
-        <Fa slot="icon" icon={faCircleQuestion} class="mx-2" />
+        {#snippet icon()}
+          <Fa icon={faCircleQuestion} class="mx-2" />
+        {/snippet}
         <label for="timeDataSource">Time Data Source</label>
       </Popover>
       <select id="timeDataSource" class="text-black" bind:value={$lastReadingTimeDataSource$}>
@@ -198,7 +200,9 @@
         contentText={'Characters Read Attribute which should be used for the Summary Tab'}
         contentStyles="padding: 0.5rem; max-width: 20rem;"
       >
-        <Fa slot="icon" icon={faCircleQuestion} class="mx-2" />
+        {#snippet icon()}
+          <Fa icon={faCircleQuestion} class="mx-2" />
+        {/snippet}
         <label for="charactersSource">Characters Data Source</label>
       </Popover>
       <select id="charactersSource" class="text-black" bind:value={$lastCharactersDataSource$}>
@@ -214,7 +218,9 @@
         contentText={'Reading Speed Attribute which should be used for the Summary Tab'}
         contentStyles="padding: 0.5rem;"
       >
-        <Fa slot="icon" icon={faCircleQuestion} class="mx-2" />
+        {#snippet icon()}
+          <Fa icon={faCircleQuestion} class="mx-2" />
+        {/snippet}
         <label for="speedSource">Speed Data Source</label>
       </Popover>
       <select id="speedSource" class="text-black" bind:value={$lastReadingSpeedDataSource$}>
@@ -231,7 +237,9 @@
       contentText={'Determines on which primary Attribute the Data will be grouped for the Summary Tab'}
       contentStyles="padding: 0.5rem;"
     >
-      <Fa slot="icon" icon={faCircleQuestion} class="mx-2" />
+      {#snippet icon()}
+        <Fa icon={faCircleQuestion} class="mx-2" />
+      {/snippet}
       <label for="primaryAggregration">Primary Aggregration</label>
     </Popover>
     <select

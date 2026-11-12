@@ -18,24 +18,21 @@
     oneDriveStorageSource$
   } from '#lib/data/store';
   import { executeReplicate$ } from '#lib/functions/replication/replication-progress';
-  import { createEventDispatcher } from 'svelte';
 
-  let icons = [
-    { ...getStorageIconData(StorageKey.BACKUP), source: StorageKey.BACKUP, label: 'Zip File' },
-    { ...getStorageIconData(StorageKey.BROWSER), source: StorageKey.BROWSER, label: 'Browser DB' }
-  ];
+  let { onClose }: { onClose: () => void } = $props();
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-  }>();
-
-  $: if (browser) {
-    icons = [
-      ...icons,
-      ...(isStorageSourceAvailable(StorageKey.GDRIVE, $gDriveStorageSource$, window)
+  let icons = $derived(
+    [
+      { ...getStorageIconData(StorageKey.BACKUP), source: StorageKey.BACKUP, label: 'Zip File' },
+      {
+        ...getStorageIconData(StorageKey.BROWSER),
+        source: StorageKey.BROWSER,
+        label: 'Browser DB'
+      },
+      ...(browser && isStorageSourceAvailable(StorageKey.GDRIVE, $gDriveStorageSource$, window)
         ? [{ ...getStorageIconData(StorageKey.GDRIVE), source: StorageKey.GDRIVE, label: 'GDrive' }]
         : []),
-      ...(isStorageSourceAvailable(StorageKey.ONEDRIVE, $oneDriveStorageSource$, window)
+      ...(browser && isStorageSourceAvailable(StorageKey.ONEDRIVE, $oneDriveStorageSource$, window)
         ? [
             {
               ...getStorageIconData(StorageKey.ONEDRIVE),
@@ -44,40 +41,42 @@
             }
           ]
         : []),
-      ...(isStorageSourceAvailable(StorageKey.FS, $fsStorageSource$, window)
+      ...(browser && isStorageSourceAvailable(StorageKey.FS, $fsStorageSource$, window)
         ? [{ ...getStorageIconData(StorageKey.FS), source: StorageKey.FS, label: 'Filesystem' }]
         : [])
-    ].filter((icon) => icon.source !== $storageSource$);
-  }
+    ].filter((icon) => icon.source !== $storageSource$)
+  );
 
   function replicateData() {
     executeReplicate$.next();
 
-    dispatch('close');
+    onClose();
   }
 </script>
 
 <DialogTemplate>
-  <svelte:fragment slot="content">
+  {#snippet content()}
     <BookExportSelection
       {icons}
       bind:target={$lastExportedTarget$}
       bind:dataToReplicate={$lastExportedTypes$}
     />
-  </svelte:fragment>
-  <div class="flex grow justify-between" slot="footer">
-    <button class={buttonClasses} on:click={() => dispatch('close')}>
-      Cancel
-      <Ripple />
-    </button>
-    <button
-      class={buttonClasses}
-      class:cursor-not-allowed={!$lastExportedTypes$.length}
-      disabled={!$lastExportedTypes$.length}
-      on:click={replicateData}
-    >
-      Start
-      <Ripple />
-    </button>
-  </div>
+  {/snippet}
+  {#snippet footer()}
+    <div class="flex grow justify-between">
+      <button class={buttonClasses} onclick={() => onClose()}>
+        Cancel
+        <Ripple />
+      </button>
+      <button
+        class={buttonClasses}
+        class:cursor-not-allowed={!$lastExportedTypes$.length}
+        disabled={!$lastExportedTypes$.length}
+        onclick={replicateData}
+      >
+        Start
+        <Ripple />
+      </button>
+    </div>
+  {/snippet}
 </DialogTemplate>

@@ -194,8 +194,7 @@
         component: SettingsCustomTheme,
         props: {
           selectedTheme: theme,
-          existingThemes: themeChoices,
-          onClose: () => dialogManager.dialogs$.next([])
+          existingThemes: themeChoices
         }
       }
     ]);
@@ -1023,7 +1022,7 @@
     {#if statisticsEnabled}
       <SettingsReadingGoals
         storageSources={$storageSources$}
-        on:spinner={({ detail }) => (showSpinner = detail)}
+        onSpinner={(show) => (showSpinner = show)}
       />
     {/if}
     <SettingsSection title="Sync">

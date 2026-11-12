@@ -126,8 +126,8 @@
   let folderImportElm = $state<HTMLElement>();
   let backupImportElm = $state<HTMLElement>();
   let countImportElm = $state<HTMLInputElement>();
-  let storageSourceElm = $state<Popover>();
-  let sortOptionsElm = $state<Popover>();
+  let storageSourceElm = $state<ReturnType<typeof Popover>>();
+  let sortOptionsElm = $state<ReturnType<typeof Popover>>();
   const showLoadCount = browser && new URLSearchParams(window.location.search).has('count');
 
   let sortMenuItems = $derived([
@@ -140,8 +140,8 @@
     { property: 'lastBookmarkModified', label: 'Bookmarked' }
   ]);
 
-  function triggerInput(event: CustomEvent<string>) {
-    switch (event.detail) {
+  function triggerInput(action: string) {
+    switch (action) {
       case mergeEntries.FOLDER_IMPORT.label:
         folderImportElm?.click();
         break;
@@ -329,7 +329,7 @@
             <MergedHeaderIcon
               items={importMenuItems}
               mergeTo={mergeEntries.FILE_IMPORT}
-              on:action={triggerInput}
+              onAction={triggerInput}
             />
           </div>
           <div
@@ -344,48 +344,52 @@
               yOffset={0}
               bind:this={storageSourceElm}
             >
-              <div slot="icon">
-                {#key $storageIcon$}
-                  <svg
-                    class={baseIconClasses}
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox={$storageIcon$.viewBox}
-                  >
-                    <path class="fill-current" d={$storageIcon$.d} />
-                  </svg>
-                {/key}
-              </div>
-              <div slot="content" class="w-28 bg-gray-700">
-                {#each storageSourceMenuItems as sourceMenuItem (sourceMenuItem.key)}
-                  <div
-                    tabindex="0"
-                    role="button"
-                    class="cursor-pointer px-4 py-2 text-sm hover:bg-white hover:text-gray-700"
-                    class:hover:bg-white={!sourceMenuItem.requiresConnectivity || $isOnline$}
-                    class:hover:text-gray-700={!sourceMenuItem.requiresConnectivity || $isOnline$}
-                    class:cursor-not-allowed={sourceMenuItem.requiresConnectivity && !$isOnline$}
-                    class:text-gray-500={sourceMenuItem.requiresConnectivity && !$isOnline$}
-                    onclick={async () => {
-                      if (sourceMenuItem.requiresConnectivity && !$isOnline$) {
-                        return;
-                      }
-
-                      if (sourceMenuItem.key !== $storageSource$) {
-                        if (!$cacheStorageData$) {
-                          getStorageHandler(window, sourceMenuItem.key).clearData();
+              {#snippet icon()}
+                <div>
+                  {#key $storageIcon$}
+                    <svg
+                      class={baseIconClasses}
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox={$storageIcon$.viewBox}
+                    >
+                      <path class="fill-current" d={$storageIcon$.d} />
+                    </svg>
+                  {/key}
+                </div>
+              {/snippet}
+              {#snippet content()}
+                <div class="w-28 bg-gray-700">
+                  {#each storageSourceMenuItems as sourceMenuItem (sourceMenuItem.key)}
+                    <div
+                      tabindex="0"
+                      role="button"
+                      class="cursor-pointer px-4 py-2 text-sm hover:bg-white hover:text-gray-700"
+                      class:hover:bg-white={!sourceMenuItem.requiresConnectivity || $isOnline$}
+                      class:hover:text-gray-700={!sourceMenuItem.requiresConnectivity || $isOnline$}
+                      class:cursor-not-allowed={sourceMenuItem.requiresConnectivity && !$isOnline$}
+                      class:text-gray-500={sourceMenuItem.requiresConnectivity && !$isOnline$}
+                      onclick={async () => {
+                        if (sourceMenuItem.requiresConnectivity && !$isOnline$) {
+                          return;
                         }
 
-                        storageSource$.next(sourceMenuItem.key);
-                      }
+                        if (sourceMenuItem.key !== $storageSource$) {
+                          if (!$cacheStorageData$) {
+                            getStorageHandler(window, sourceMenuItem.key).clearData();
+                          }
 
-                      storageSourceElm?.toggleOpen();
-                    }}
-                    onkeyup={dummyFn}
-                  >
-                    {sourceMenuItem.label}
-                  </div>
-                {/each}
-              </div>
+                          storageSource$.next(sourceMenuItem.key);
+                        }
+
+                        storageSourceElm?.toggleOpen();
+                      }}
+                      onkeyup={dummyFn}
+                    >
+                      {sourceMenuItem.label}
+                    </div>
+                  {/each}
+                </div>
+              {/snippet}
             </Popover>
           </div>
           <div
@@ -399,60 +403,64 @@
               yOffset={0}
               bind:this={sortOptionsElm}
             >
-              <div slot="icon" class={baseIconClasses} title="Select Sort Options">
-                {#if $booklistSortOptions$[$storageSource$].direction === SortDirection.ASC}
-                  <Fa icon={faArrowDownShortWide} />
-                {:else}
-                  <Fa icon={faArrowDownWideShort} />
-                {/if}
-              </div>
-              <div slot="content" class="w-44 bg-gray-700">
-                {#each sortMenuItems as sortMenuItem (sortMenuItem.property)}
-                  {@const isCurrentSort =
-                    $booklistSortOptions$[$storageSource$].property === sortMenuItem.property}
-                  {@const isCurrentSortAsc =
-                    isCurrentSort &&
-                    $booklistSortOptions$[$storageSource$].direction === SortDirection.ASC}
-                  <div
-                    class="grid cursor-default grid-cols-[auto_auto_auto] text-sm hover:bg-white hover:text-gray-700"
-                    class:bg-white={isCurrentSort}
-                    class:text-gray-700={isCurrentSort}
-                    class:hover:opacity-70={isCurrentSort}
-                  >
+              {#snippet icon()}
+                <div class={baseIconClasses} title="Select Sort Options">
+                  {#if $booklistSortOptions$[$storageSource$].direction === SortDirection.ASC}
+                    <Fa icon={faArrowDownShortWide} />
+                  {:else}
+                    <Fa icon={faArrowDownWideShort} />
+                  {/if}
+                </div>
+              {/snippet}
+              {#snippet content()}
+                <div class="w-44 bg-gray-700">
+                  {#each sortMenuItems as sortMenuItem (sortMenuItem.property)}
+                    {@const isCurrentSort =
+                      $booklistSortOptions$[$storageSource$].property === sortMenuItem.property}
+                    {@const isCurrentSortAsc =
+                      isCurrentSort &&
+                      $booklistSortOptions$[$storageSource$].direction === SortDirection.ASC}
                     <div
-                      tabindex="0"
-                      role="button"
-                      class="self-center justify-self-start"
-                      class:text-red-500={isCurrentSortAsc}
-                      class:hover:text-gray-700={isCurrentSortAsc}
-                      class:hover:text-red-500={!isCurrentSortAsc}
-                      onclick={() => {
-                        changeSortOptions(sortMenuItem.property, SortDirection.ASC);
-                      }}
-                      onkeyup={() => {}}
+                      class="grid cursor-default grid-cols-[auto_auto_auto] text-sm hover:bg-white hover:text-gray-700"
+                      class:bg-white={isCurrentSort}
+                      class:text-gray-700={isCurrentSort}
+                      class:hover:opacity-70={isCurrentSort}
                     >
-                      <Fa icon={faSortUp} class="px-4" />
+                      <div
+                        tabindex="0"
+                        role="button"
+                        class="self-center justify-self-start"
+                        class:text-red-500={isCurrentSortAsc}
+                        class:hover:text-gray-700={isCurrentSortAsc}
+                        class:hover:text-red-500={!isCurrentSortAsc}
+                        onclick={() => {
+                          changeSortOptions(sortMenuItem.property, SortDirection.ASC);
+                        }}
+                        onkeyup={() => {}}
+                      >
+                        <Fa icon={faSortUp} class="px-4" />
+                      </div>
+                      <div class="py-2">
+                        {sortMenuItem.label}
+                      </div>
+                      <div
+                        tabindex="0"
+                        role="button"
+                        class="justify-self-end hover:text-red-500"
+                        class:text-red-500={isCurrentSort && !isCurrentSortAsc}
+                        class:hover:text-gray-700={isCurrentSort && !isCurrentSortAsc}
+                        class:hover:text-red-500={!isCurrentSort || isCurrentSortAsc}
+                        onclick={() => {
+                          changeSortOptions(sortMenuItem.property, SortDirection.DESC);
+                        }}
+                        onkeyup={() => {}}
+                      >
+                        <Fa icon={faSortDown} class="mt-1 px-4" />
+                      </div>
                     </div>
-                    <div class="py-2">
-                      {sortMenuItem.label}
-                    </div>
-                    <div
-                      tabindex="0"
-                      role="button"
-                      class="justify-self-end hover:text-red-500"
-                      class:text-red-500={isCurrentSort && !isCurrentSortAsc}
-                      class:hover:text-gray-700={isCurrentSort && !isCurrentSortAsc}
-                      class:hover:text-red-500={!isCurrentSort || isCurrentSortAsc}
-                      onclick={() => {
-                        changeSortOptions(sortMenuItem.property, SortDirection.DESC);
-                      }}
-                      onkeyup={() => {}}
-                    >
-                      <Fa icon={faSortDown} class="mt-1 px-4" />
-                    </div>
-                  </div>
-                {/each}
-              </div>
+                  {/each}
+                </div>
+              {/snippet}
             </Popover>
           </div>
           <div
@@ -467,7 +475,7 @@
                 mergeEntries.SETTINGS,
                 mergeEntries.BUG_REPORT
               ]}
-              on:action={({ detail }) => {
+              onAction={(detail) => {
                 if (detail === mergeEntries.BUG_REPORT.label) {
                   onBugReportClick();
                 }

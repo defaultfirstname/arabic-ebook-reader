@@ -184,70 +184,74 @@
 </script>
 
 <DialogTemplate>
-  <div slot="content">
-    <div
-      class="grid grid-cols-1 gap-2 items-center overflow-auto max-h-[60vh] sm:grid-cols-[auto_auto_5rem] sm:gap-4"
-    >
-      <select aria-label="Theme to copy" class="sm:col-span-2" bind:value={themeToCopy}>
-        {#each existingThemes as theme (theme.id)}
-          <option value={theme.id}>
-            {theme.name}
-          </option>
-        {/each}
-      </select>
-      <button class={buttonClasses} onclick={handleCopyTheme}
-        >Copy
+  {#snippet content()}
+    <div>
+      <div
+        class="grid grid-cols-1 gap-2 items-center overflow-auto max-h-[60vh] sm:grid-cols-[auto_auto_5rem] sm:gap-4"
+      >
+        <select aria-label="Theme to copy" class="sm:col-span-2" bind:value={themeToCopy}>
+          {#each existingThemes as theme (theme.id)}
+            <option value={theme.id}>
+              {theme.name}
+            </option>
+          {/each}
+        </select>
+        <button class={buttonClasses} onclick={handleCopyTheme}
+          >Copy
+          <Ripple />
+        </button>
+        <span class="hidden sm:block">Attribute</span>
+        <span class="hidden sm:block">Color</span>
+        <span class="hidden sm:block">Alpha</span>
+        <SettingsCustomThemeInput
+          label="Font"
+          attribute="fontColor"
+          values={customTheme.fontColor}
+          onColorChange={handleColorValueChange}
+          onAlphaChange={handleAlphaValueChange}
+        />
+        <SettingsCustomThemeInput
+          label="Background"
+          attribute="backgroundColor"
+          values={customTheme.backgroundColor}
+          onColorChange={handleColorValueChange}
+          onAlphaChange={handleAlphaValueChange}
+        />
+        <SettingsCustomThemeInput
+          label="Footer Font"
+          attribute="tooltipTextFontColor"
+          values={customTheme.tooltipTextFontColor}
+          onColorChange={handleColorValueChange}
+          onAlphaChange={handleAlphaValueChange}
+        />
+        <input
+          class="sm:col-span-2"
+          type="text"
+          placeholder="Theme Name"
+          bind:value={themeName}
+          bind:this={themeNameElm}
+        />
+        <button
+          class="flex justify-center items-center rounded-md border-2 border-gray-400 p-2 text-lg"
+          style={themeStyle}
+        >
+          <span lang="ar" dir="rtl">{themePreviewText}</span>
+          <Ripple />
+        </button>
+      </div>
+      <div class="flex mt-4"></div>
+    </div>
+  {/snippet}
+  {#snippet footer()}
+    <div class="mt-2 flex grow justify-between">
+      <button class={buttonClasses} onclick={onClose}>
+        Cancel
         <Ripple />
       </button>
-      <span class="hidden sm:block">Attribute</span>
-      <span class="hidden sm:block">Color</span>
-      <span class="hidden sm:block">Alpha</span>
-      <SettingsCustomThemeInput
-        label="Font"
-        attribute="fontColor"
-        values={customTheme.fontColor}
-        onColorChange={handleColorValueChange}
-        onAlphaChange={handleAlphaValueChange}
-      />
-      <SettingsCustomThemeInput
-        label="Background"
-        attribute="backgroundColor"
-        values={customTheme.backgroundColor}
-        onColorChange={handleColorValueChange}
-        onAlphaChange={handleAlphaValueChange}
-      />
-      <SettingsCustomThemeInput
-        label="Footer Font"
-        attribute="tooltipTextFontColor"
-        values={customTheme.tooltipTextFontColor}
-        onColorChange={handleColorValueChange}
-        onAlphaChange={handleAlphaValueChange}
-      />
-      <input
-        class="sm:col-span-2"
-        type="text"
-        placeholder="Theme Name"
-        bind:value={themeName}
-        bind:this={themeNameElm}
-      />
-      <button
-        class="flex justify-center items-center rounded-md border-2 border-gray-400 p-2 text-lg"
-        style={themeStyle}
-      >
-        <span lang="ar" dir="rtl">{themePreviewText}</span>
+      <button class={buttonClasses} onclick={handleSave}>
+        Save
         <Ripple />
       </button>
     </div>
-    <div class="flex mt-4"></div>
-  </div>
-  <div class="mt-2 flex grow justify-between" slot="footer">
-    <button class={buttonClasses} onclick={onClose}>
-      Cancel
-      <Ripple />
-    </button>
-    <button class={buttonClasses} onclick={handleSave}>
-      Save
-      <Ripple />
-    </button>
-  </div>
+  {/snippet}
 </DialogTemplate>

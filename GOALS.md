@@ -21,12 +21,12 @@ Targets checked on November 11, 2026. Recheck patch versions and package compati
 - [x] **2. Upgrade Svelte (½–1 day).** Align the app and tooling on Svelte 5, verify the metadata, icon, and gesture packages, and remove the temporary `Snippet` declaration. Existing components can use Svelte 4 syntax during this step. [Svelte 5 migration guide](https://svelte.dev/docs/svelte/v5-migration-guide)
 - [x] **3. Migrate Settings (½–1 day).** Convert the shared settings components and their callers in small groups. Verify dropdowns, switches, custom themes, and persistence.
 - [x] **4. Upgrade SvelteKit and Vite (1–2 days).** Update Docker's Node version, move Kit configuration into Vite, migrate `$app/stores` and the service worker, and verify the static build on an upgrade from the existing app. [Kit 3 migration guide](https://svelte.dev/docs/kit/migrating-to-sveltekit-3)
-- [ ] **5. Migrate the remaining app (1½–3 days).** Convert the library and statistics first, then paginated and continuous reading separately. Remove migration-only compatibility code once its callers are converted.
+- [x] **5. Migrate the remaining app (1½–3 days).** Convert the library and statistics first, then paginated and continuous reading separately. Remove migration-only compatibility code once its callers are converted.
   - [x] Library and statistics
   - [x] Paginated reader
   - [x] Continuous reader
   - [x] Shared reader route and controls
-  - [ ] Remaining legacy routes and components
+  - [x] Remaining legacy routes and components
 
 Allow **4–8 focused working days** for the full migration, including verification. The first Svelte 5 build should take **1–2 days** including the baseline. The biggest unknowns are library compatibility, service worker updates for existing installs, and bookmark resume across both reading modes.
 
@@ -34,7 +34,7 @@ Allow **4–8 focused working days** for the full migration, including verificat
 
 - [ ] A clean install, lint, both type checks, and the production build pass.
 - [ ] Arabic EPUB, TXT, and HTMLZ import and open in both modes. Verify RTL page turns, chapter navigation where available, progress, and bookmark resume.
-- [ ] A current browser profile retains its books and settings after upgrading. An older ZIP backup restores books, bookmarks, and statistics into a fresh profile.
+- [x] A current browser profile retains its books and settings after upgrading. An older ZIP backup restores books, bookmarks, and statistics into a fresh profile.
 - [ ] Direct book links and offline reopening work after the static deployment updates. Verify phone navigation and Yomitan lookups in a browser with the extension installed.
 
 Run the build and type checks for each pull request. Run the browser smoke test and verify the flows affected by that step before merging.

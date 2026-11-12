@@ -4,27 +4,37 @@
   import { buttonClasses } from '#lib/css-classes';
   import { decrypt, type StorageUnlockAction } from '#lib/data/storage/storage-source-manager';
   import { skipKeyDownListener$ } from '#lib/data/store';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
 
-  export let description: string;
-  export let action: string;
-  export let requiresSecret = true;
-  export let showCancel = false;
-  export let forwardSecret = false;
-  export let encryptedData: ArrayBuffer | undefined;
-  export let resolver: (arg0: StorageUnlockAction | undefined) => void;
+  interface Props {
+    onClose: () => void;
+    description: string;
+    action: string;
+    requiresSecret?: boolean;
+    showCancel?: boolean;
+    forwardSecret?: boolean;
+    encryptedData: ArrayBuffer | undefined;
+    resolver: (arg0: StorageUnlockAction | undefined) => void;
+  }
 
-  let containerElm: HTMLElement;
-  let passwordElm: HTMLInputElement;
-  let secret = '';
-  let error = '';
+  let {
+    onClose,
+    description,
+    action,
+    requiresSecret = true,
+    showCancel = false,
+    forwardSecret = false,
+    encryptedData,
+    resolver
+  }: Props = $props();
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-  }>();
+  let containerElm = $state<HTMLElement>();
+  let passwordElm = $state<HTMLInputElement>();
+  let secret = $state('');
+  let error = $state('');
 
   async function unlock() {
-    containerElm.classList.remove('error-animation');
+    containerElm?.classList.remove('error-animation');
     error = '';
 
     try {
@@ -40,20 +50,20 @@
       closeDialog({ clientId: '', clientSecret: '' });
     } catch (err: any) {
       error = `Failed to unlock Data${err.message ? `: ${err.message}` : ''}`;
-      containerElm.classList.add('error-animation');
+      containerElm?.classList.add('error-animation');
     }
   }
 
   function closeDialog(data?: StorageUnlockAction) {
     resolver(data);
-    dispatch('close');
+    onClose();
   }
 
   onMount(() => {
     skipKeyDownListener$.next(true);
 
     if (passwordElm) {
-      passwordElm.focus();
+      passwordElm?.focus();
     }
 
     return () => skipKeyDownListener$.next(false);
@@ -61,41 +71,45 @@
 </script>
 
 <DialogTemplate>
-  <div class="flex flex-col text-sm sm:text-base" slot="content" bind:this={containerElm}>
-    <div>{description}</div>
-    <div class="my-2">{action}</div>
-    {#if requiresSecret}
-      <input
-        type="password"
-        placeholder="Password"
-        bind:value={secret}
-        bind:this={passwordElm}
-        on:keyup={(evt) => {
-          if (evt.key === 'Enter') {
-            unlock();
-          }
-        }}
-      />
-    {/if}
-    <div class="text-red-500">{error}</div>
-  </div>
-  <div class="mt-2 flex grow justify-between" slot="footer">
-    {#if requiresSecret || showCancel}
-      <button
-        class={buttonClasses}
-        on:click={() => {
-          closeDialog();
-        }}
-      >
-        Cancel
+  {#snippet content()}
+    <div class="flex flex-col text-sm sm:text-base" bind:this={containerElm}>
+      <div>{description}</div>
+      <div class="my-2">{action}</div>
+      {#if requiresSecret}
+        <input
+          type="password"
+          placeholder="Password"
+          bind:value={secret}
+          bind:this={passwordElm}
+          onkeyup={(evt) => {
+            if (evt.key === 'Enter') {
+              unlock();
+            }
+          }}
+        />
+      {/if}
+      <div class="text-red-500">{error}</div>
+    </div>
+  {/snippet}
+  {#snippet footer()}
+    <div class="mt-2 flex grow justify-between">
+      {#if requiresSecret || showCancel}
+        <button
+          class={buttonClasses}
+          onclick={() => {
+            closeDialog();
+          }}
+        >
+          Cancel
+          <Ripple />
+        </button>
+      {/if}
+      <button class={buttonClasses} onclick={unlock}>
+        Confirm
         <Ripple />
       </button>
-    {/if}
-    <button class={buttonClasses} on:click={unlock}>
-      Confirm
-      <Ripple />
-    </button>
-  </div>
+    </div>
+  {/snippet}
 </DialogTemplate>
 
 <style>
