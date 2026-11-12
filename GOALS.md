@@ -24,7 +24,9 @@ Targets checked on November 11, 2026. Recheck patch versions and package compati
 - [ ] **5. Migrate the remaining app (1½–3 days).** Convert the library and statistics first, then paginated and continuous reading separately. Remove migration-only compatibility code once its callers are converted.
   - [x] Library and statistics
   - [x] Paginated reader
-  - [ ] Continuous reader
+  - [x] Continuous reader
+  - [ ] Shared reader route and controls
+  - [ ] Remaining legacy routes and components
 
 Allow **4–8 focused working days** for the full migration, including verification. The first Svelte 5 build should take **1–2 days** including the baseline. The biggest unknowns are library compatibility, service worker updates for existing installs, and bookmark resume across both reading modes.
 

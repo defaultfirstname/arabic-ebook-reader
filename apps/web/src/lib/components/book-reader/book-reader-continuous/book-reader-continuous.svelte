@@ -1,12 +1,10 @@
 <script lang="ts">
-  import { browser } from '$app/env';
   import {
     nextChapter$,
     sectionList$,
     sectionProgress$,
     type SectionWithProgress
   } from '#lib/components/book-reader/book-toc/book-toc';
-  import HtmlRenderer from '#lib/components/html-renderer.svelte';
   import type { BooksDbBookmarkData } from '#lib/data/database/books-db/versions/books-db';
   import { getReaderFontStack, isStoredFont } from '#lib/data/fonts';
   import { logger } from '#lib/data/logger';
@@ -32,7 +30,7 @@
     takeUntil,
     timer
   } from 'rxjs';
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, untrack } from 'svelte';
   import Fa from 'svelte-fa';
   import type { AutoScroller, BookmarkManager, PageManager } from '../types';
   import { AutoScrollerContinuous } from './auto-scroller-continuous';
@@ -40,112 +38,118 @@
   import { CharacterStatsCalculator } from './character-stats-calculator';
   import { PageManagerContinuous } from './page-manager-continuous';
 
-  export let htmlContent: string;
+  interface Props {
+    htmlContent: string;
+    width: number;
+    height: number;
+    rightToLeft: boolean;
+    prioritizeReaderStyles: boolean;
+    enableTextJustification: boolean;
+    enableTextWrapPretty: boolean;
+    fontColor: string;
+    backgroundColor: string;
+    fontFamilyGroupOne: string;
+    fontFamilyGroupTwo: string;
+    fontWeight: number | null;
+    fontSize: number;
+    lineHeight: number;
+    textIndentation: number;
+    textMarginMode: TextMarginMode;
+    textMarginValue: number;
+    hideSpoilerImage: boolean;
+    secondDimensionMaxValue: number;
+    firstDimensionMargin: number;
+    autoPositionOnResize: boolean;
+    autoBookmark: boolean;
+    autoBookmarkTime: number;
+    loadingState: boolean;
+    multiplier: number;
+    bookmarkData: Promise<BooksDbBookmarkData | undefined>;
+    exploredCharCount: number;
+    bookCharCount: number;
+    autoScroller: AutoScroller | undefined;
+    bookmarkManager: BookmarkManager | undefined;
+    pageManager: PageManager | undefined;
+    customReadingPoint: number;
+    customReadingPointLeft: number;
+    customReadingPointTop: number;
+    customReadingPointScrollOffset: number;
+    onBookmark: () => void;
+    onContentChange: (content: HTMLElement) => void;
+    onTrackerPause: () => void;
+  }
 
-  export let width: number;
+  let {
+    htmlContent,
+    width,
+    height,
+    rightToLeft,
+    prioritizeReaderStyles,
+    enableTextJustification,
+    enableTextWrapPretty,
+    fontColor,
+    backgroundColor,
+    fontFamilyGroupOne,
+    fontFamilyGroupTwo,
+    fontWeight,
+    fontSize,
+    lineHeight,
+    textIndentation,
+    textMarginMode,
+    textMarginValue,
+    hideSpoilerImage,
+    secondDimensionMaxValue,
+    firstDimensionMargin,
+    autoPositionOnResize,
+    autoBookmark,
+    autoBookmarkTime,
+    loadingState,
+    multiplier,
+    bookmarkData = $bindable(),
+    exploredCharCount = $bindable(),
+    bookCharCount = $bindable(),
+    autoScroller = $bindable(),
+    bookmarkManager = $bindable(),
+    pageManager = $bindable(),
+    customReadingPoint = $bindable(),
+    customReadingPointLeft = $bindable(),
+    customReadingPointTop = $bindable(),
+    customReadingPointScrollOffset = $bindable(),
+    onBookmark,
+    onContentChange,
+    onTrackerPause
+  }: Props = $props();
 
-  export let height: number;
+  let allowDisplay = $state(false);
 
-  export let rightToLeft: boolean;
+  let contentEl = $state<HTMLElement>();
 
-  export let prioritizeReaderStyles: boolean;
+  let calculator = $state<CharacterStatsCalculator>();
 
-  export let enableTextJustification: boolean;
+  let layoutRevision = $state(0);
 
-  export let enableTextWrapPretty: boolean;
+  let autoScrollerConcrete = $state<AutoScrollerContinuous>();
 
-  export let fontColor: string;
-
-  export let backgroundColor: string;
-
-  export let fontFamilyGroupOne: string;
-
-  export let fontFamilyGroupTwo: string;
-
-  export let fontWeight: number | null;
-
-  export let fontSize: number;
-
-  export let lineHeight: number;
-
-  export let textIndentation: number;
-
-  export let textMarginMode: TextMarginMode;
-
-  export let textMarginValue: number;
-
-  export let hideSpoilerImage: boolean;
-
-  export let secondDimensionMaxValue: number;
-
-  export let firstDimensionMargin: number;
-
-  export let autoPositionOnResize: boolean;
-
-  export let autoBookmark: boolean;
-
-  export let autoBookmarkTime: number;
-
-  export let loadingState: boolean;
-
-  export let multiplier: number;
-
-  export let bookmarkData: Promise<BooksDbBookmarkData | undefined>;
-
-  export let exploredCharCount: number;
-
-  export let bookCharCount: number;
-
-  export let autoScroller: AutoScroller | undefined;
-
-  export let bookmarkManager: BookmarkManager | undefined;
-
-  export let pageManager: PageManager | undefined;
-
-  export let customReadingPoint: number;
-
-  export let customReadingPointLeft: number;
-
-  export let customReadingPointTop: number;
-
-  export let customReadingPointScrollOffset: number;
-
-  const dispatch = createEventDispatcher<{
-    bookmark: void;
-    contentChange: HTMLElement;
-    trackerPause: void;
-  }>();
-
-  let allowDisplay = false;
-
-  let contentEl: HTMLElement | undefined;
-
-  let calculator: CharacterStatsCalculator | undefined;
-
-  let contentReadyEvent = {};
-
-  let autoScrollerConcrete: AutoScrollerContinuous | undefined;
-
-  let bookmarkManagerConcrete: BookmarkManagerContinuous | undefined;
+  let bookmarkManagerConcrete = $state<BookmarkManagerContinuous>();
 
   let pageManagerConcrete: PageManagerContinuous | undefined;
 
-  let bookmarkPos: string | undefined;
+  let bookmarkPos = $state<string>();
 
-  let scrollWhenReady: boolean;
+  let scrollWhenReady = false;
 
   let prevIntendedCharCount = 0;
 
   let isResizeScroll = false;
+  let viewportWidth = 0;
 
-  let bookmarkAdjustment = window.matchMedia('(min-width: 640px)').matches ? '0.5rem' : '0.25rem';
-
-  let fontLoadingAdded = false;
-  let loadedHtml: string | undefined;
+  let bookmarkAdjustment = $state('0.25rem');
 
   const width$ = new Subject<number>();
 
   const destroy$ = new Subject<void>();
+  const contentChanged$ = new Subject<void>();
+  let destroyed = false;
 
   const sectionToElement = new Map<string, HTMLElement>();
 
@@ -155,73 +159,94 @@
 
   let willNavigate = false;
 
-  $: width$.next(width);
+  $effect(() => {
+    const currentWidth = width;
+    untrack(() => width$.next(currentWidth));
+  });
 
-  $: if (secondDimensionMaxValue && contentEl) {
-    const dimensionAdjustment = Number(getComputedStyle(contentEl).marginRight.replace(/px$/, ''));
+  $effect(() => {
+    if (!width || !contentEl) return;
 
-    bookmarkAdjustment = `min(max(calc(${`${dimensionAdjustment}px - ${bookmarkAdjustment}`}), ${bookmarkAdjustment}), ${
-      dimensionAdjustment ? `${dimensionAdjustment}px` : bookmarkAdjustment
-    })`;
-  }
+    const defaultAdjustment = window.matchMedia('(min-width: 640px)').matches
+      ? '0.5rem'
+      : '0.25rem';
+    const margin = secondDimensionMaxValue
+      ? Number.parseFloat(getComputedStyle(contentEl).marginRight)
+      : 0;
+    bookmarkAdjustment = margin
+      ? `min(max(calc(${margin}px - ${defaultAdjustment}), ${defaultAdjustment}), ${margin}px)`
+      : defaultAdjustment;
+  });
 
-  $: {
-    if (htmlContent) {
-      scrollWhenReady = true;
-    }
-  }
+  // The effect runs after the book HTML has been inserted into the document.
+  $effect(() => {
+    const html = htmlContent;
+    const content = contentEl;
+    if (!content) return;
+    const stopFontWait = untrack(() => initializeContent(content, html));
+    return () => {
+      stopFontWait?.();
+      contentChanged$.next();
+    };
+  });
 
-  $: {
-    if (calculator && width && height && !loadingState) {
-      const c = calculator;
-      requestAnimationFrame(() => {
-        onContentDisplayChange(c);
-      });
-    }
-  }
+  $effect(() => {
+    const currentCalculator = calculator;
+    if (!currentCalculator || !width || !height || loadingState) return;
+    const frame = requestAnimationFrame(() => onContentDisplayChange(currentCalculator));
+    return () => cancelAnimationFrame(frame);
+  });
 
-  $: {
+  $effect(() => {
     if (autoScrollerConcrete) {
       autoScrollerConcrete.multiplier = multiplier;
     }
-  }
+  });
 
-  $: {
-    if (browser && calculator) {
-      bookmarkManagerConcrete =
-        browser &&
-        calculator &&
-        new BookmarkManagerContinuous(calculator, window, firstDimensionMargin || 0);
-      bookmarkManager = bookmarkManagerConcrete;
-    }
-  }
+  $effect(() => {
+    if (!calculator) return;
+    const manager = new BookmarkManagerContinuous(calculator, window, firstDimensionMargin || 0);
+    bookmarkManagerConcrete = manager;
+    bookmarkManager = manager;
+  });
 
-  $: {
-    if (contentReadyEvent) {
-      bookmarkPos = undefined;
-      bookmarkData.then((data) => {
-        if (!data) return;
-        bookmarkPos = bookmarkManagerConcrete?.getBookmarkBarPosition(data);
+  $effect(() => {
+    const manager = bookmarkManagerConcrete;
+    if (!layoutRevision || !manager) return;
+    let current = true;
+    bookmarkPos = undefined;
+    bookmarkData.then((data) => {
+      if (current && data) bookmarkPos = manager.getBookmarkBarPosition(data);
+    });
+    return () => (current = false);
+  });
+
+  $effect(() => {
+    const manager = new PageManagerContinuous(firstDimensionMargin, window);
+    pageManagerConcrete = manager;
+    pageManager = manager;
+  });
+
+  $effect(() => {
+    if ($customReadingPointEnabled$ && contentEl && Number.isFinite(customReadingPoint)) {
+      untrack(() => {
+        updateCustomReadingPointPosition();
+        onScroll();
+        updateSectionProgress();
       });
     }
-  }
+  });
 
-  $: {
-    if (browser) {
-      pageManagerConcrete = new PageManagerContinuous(firstDimensionMargin, window);
-      pageManager = pageManagerConcrete;
-    }
-  }
-
-  $: if ($customReadingPointEnabled$ && contentEl && Number.isFinite(customReadingPoint)) {
-    updateCustomReadingPointPosition();
-    onScroll();
-    updateSectionProgress();
-  }
+  onMount(() => {
+    viewportWidth = window.innerWidth;
+    const scroller = new AutoScrollerContinuous(multiplier, destroy$, document);
+    autoScrollerConcrete = scroller;
+    autoScroller = scroller;
+    document.addEventListener('ttu-action', handleAction, false);
+    return () => document.removeEventListener('ttu-action', handleAction, false);
+  });
 
   /** Experimental Code - May be removed any time without warning */
-  onMount(() => document.addEventListener('ttu-action', handleAction, false));
-
   function handleAction({ detail }: any) {
     if (!detail.type) {
       return;
@@ -252,7 +277,7 @@
       detail.type === 'pauseTracker' &&
       needScroll(detail.selector, detail.scrollMode).scroll
     ) {
-      dispatch('trackerPause');
+      onTrackerPause();
     }
   }
 
@@ -287,22 +312,16 @@
   /** Experimental Code - May be removed any time without warning */
 
   onDestroy(() => {
-    document.removeEventListener('ttu-action', handleAction, false);
-
+    destroyed = true;
     destroy$.next();
     destroy$.complete();
   });
 
-  if (browser) {
-    autoScrollerConcrete = new AutoScrollerContinuous(multiplier, destroy$, document);
-    autoScroller = autoScrollerConcrete;
-  }
-
   width$
     .pipe(
-      filter(() => autoPositionOnResize),
-      skip(1),
+      filter((currentWidth) => autoPositionOnResize && currentWidth > 0),
       distinctUntilChanged(),
+      skip(1),
       debounceTime(10),
       observeOn(animationFrameScheduler),
       takeUntil(destroy$)
@@ -312,8 +331,9 @@
 
       const scrollPos =
         calculator.getScrollPosByCharCount(prevIntendedCharCount) - customReadingPointScrollOffset;
-      isResizeScroll = true;
+      const previousScrollY = window.scrollY;
       pageManagerConcrete.scrollTo(scrollPos);
+      isResizeScroll = window.scrollY !== previousScrollY;
     });
 
   function updateCustomReadingPointPosition() {
@@ -351,7 +371,7 @@
 
       bookmarkData
         .then((data) => {
-          if (!data || !bookmarkManager) {
+          if (destroyed || _calculator !== calculator || !data || !bookmarkManager) {
             return;
           }
 
@@ -359,11 +379,18 @@
           bookmarkManager.scrollToBookmark(data, customReadingPointScrollOffset);
         })
         .finally(() => {
+          if (destroyed || _calculator !== calculator) return;
+
           if (autoBookmark) {
             fromEvent(window, 'scroll')
-              .pipe(skip(1), debounceTime(autoBookmarkTime * 1000), takeUntil(destroy$))
+              .pipe(
+                skip(1),
+                debounceTime(autoBookmarkTime * 1000),
+                takeUntil(contentChanged$),
+                takeUntil(destroy$)
+              )
               .subscribe(() => {
-                dispatch('bookmark');
+                onBookmark();
               });
           }
 
@@ -397,12 +424,13 @@
                 return EMPTY;
               }),
               debounce(() => timer(willNavigate ? 100 : 500)),
+              takeUntil(contentChanged$),
               takeUntil(destroy$)
             )
             .subscribe(updateSectionProgress);
         });
     }
-    contentReadyEvent = {};
+    layoutRevision += 1;
     allowDisplay = true;
   }
 
@@ -437,7 +465,7 @@
 
   function onScroll() {
     requestAnimationFrame(() => {
-      if (!calculator) return;
+      if (destroyed || !calculator) return;
 
       exploredCharCount = calculator.calcExploredCharCount(customReadingPointScrollOffset);
 
@@ -448,12 +476,15 @@
     });
   }
 
-  function onHtmlLoad() {
-    // The renderer also reports updates caused by reading progress.
-    if (!contentEl || loadedHtml === htmlContent) return;
-
-    loadedHtml = htmlContent;
-    calculator = new CharacterStatsCalculator(contentEl, document.documentElement, document);
+  function initializeContent(content: HTMLElement, html: string) {
+    scrollWhenReady = !!html;
+    allowDisplay = false;
+    layoutRevision = 0;
+    bookmarkPos = undefined;
+    sectionToElement.clear();
+    sectionData.clear();
+    scrollAdjustment = 0;
+    calculator = new CharacterStatsCalculator(content, document.documentElement, document);
     exploredCharCount = 0;
     prevIntendedCharCount = exploredCharCount;
     bookCharCount = calculator.charCount;
@@ -470,28 +501,26 @@
     }
 
     if (fontLoaded) {
-      dispatch('contentChange', contentEl);
-    } else if (!fontLoadingAdded) {
-      fontLoadingAdded = true;
-
-      const timeout = isStoredFont(fontFamilyGroupOne, $userFonts$) ? 30000 : 10000;
-      const fontLoadTimer = setTimeout(() => {
-        if (!contentEl) {
-          return;
-        }
-
-        logger.error(`Error loading primary Font: ${fontFamilyGroupOne}`);
-        dispatch('contentChange', contentEl);
-      }, timeout);
-
-      document.fonts.addEventListener('loadingdone', () => {
-        clearTimeout(fontLoadTimer);
-
-        if (contentEl) {
-          dispatch('contentChange', contentEl);
-        }
-      });
+      onContentChange(content);
+      return;
     }
+
+    const font = fontFamilyGroupOne;
+    const timeout = isStoredFont(font, $userFonts$) ? 30000 : 10000;
+    const stopWaitingForFont = () => {
+      clearTimeout(fontLoadTimer);
+      document.fonts.removeEventListener('loadingdone', onFontLoaded);
+    };
+    const onFontLoaded = () => {
+      stopWaitingForFont();
+      onContentChange(content);
+    };
+    const fontLoadTimer = setTimeout(() => {
+      logger.error(`Error loading primary Font: ${font}`);
+      onFontLoaded();
+    }, timeout);
+    document.fonts.addEventListener('loadingdone', onFontLoaded);
+    return stopWaitingForFont;
   }
 
   nextChapter$.pipe(takeUntil(destroy$)).subscribe((chapterId) => {
@@ -546,7 +575,7 @@
   dir={rightToLeft ? 'rtl' : undefined}
   class="book-content m-auto"
 >
-  <HtmlRenderer html={htmlContent} on:load={onHtmlLoad} />
+  {@html htmlContent}
 </div>
 
 {#if firstDimensionMargin}
@@ -555,13 +584,13 @@
     style:background-color={backgroundColor}
     style:height={`${firstDimensionMargin}px`}
     style:top="0"
-  />
+  ></div>
   <div
     class="fixed inset-x-0 z-[5]"
     style:background-color={backgroundColor}
     style:height={`${firstDimensionMargin}px`}
     style:bottom="0"
-  />
+  ></div>
 {/if}
 
 {#if bookmarkPos}
@@ -586,18 +615,19 @@
 {/if}
 
 <svelte:body
-  on:mousedown={(e) => {
+  onmousedown={(e) => {
     if ($disableWheelNavigation$ && e.button === 1) {
       e.preventDefault();
     }
   }}
 />
 <svelte:window
-  on:scroll={onScroll}
-  on:resize={() => {
-    if (autoPositionOnResize) {
+  onscroll={onScroll}
+  onresize={() => {
+    if (autoPositionOnResize && window.innerWidth !== viewportWidth) {
       isResizeScroll = true;
     }
+    viewportWidth = window.innerWidth;
   }}
 />
 

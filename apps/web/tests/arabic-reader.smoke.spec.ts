@@ -78,13 +78,16 @@ test('reads an Arabic book and resumes from a saved bookmark', async ({ page, co
   );
 });
 
-test('updates Arabic reading progress while scrolling in continuous mode', async ({ page }) => {
+test('scrolls and resumes an Arabic book in continuous mode', async ({ page, context }) => {
   await page.goto('/settings');
   await expect(page).toHaveTitle('Settings | Arabic Ebook Reader');
   const viewMode = page.getByRole('combobox', { name: 'View mode', exact: true });
   await viewMode.selectOption('continuous');
+  const autoBookmark = page.getByRole('switch', { name: 'Save reading position automatically' });
+  await autoBookmark.press('Space');
   await page.reload();
   await expect(viewMode).toHaveValue('continuous');
+  await expect(autoBookmark).not.toBeChecked();
   await importAndOpenBook(page);
 
   const progress = page.getByTitle('Click to copy Progress', { exact: true });
@@ -94,6 +97,38 @@ test('updates Arabic reading progress while scrolling in continuous mode', async
     await document.fonts.ready;
   });
   await page.mouse.move(480, 360);
-  await page.mouse.wheel(0, 600);
+  await page.mouse.wheel(0, 1600);
   await expect(progress).toHaveText(/^\s*[1-9]\d*\s*\/\s*[1-9]\d*\s+[\d.]+%\s*$/);
+  const count = async () => Number.parseInt(await progress.innerText(), 10);
+  const beforeResize = await count();
+  const scrollY = () => page.evaluate(() => window.scrollY);
+  const beforeResizeY = await scrollY();
+  const narrowViewport = { width: 360, height: 680 };
+  await page.setViewportSize(narrowViewport);
+  await expect.poll(scrollY).not.toBe(beforeResizeY);
+  await expect
+    .poll(async () => Math.abs((await count()) - beforeResize))
+    .toBeLessThan(beforeResize / 2);
+
+  const savedProgress = await progress.innerText();
+  const savedCount = Number.parseInt(savedProgress, 10);
+
+  const showControls = page.getByRole('button', { name: 'Show reader controls', exact: true });
+  const createBookmark = page.getByTitle('Create Bookmark', { exact: true });
+  await showControls.click();
+  await createBookmark.click();
+  await expect(createBookmark).toBeHidden();
+  await showControls.click();
+  await expect(page.getByTitle('Return to Bookmark', { exact: true })).toBeVisible();
+
+  await page.mouse.move(180, 360);
+  await page.mouse.wheel(0, 600);
+  await expect.poll(count).toBeGreaterThan(savedCount);
+
+  const reopened = await context.newPage();
+  await reopened.setViewportSize(narrowViewport);
+  await reopened.goto(page.url());
+  await expect(reopened.getByTitle('Click to copy Progress', { exact: true })).toHaveText(
+    savedProgress
+  );
 });

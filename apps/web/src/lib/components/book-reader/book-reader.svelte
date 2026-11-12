@@ -295,9 +295,9 @@
       bind:customReadingPointTop
       bind:customReadingPointLeft
       bind:customReadingPointScrollOffset
-      on:contentChange={(ev) => contentEl$.next(ev.detail)}
-      on:bookmark={onBookmark}
-      on:trackerPause={onTrackerPause}
+      onContentChange={(content) => contentEl$.next(content)}
+      {onBookmark}
+      {onTrackerPause}
     />
   {:else}
     <BookReaderPaginated
