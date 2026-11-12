@@ -18,7 +18,7 @@ Targets checked on November 11, 2026. Recheck patch versions and package compati
 ## Milestones
 
 - [x] **1. Record a baseline (½–1 day).** Run both web type checks in CI and verify Arabic TXT import, page turns, bookmark resume, and saved settings in a Chromium smoke test.
-- [ ] **2. Upgrade Svelte (½–1 day).** Align the app and tooling on Svelte 5, verify the metadata, icon, and gesture packages, and remove the temporary `Snippet` declaration. Existing components can use Svelte 4 syntax during this step. [Svelte 5 migration guide](https://svelte.dev/docs/svelte/v5-migration-guide)
+- [x] **2. Upgrade Svelte (½–1 day).** Align the app and tooling on Svelte 5, verify the metadata, icon, and gesture packages, and remove the temporary `Snippet` declaration. Existing components can use Svelte 4 syntax during this step. [Svelte 5 migration guide](https://svelte.dev/docs/svelte/v5-migration-guide)
 - [ ] **3. Migrate Settings (½–1 day).** Convert the shared settings components and their callers in small groups. Verify dropdowns, switches, custom themes, and persistence.
 - [ ] **4. Upgrade SvelteKit and Vite (1–2 days).** Update Docker's Node version, move Kit configuration into Vite, migrate `$app/stores` and the service worker, and verify the static build on an upgrade from the existing app. [Kit 3 migration guide](https://svelte.dev/docs/kit/migrating-to-sveltekit-3)
 - [ ] **5. Migrate the remaining app (1½–3 days).** Convert the library and statistics first, then paginated and continuous reading separately. Remove migration-only compatibility code once its callers are converted.

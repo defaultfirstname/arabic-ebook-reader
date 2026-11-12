@@ -141,6 +141,7 @@
   let bookmarkAdjustment = window.matchMedia('(min-width: 640px)').matches ? '0.5rem' : '0.25rem';
 
   let fontLoadingAdded = false;
+  let loadedHtml: string | undefined;
 
   const width$ = new Subject<number>();
 
@@ -448,8 +449,10 @@
   }
 
   function onHtmlLoad() {
-    if (!contentEl) return;
+    // The renderer also reports updates caused by reading progress.
+    if (!contentEl || loadedHtml === htmlContent) return;
 
+    loadedHtml = htmlContent;
     calculator = new CharacterStatsCalculator(contentEl, document.documentElement, document);
     exploredCharCount = 0;
     prevIntendedCharCount = exploredCharCount;
