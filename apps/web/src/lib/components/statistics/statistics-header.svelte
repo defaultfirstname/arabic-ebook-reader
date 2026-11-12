@@ -23,15 +23,19 @@
   import { dummyFn } from '#lib/functions/utils';
   import Fa from 'svelte-fa';
 
-  export let currentBookId: number | undefined;
-  export let showStatisticsSettings: boolean;
+  interface Props {
+    currentBookId: number | undefined;
+    showStatisticsSettings: boolean;
+  }
+
+  let { currentBookId, showStatisticsSettings = $bindable() }: Props = $props();
 
   const copyStatisticsDataItems: StatisticsDataSource[] = [
     { key: 'readingTime', label: 'Reading Time' },
     { key: 'charactersRead', label: 'Characters Read' }
   ];
 
-  let copyStatisticsDataPopover: Popover;
+  let copyStatisticsDataPopover = $state<Popover>();
 </script>
 
 <div class="elevation-4 fixed inset-x-0 top-0 z-10">
@@ -44,16 +48,16 @@
           yOffset={0}
           bind:this={copyStatisticsDataPopover}
         >
-          <div title="Copy Data in TMW Log Format" slot="icon" class={baseIconClasses}>
+          <div slot="icon" title="Copy Data in TMW Log Format" class={baseIconClasses}>
             <Fa icon={faCopy} />
           </div>
-          <div class="flex flex-col justify-center w-36 bg-gray-700" slot="content">
+          <div slot="content" class="flex flex-col justify-center w-36 bg-gray-700">
             {#each copyStatisticsDataItems as copyStatisticsDataItem (copyStatisticsDataItem.key)}
               <button
                 class="p-2 hover:bg-white hover:text-gray-700"
-                on:click={() => {
+                onclick={() => {
                   copyStatisticsData$.next(copyStatisticsDataItem.key);
-                  copyStatisticsDataPopover.toggleOpen();
+                  copyStatisticsDataPopover?.toggleOpen();
                 }}
               >
                 {copyStatisticsDataItem.label}
@@ -70,8 +74,8 @@
           : 'Switch to Summary Tab'}
         class={baseIconClasses}
         class:bg-gray-900={$lastStatisticsTab$ === StatisticsTab.SUMMARY}
-        on:click={() => ($lastStatisticsTab$ = StatisticsTab.SUMMARY)}
-        on:keyup={dummyFn}
+        onclick={() => ($lastStatisticsTab$ = StatisticsTab.SUMMARY)}
+        onkeyup={dummyFn}
       >
         <Fa icon={faCalendarDays} />
       </div>
@@ -83,8 +87,8 @@
           : 'Switch to Heatmap Tab'}
         class={baseIconClasses}
         class:bg-gray-900={$lastStatisticsTab$ === StatisticsTab.OVERVIEW}
-        on:click={() => ($lastStatisticsTab$ = StatisticsTab.OVERVIEW)}
-        on:keyup={dummyFn}
+        onclick={() => ($lastStatisticsTab$ = StatisticsTab.OVERVIEW)}
+        onkeyup={dummyFn}
       >
         <Fa icon={faMap} />
       </div>
@@ -94,14 +98,14 @@
         title="Open Title Filter Menu"
         class={baseIconClasses}
         style:cursor={$statisticsTitleFilterEnabled$ ? 'pointer' : 'not-allowed'}
-        on:click={() => {
+        onclick={() => {
           if (!$statisticsTitleFilterEnabled$) {
             return;
           }
 
           $statisticsTitleFilterIsOpen$ = true;
         }}
-        on:keyup={dummyFn}
+        onkeyup={dummyFn}
       >
         <Fa icon={faFilter} />
       </div>
@@ -110,8 +114,8 @@
         role="button"
         title="Open Statistics Settings"
         class={baseIconClasses}
-        on:click={() => (showStatisticsSettings = true)}
-        on:keyup={dummyFn}
+        onclick={() => (showStatisticsSettings = true)}
+        onkeyup={dummyFn}
       >
         <Fa icon={faSliders} />
       </div>
@@ -122,8 +126,8 @@
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           class={baseIconClasses}
-          on:click={() => goto(`${pagePath}/b?id=${currentBookId}`)}
-          on:keyup={dummyFn}
+          onclick={() => goto(`${pagePath}/b?id=${currentBookId}`)}
+          onkeyup={dummyFn}
         >
           <path
             class="fill-current"

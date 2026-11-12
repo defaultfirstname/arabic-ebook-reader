@@ -45,32 +45,51 @@
     faTimes,
     faTrash
   } from '@fortawesome/free-solid-svg-icons';
-  import { createEventDispatcher } from 'svelte';
   import Fa from 'svelte-fa';
   import { quintOut } from 'svelte/easing';
   import { scale } from 'svelte/transition';
 
-  export let hasBookOpened: boolean;
-  export let selectMode: boolean;
-  export let selectedCount: number;
-  export let hasBooks: boolean;
-  export let cancelTooltip: string;
-  export let replicationProgress: number;
-  export let replicationToProgress: number;
-  export let replicationProgressRemaining: string;
+  interface Props {
+    onSelectAllClick: () => void;
+    onRemoveClick: () => void;
+    onBugReportClick: () => void;
+    onBackToBookClick: () => void;
+    onFilesChange: (detail: FileList) => void;
+    onImportBackup: (detail: File) => void;
+    onSelectionToStatistics: () => void;
+    onDeleteStatistics: () => void;
+    onReplicateData: () => void;
+    onCancelReplication: () => void;
+    hasBookOpened: boolean;
+    selectMode: boolean;
+    selectedCount: number;
+    hasBooks: boolean;
+    cancelTooltip: string;
+    replicationProgress: number;
+    replicationToProgress: number;
+    replicationProgressRemaining: string;
+  }
 
-  const dispatch = createEventDispatcher<{
-    selectAllClick: void;
-    removeClick: void;
-    bugReportClick: void;
-    backToBookClick: void;
-    filesChange: FileList;
-    importBackup: File;
-    selectionToStatistics: void;
-    deleteStatistics: void;
-    replicateData: void;
-    cancelReplication: void;
-  }>();
+  let {
+    onSelectAllClick,
+    onRemoveClick,
+    onBugReportClick,
+    onBackToBookClick,
+    onFilesChange,
+    onImportBackup,
+    onSelectionToStatistics,
+    onDeleteStatistics,
+    onReplicateData,
+    onCancelReplication,
+    hasBookOpened,
+    selectMode = $bindable(),
+    selectedCount,
+    hasBooks,
+    cancelTooltip,
+    replicationProgress,
+    replicationToProgress,
+    replicationProgressRemaining
+  }: Props = $props();
 
   const nTranslateXHeaderMat = '-translate-x-3 xl:-translate-x-2.5';
 
@@ -85,60 +104,33 @@
     easing: quintOut
   };
 
-  const importMenuItems = [mergeEntries.FILE_IMPORT];
-  const storageSourceMenuItems = [
-    { label: 'Browser', key: StorageKey.BROWSER, requiresConnectivity: false }
-  ];
+  let importMenuItems = $derived([
+    mergeEntries.FILE_IMPORT,
+    ...(browser && !$isMobile$ ? [mergeEntries.FOLDER_IMPORT] : []),
+    ...(browser ? [mergeEntries.BACKUP_IMPORT] : [])
+  ]);
+  let storageSourceMenuItems = $derived([
+    { label: 'Browser', key: StorageKey.BROWSER, requiresConnectivity: false },
+    ...(browser && isStorageSourceAvailable(StorageKey.GDRIVE, $gDriveStorageSource$, window)
+      ? [{ label: 'GDrive', key: StorageKey.GDRIVE, requiresConnectivity: true }]
+      : []),
+    ...(browser && isStorageSourceAvailable(StorageKey.ONEDRIVE, $oneDriveStorageSource$, window)
+      ? [{ label: 'OneDrive', key: StorageKey.ONEDRIVE, requiresConnectivity: true }]
+      : []),
+    ...(browser && isStorageSourceAvailable(StorageKey.FS, $fsStorageSource$, window)
+      ? [{ label: 'Filesystem', key: StorageKey.FS, requiresConnectivity: false }]
+      : [])
+  ]);
 
-  let fileImportElm: HTMLElement;
-  let folderImportElm: HTMLElement;
-  let backupImportElm: HTMLElement;
-  let countImportElm: HTMLInputElement;
-  let storageSourceElm: Popover;
-  let sortOptionsElm: Popover;
-  let showLoadCount = false;
+  let fileImportElm = $state<HTMLElement>();
+  let folderImportElm = $state<HTMLElement>();
+  let backupImportElm = $state<HTMLElement>();
+  let countImportElm = $state<HTMLInputElement>();
+  let storageSourceElm = $state<Popover>();
+  let sortOptionsElm = $state<Popover>();
+  const showLoadCount = browser && new URLSearchParams(window.location.search).has('count');
 
-  $: if (browser) {
-    showLoadCount = new URLSearchParams(window.location.search).has('count');
-
-    importMenuItems.push(
-      ...($isMobile$
-        ? [mergeEntries.BACKUP_IMPORT]
-        : [mergeEntries.FOLDER_IMPORT, mergeEntries.BACKUP_IMPORT])
-    );
-
-    storageSourceMenuItems.push(
-      ...(isStorageSourceAvailable(StorageKey.GDRIVE, $gDriveStorageSource$, window)
-        ? [
-            {
-              label: 'GDrive',
-              key: StorageKey.GDRIVE,
-              requiresConnectivity: true
-            }
-          ]
-        : []),
-      ...(isStorageSourceAvailable(StorageKey.ONEDRIVE, $oneDriveStorageSource$, window)
-        ? [
-            {
-              label: 'OneDrive',
-              key: StorageKey.ONEDRIVE,
-              requiresConnectivity: true
-            }
-          ]
-        : []),
-      ...(isStorageSourceAvailable(StorageKey.FS, $fsStorageSource$, window)
-        ? [
-            {
-              label: 'Filesystem',
-              key: StorageKey.FS,
-              requiresConnectivity: false
-            }
-          ]
-        : [])
-    );
-  }
-
-  $: sortMenuItems = [
+  let sortMenuItems = $derived([
     ...($storageSource$ === StorageKey.BROWSER ? [{ property: 'id', label: 'Added (id)' }] : []),
     { property: 'title', label: 'Title' },
     { property: 'characters', label: 'Characters' },
@@ -146,30 +138,30 @@
     { property: 'lastBookOpen', label: 'Last Read' },
     { property: 'progress', label: 'Progress' },
     { property: 'lastBookmarkModified', label: 'Bookmarked' }
-  ];
+  ]);
 
   function triggerInput(event: CustomEvent<string>) {
     switch (event.detail) {
       case mergeEntries.FOLDER_IMPORT.label:
-        folderImportElm.click();
+        folderImportElm?.click();
         break;
 
       case mergeEntries.BACKUP_IMPORT.label:
-        backupImportElm.click();
+        backupImportElm?.click();
         break;
 
       default:
-        fileImportElm.click();
+        fileImportElm?.click();
         break;
     }
   }
 
   function dispatchFilesChange(fileList: FileList) {
-    dispatch('filesChange', fileList);
+    onFilesChange(fileList);
   }
 
   function dispatchImportBackup(fileList: FileList) {
-    dispatch('importBackup', fileList[0]);
+    onImportBackup(fileList[0]);
   }
 
   async function setCountData(fileList: FileList) {
@@ -198,7 +190,7 @@
       });
     }
 
-    sortOptionsElm.toggleOpen();
+    sortOptionsElm?.toggleOpen();
   }
 </script>
 
@@ -250,8 +242,8 @@
             class:opacity-100={selectMode}
             class:opacity-60={!selectMode}
             class={baseIconClasses}
-            on:click={() => (selectMode = hasBooks && !selectMode)}
-            on:keyup={dummyFn}
+            onclick={() => (selectMode = hasBooks && !selectMode)}
+            onkeyup={dummyFn}
           >
             <path
               class="fill-current"
@@ -270,8 +262,8 @@
             class="flex h-full items-center text-2xl xl:text-xl {pHeaderFa} cursor-pointer"
             in:scale={inAnimationParams}
             out:scale={outAnimationParams}
-            on:click={() => (selectMode = !selectMode)}
-            on:keyup={dummyFn}
+            onclick={() => (selectMode = !selectMode)}
+            onkeyup={dummyFn}
           >
             <Fa icon={faTimes} />
           </div>
@@ -295,8 +287,8 @@
                 class={baseIconClasses}
                 in:scale={inAnimationParams}
                 out:scale={outAnimationParams}
-                on:click={() => dispatch('backToBookClick')}
-                on:keyup={dummyFn}
+                onclick={() => onBackToBookClick()}
+                onkeyup={dummyFn}
               >
                 <path
                   class="fill-current"
@@ -315,8 +307,8 @@
               class={baseIconClasses}
               in:scale={inAnimationParams}
               out:scale={outAnimationParams}
-              on:click={() => dispatch('selectAllClick')}
-              on:keyup={dummyFn}
+              onclick={() => onSelectAllClick()}
+              onkeyup={dummyFn}
             >
               <path
                 class="fill-current"
@@ -363,7 +355,7 @@
                   </svg>
                 {/key}
               </div>
-              <div class="w-28 bg-gray-700" slot="content">
+              <div slot="content" class="w-28 bg-gray-700">
                 {#each storageSourceMenuItems as sourceMenuItem (sourceMenuItem.key)}
                   <div
                     tabindex="0"
@@ -373,7 +365,7 @@
                     class:hover:text-gray-700={!sourceMenuItem.requiresConnectivity || $isOnline$}
                     class:cursor-not-allowed={sourceMenuItem.requiresConnectivity && !$isOnline$}
                     class:text-gray-500={sourceMenuItem.requiresConnectivity && !$isOnline$}
-                    on:click={async () => {
+                    onclick={async () => {
                       if (sourceMenuItem.requiresConnectivity && !$isOnline$) {
                         return;
                       }
@@ -386,9 +378,9 @@
                         storageSource$.next(sourceMenuItem.key);
                       }
 
-                      storageSourceElm.toggleOpen();
+                      storageSourceElm?.toggleOpen();
                     }}
-                    on:keyup={dummyFn}
+                    onkeyup={dummyFn}
                   >
                     {sourceMenuItem.label}
                   </div>
@@ -414,7 +406,7 @@
                   <Fa icon={faArrowDownWideShort} />
                 {/if}
               </div>
-              <div class="w-44 bg-gray-700" slot="content">
+              <div slot="content" class="w-44 bg-gray-700">
                 {#each sortMenuItems as sortMenuItem (sortMenuItem.property)}
                   {@const isCurrentSort =
                     $booklistSortOptions$[$storageSource$].property === sortMenuItem.property}
@@ -434,10 +426,10 @@
                       class:text-red-500={isCurrentSortAsc}
                       class:hover:text-gray-700={isCurrentSortAsc}
                       class:hover:text-red-500={!isCurrentSortAsc}
-                      on:click={() => {
+                      onclick={() => {
                         changeSortOptions(sortMenuItem.property, SortDirection.ASC);
                       }}
-                      on:keyup={() => {}}
+                      onkeyup={() => {}}
                     >
                       <Fa icon={faSortUp} class="px-4" />
                     </div>
@@ -451,10 +443,10 @@
                       class:text-red-500={isCurrentSort && !isCurrentSortAsc}
                       class:hover:text-gray-700={isCurrentSort && !isCurrentSortAsc}
                       class:hover:text-red-500={!isCurrentSort || isCurrentSortAsc}
-                      on:click={() => {
+                      onclick={() => {
                         changeSortOptions(sortMenuItem.property, SortDirection.DESC);
                       }}
-                      on:keyup={() => {}}
+                      onkeyup={() => {}}
                     >
                       <Fa icon={faSortDown} class="mt-1 px-4" />
                     </div>
@@ -477,7 +469,7 @@
               ]}
               on:action={({ detail }) => {
                 if (detail === mergeEntries.BUG_REPORT.label) {
-                  dispatch('bugReportClick');
+                  onBugReportClick();
                 }
               }}
             />
@@ -485,7 +477,7 @@
           {#if showLoadCount}
             <button
               style:color={!!$fileCountData$ ? 'red' : null}
-              on:click={() => countImportElm.click()}>C</button
+              onclick={() => countImportElm?.click()}>C</button
             >
           {/if}
         {/if}
@@ -498,8 +490,8 @@
             class="transform-gpu {baseIconClasses}"
             in:scale={inAnimationParams}
             out:scale={outAnimationParams}
-            on:click={() => dispatch('replicateData')}
-            on:keyup={dummyFn}
+            onclick={() => onReplicateData()}
+            onkeyup={dummyFn}
           >
             <Fa icon={faCloudArrowUp} />
           </div>
@@ -511,8 +503,8 @@
               class="transform-gpu {baseIconClasses}"
               in:scale={inAnimationParams}
               out:scale={outAnimationParams}
-              on:click={() => dispatch('selectionToStatistics')}
-              on:keyup={dummyFn}
+              onclick={() => onSelectionToStatistics()}
+              onkeyup={dummyFn}
             >
               <Fa icon={faChartLine} />
             </div>
@@ -523,8 +515,8 @@
               class="transform-gpu {baseIconClasses}"
               in:scale={inAnimationParams}
               out:scale={outAnimationParams}
-              on:click={() => dispatch('deleteStatistics')}
-              on:keyup={dummyFn}
+              onclick={() => onDeleteStatistics()}
+              onkeyup={dummyFn}
             >
               <Fa icon={faCalendarXmark} />
             </div>
@@ -536,8 +528,8 @@
             class="transform-gpu {baseIconClasses}"
             in:scale={inAnimationParams}
             out:scale={outAnimationParams}
-            on:click={() => dispatch('removeClick')}
-            on:keyup={dummyFn}
+            onclick={() => onRemoveClick()}
+            onkeyup={dummyFn}
           >
             <Fa icon={faTrash} />
           </div>
@@ -552,16 +544,12 @@
       out:scale={outAnimationParams}
     >
       <Popover contentText={cancelTooltip} contentStyles={'padding: 0.75rem'} eventType="pointer">
-        <div
-          tabindex="0"
-          role="button"
-          on:click={() => dispatch('cancelReplication')}
-          on:keyup={dummyFn}
-        >
+        <div tabindex="0" role="button" onclick={() => onCancelReplication()} onkeyup={dummyFn}>
           <Fa icon={faCircleXmark} class="cursor-pointer" />
         </div>
       </Popover>
-      <progress class="mx-4 w-full" value={replicationProgress} max={replicationToProgress} />
+      <progress class="mx-4 w-full" value={replicationProgress} max={replicationToProgress}
+      ></progress>
       <div class="ml-4 min-w-fit">{replicationProgressRemaining}</div>
     </div>
   {/if}

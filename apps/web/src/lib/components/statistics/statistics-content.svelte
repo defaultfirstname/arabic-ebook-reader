@@ -63,7 +63,7 @@
   import { pluralize } from '#lib/functions/utils';
   import pLimit from 'p-limit';
   import { tap } from 'rxjs';
-  import { onDestroy, onMount, tick } from 'svelte';
+  import { onDestroy, onMount, tick, untrack } from 'svelte';
   import Fa from 'svelte-fa';
   import { quintInOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
@@ -220,9 +220,7 @@
         request.titlesToCheck.add(dataList[index].title);
       }
 
-      handleDeleteRequest(
-        new CustomEvent<StatisticsDeleteRequest>('delete', { detail: request })
-      ).finally(() => {
+      handleDeleteRequest(request).finally(() => {
         tick().then(() => dialogManager.dialogs$.next([{ component: '<div/>' }]));
       });
     }),
@@ -264,32 +262,15 @@
     reduceToEmptyString()
   );
 
-  let isLoading = true;
-  let today = getStartHoursDate($startDayHoursForTracker$);
-  let todayKey = getDateString(today);
-  let statisticsTitleFilters = new Map<string, boolean>();
-  let titlesInStatisticsDateRange = new Set<string>();
-  let statisticsData: BookStatistic[] = [];
+  let isLoading = $state(true);
+  let today = $state(untrack(() => getStartHoursDate($startDayHoursForTracker$)));
+  let todayKey = $derived(getDateString(today));
+  let statisticsTitleFilters = $state(new Map<string, boolean>());
+  let titlesInStatisticsDateRange = $state(new Set<string>());
+  let statisticsData: BookStatistic[] = $state.raw([]);
   let statisticsForSelection: BookStatistic[] = [];
-  let aggregratedStatistics: BookStatistic[] = [];
-  let readingGoals: BooksDbReadingGoal[] = [];
-
-  $: statisticsDateRangeLabel = getDateRangeLabel(
-    $lastStatisticsStartDate$,
-    $lastStatisticsEndDate$
-  );
-
-  $: if (
-    statisticsData &&
-    $lastPrimaryReadingDataAggregationMode$ &&
-    $lastStatisticsStartDate$ &&
-    $lastStatisticsEndDate$
-  ) {
-    today = getStartHoursDate($startDayHoursForTracker$);
-    todayKey = getDateString(today);
-
-    updateStatisticsData();
-  }
+  let aggregratedStatistics: BookStatistic[] = $state.raw([]);
+  let readingGoals: BooksDbReadingGoal[] = $state([]);
 
   onMount(init);
 
@@ -324,8 +305,11 @@
   }
 
   async function handleDeleteRequest({
-    detail: { startDate, endDate, titlesToCheck, takeAsIs }
-  }: CustomEvent<StatisticsDeleteRequest>) {
+    startDate,
+    endDate,
+    titlesToCheck,
+    takeAsIs
+  }: StatisticsDeleteRequest) {
     let titlesToDelete = new Set<string>();
 
     $statisticsActionInProgress$ = true;
@@ -472,8 +456,12 @@
   }
 
   async function handleEditRequest({
-    detail: { dateKey, title, newReadingTime, newCharactersRead, resetMinMaxValues }
-  }: CustomEvent<StatisticsEditRequest>) {
+    dateKey,
+    title,
+    newReadingTime,
+    newCharactersRead,
+    resetMinMaxValues
+  }: StatisticsEditRequest) {
     $statisticsActionInProgress$ = true;
 
     const statisticIndex = statisticsData.findIndex(
@@ -545,8 +533,9 @@
     try {
       await database.updateStatistic(newStatistic);
 
-      statisticsData[statisticIndex] = { ...statistic, ...newStatistic };
-      updateStatisticsData();
+      statisticsData = statisticsData.map((entry, index) =>
+        index === statisticIndex ? newStatistic : entry
+      );
     } catch ({ message }: any) {
       dialogManager.dialogs$.next([
         {
@@ -562,9 +551,7 @@
     }
   }
 
-  function updateTitleFilter({
-    detail: newStatisticsTitleFilters
-  }: CustomEvent<StatisticsTitleFilterItem[]>) {
+  function updateTitleFilter(newStatisticsTitleFilters: StatisticsTitleFilterItem[]) {
     const newStatisticsTitleFilterData = new Map<string, boolean>();
 
     for (let index = 0, { length } = newStatisticsTitleFilters; index < length; index += 1) {
@@ -800,13 +787,28 @@
 
     return isInDateRange && statisticsTitleFilters.get(statistic.title);
   }
+  let statisticsDateRangeLabel = $derived(
+    getDateRangeLabel($lastStatisticsStartDate$, $lastStatisticsEndDate$)
+  );
+  $effect(() => {
+    const startHour = $startDayHoursForTracker$;
+    if (
+      statisticsData &&
+      $lastPrimaryReadingDataAggregationMode$ &&
+      $lastStatisticsStartDate$ &&
+      $lastStatisticsEndDate$
+    ) {
+      today = getStartHoursDate(startHour);
+      untrack(updateStatisticsData);
+    }
+  });
 </script>
 
 {$copyStatisticsDataHandler$ ?? ''}
 {$exportStatisticsDataHandler$ ?? ''}
 {$deleteStatisticsDataHandler$ ?? ''}
 {$setStatisticsDatesToAllTimeHandler$ ?? ''}
-<svelte:window on:keyup={onKeyUp} />
+<svelte:window onkeyup={onKeyUp} />
 {#if isLoading}
   <div class="flex fixed items-center justify-center inset-0 h-full w-full text-7xl">
     <Fa icon={faSpinner} spin />
@@ -839,8 +841,8 @@
     <StatisticsSummary
       {aggregratedStatistics}
       {statisticsDateRangeLabel}
-      on:delete={handleDeleteRequest}
-      on:edit={handleEditRequest}
+      onDelete={handleDeleteRequest}
+      onEdit={handleEditRequest}
     />
   {/if}
 {/if}
@@ -853,14 +855,14 @@
     <StatisticsTitleFilter
       {statisticsTitleFilters}
       {titlesInStatisticsDateRange}
-      on:applyFilter={updateTitleFilter}
-      on:clearPrefilter={clearPrefilter}
-      on:close={() => ($statisticsTitleFilterIsOpen$ = false)}
+      onApplyFilter={updateTitleFilter}
+      onClearPrefilter={clearPrefilter}
+      onClose={() => ($statisticsTitleFilterIsOpen$ = false)}
     />
   </div>
 {/if}
 {#if $statisticsActionInProgress$}
-  <div class="tap-highlight-transparent fixed inset-0 bg-black/[.2] z-[70]" />
+  <div class="tap-highlight-transparent fixed inset-0 bg-black/[.2] z-[70]"></div>
   <div class="flex fixed items-center justify-center inset-0 h-full w-full text-7xl">
     <Fa icon={faSpinner} spin />
   </div>

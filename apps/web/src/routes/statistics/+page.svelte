@@ -34,17 +34,11 @@
     share()
   );
 
-  let showStatisticsSettings = false;
-
-  $: if ($lastStatisticsRangeTemplate$ || $lastStartDayOfWeek$ > -1) {
-    tick().then(() => setSelectedStatisticsDays());
-  }
+  let showStatisticsSettings = $state(false);
 
   onDestroy(() => ($preFilteredTitlesForStatistics$ = new Set()));
 
-  function handleSelectedStatisticsDateChange({
-    detail: { dateString, isStartDate }
-  }: CustomEvent<StatisticsDateChange>) {
+  function handleSelectedStatisticsDateChange({ dateString, isStartDate }: StatisticsDateChange) {
     const referenceDate = getStartHoursDate($startDayHoursForTracker$);
     const todayKey = getDateKey($startDayHoursForTracker$, referenceDate);
 
@@ -123,6 +117,13 @@
         break;
     }
   }
+  $effect(() => {
+    const template = $lastStatisticsRangeTemplate$;
+    const startDay = $lastStartDayOfWeek$;
+    if (template || startDay > -1) {
+      tick().then(() => setSelectedStatisticsDays());
+    }
+  });
 </script>
 
 <StatisticsHeader currentBookId={$currentBookId$} bind:showStatisticsSettings />
@@ -142,8 +143,8 @@
     }}
   >
     <StatisticsSettings
-      on:statisticsDateChange={handleSelectedStatisticsDateChange}
-      on:close={() => (showStatisticsSettings = false)}
+      onStatisticsDateChange={handleSelectedStatisticsDateChange}
+      onClose={() => (showStatisticsSettings = false)}
     />
   </div>
 {/if}

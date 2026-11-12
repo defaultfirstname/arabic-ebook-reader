@@ -3,9 +3,14 @@
   import { onDestroy } from 'svelte';
   import Fa from 'svelte-fa';
 
-  export let imagePath: string | Blob;
-  export let title: string;
-  export let progress: number;
+  interface Props {
+    imagePath: string | Blob;
+    title: string;
+    progress: number;
+    onclick: () => void;
+  }
+
+  let { imagePath, title, progress, onclick }: Props = $props();
 
   let objectUrl = '';
 
@@ -58,14 +63,22 @@
 
   const mapImagePath = mapImagePathFactory();
 
-  let imgEl: HTMLImageElement | undefined;
-  let imageLoading = true;
+  let imgEl: HTMLImageElement | undefined = $state();
+  let imageLoading = $state(true);
 
-  $: imageLoadComplete = imgEl?.complete && !imageLoading;
-  $: alt = `${title}_cover`;
+  let imageLoadComplete = $derived(imgEl?.complete && !imageLoading);
+  let alt = $derived(`${title}_cover`);
 </script>
 
-<div tabindex="0" role="button" class="aspect-w-2 aspect-h-3 relative" on:click on:keyup>
+<div
+  tabindex="0"
+  role="button"
+  class="aspect-w-2 aspect-h-3 relative"
+  {onclick}
+  onkeyup={(event) => {
+    if (event.key === 'Enter' || event.key === ' ') onclick();
+  }}
+>
   <div class="inline">
     <div class="h-full w-full text-5xl sm:text-7xl">
       {#if !imageLoadComplete}
@@ -82,7 +95,7 @@
           src={mapImagePath(imagePath)}
           {alt}
           bind:this={imgEl}
-          on:load={() => (imageLoading = false)}
+          onload={() => (imageLoading = false)}
         />
       {/if}
     </div>
@@ -97,7 +110,7 @@
         <div
           class="h-full rounded bg-gradient-to-b from-red-600 to-red-900"
           style:width="{progress * 100}%"
-        />
+        ></div>
       </div>
     </div>
   </div>

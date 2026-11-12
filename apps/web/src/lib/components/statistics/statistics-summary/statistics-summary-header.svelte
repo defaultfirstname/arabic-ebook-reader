@@ -14,29 +14,40 @@
     lastStatisticsSummarySortDirection$,
     lastStatisticsSummarySortProperty$
   } from '#lib/data/store';
-  import { createEventDispatcher } from 'svelte';
   import Fa from 'svelte-fa';
 
-  export let statisticsSummaryKey: StatisticsSummaryKey;
-  export let options: StatisticsDataSource[];
-  export let selectionKey: keyof BookStatistic;
-  export let gridRow: number | undefined;
-  export let hasRowInEdit: boolean;
-  export let isHidden = false;
-  export let title = '';
+  interface Props {
+    onPropertyChange: (detail: StatisticsDataSourceChange) => void;
+    statisticsSummaryKey: StatisticsSummaryKey;
+    options: StatisticsDataSource[];
+    selectionKey: keyof BookStatistic;
+    gridRow: number | undefined;
+    hasRowInEdit: boolean;
+    isHidden?: boolean;
+    title?: string;
+  }
 
-  const dispatch = createEventDispatcher<{
-    propertyChange: StatisticsDataSourceChange;
-  }>();
+  let {
+    onPropertyChange,
+    statisticsSummaryKey,
+    options,
+    selectionKey,
+    gridRow,
+    hasRowInEdit,
+    isHidden = false,
+    title = ''
+  }: Props = $props();
 
   const tableHeaderClasses =
     'flex items-center py-2.5 px-0 text-sm w-full bg-transparent border-0 md:border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200 peer lg:text-base';
 
-  let summaryHeaderPopover: Popover;
+  let summaryHeaderPopover = $state<Popover>();
 
-  $: optionKeys = new Set<keyof BookStatistic>((options || []).map((option) => option.key));
+  let optionKeys = $derived(
+    new Set<keyof BookStatistic>((options || []).map((option) => option.key))
+  );
 
-  $: selectedOption = options.find((option) => option.key === selectionKey)!;
+  let selectedOption = $derived(options.find((option) => option.key === selectionKey)!);
 </script>
 
 <div
@@ -59,10 +70,11 @@
         {#each options as option (option.key)}
           <button
             class="flex flex-1 my-2 hover:opacity-50 hover:bg-slate-300 hover:text-black"
-            on:click|stopPropagation={() => {
+            onclick={(event) => {
+              event.stopPropagation();
               selectedOption = option;
-              dispatch('propertyChange', { property: option.key, statisticsSummaryKey });
-              summaryHeaderPopover.toggleOpen();
+              onPropertyChange({ property: option.key, statisticsSummaryKey });
+              summaryHeaderPopover?.toggleOpen();
             }}
           >
             {option.label}
@@ -76,8 +88,8 @@
       class:cursor-not-allowed={hasRowInEdit}
       disabled={hasRowInEdit}
       {title}
-      on:click={() => {
-        dispatch('propertyChange', { property: selectedOption.key, statisticsSummaryKey });
+      onclick={() => {
+        onPropertyChange({ property: selectedOption.key, statisticsSummaryKey });
       }}
     >
       {selectedOption.label}
@@ -89,8 +101,7 @@
     class:opacity-20={!optionKeys.has($lastStatisticsSummarySortProperty$)}
     class:cursor-not-allowed={hasRowInEdit}
     disabled={hasRowInEdit}
-    on:click={() =>
-      dispatch('propertyChange', { property: selectedOption.key, statisticsSummaryKey })}
+    onclick={() => onPropertyChange({ property: selectedOption.key, statisticsSummaryKey })}
   >
     {#if $lastStatisticsSummarySortDirection$ === SortDirection.ASC}
       <Fa icon={faArrowUpShortWide} />
