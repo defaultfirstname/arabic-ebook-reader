@@ -15,15 +15,15 @@
   import {
     preFilteredTitlesForStatistics$,
     type StatisticsTitleFilterItem
-  } from '$lib/components/statistics/statistics-types';
-  import { dialogManager } from '$lib/data/dialog-manager';
+  } from '#lib/components/statistics/statistics-types';
+  import { dialogManager } from '#lib/data/dialog-manager';
   import {
     lastStatisticsFilterDateRangeOnly$,
     lastStatisticsFilterShowSelectedTitlesOnly$,
     skipKeyDownListener$
-  } from '$lib/data/store';
-  import { reduceToEmptyString } from '$lib/functions/rxjs/reduce-to-empty-string';
-  import { convertRemToPixels, getFullHeight, limitToRange } from '$lib/functions/utils';
+  } from '#lib/data/store';
+  import { reduceToEmptyString } from '#lib/functions/rxjs/reduce-to-empty-string';
+  import { convertRemToPixels, getFullHeight, limitToRange } from '#lib/functions/utils';
   import { debounceTime, fromEvent, tap } from 'rxjs';
   import { createEventDispatcher, onMount, tick } from 'svelte';
   import Fa from 'svelte-fa';

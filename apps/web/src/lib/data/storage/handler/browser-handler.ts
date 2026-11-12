@@ -4,7 +4,7 @@
  * All rights reserved.
  */
 
-import { BaseStorageHandler, FilePrefix } from '$lib/data/storage/handler/base-handler';
+import { BaseStorageHandler, FilePrefix } from '#lib/data/storage/handler/base-handler';
 import type {
   BooksDbAudioBook,
   BooksDbBookData,
@@ -12,12 +12,12 @@ import type {
   BooksDbReadingGoal,
   BooksDbStatistic,
   BooksDbSubtitleData
-} from '$lib/data/database/books-db/versions/books-db';
-import { database, lastReadingGoalsModified$ } from '$lib/data/store';
+} from '#lib/data/database/books-db/versions/books-db';
+import { database, lastReadingGoalsModified$ } from '#lib/data/store';
 
-import type { MergeMode } from '$lib/data/merge-mode';
-import { ReplicationSaveBehavior } from '$lib/functions/replication/replication-options';
-import { StorageDataType } from '$lib/data/storage/storage-types';
+import type { MergeMode } from '#lib/data/merge-mode';
+import { ReplicationSaveBehavior } from '#lib/functions/replication/replication-options';
+import { StorageDataType } from '#lib/data/storage/storage-types';
 
 export class BrowserStorageHandler extends BaseStorageHandler {
   updateSettings(

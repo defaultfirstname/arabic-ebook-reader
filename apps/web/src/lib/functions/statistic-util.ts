@@ -4,8 +4,8 @@
  * All rights reserved.
  */
 
-import type { BookStatistic } from '$lib/components/statistics/statistics-types';
-import type { BooksDbStatistic } from '$lib/data/database/books-db/versions/books-db';
+import type { BookStatistic } from '#lib/components/statistics/statistics-types';
+import type { BooksDbStatistic } from '#lib/data/database/books-db/versions/books-db';
 
 export function getDate(referenceDateString: string, startOfDay = 0) {
   return new Date(`${referenceDateString}T${`${startOfDay}`.padStart(2, '0')}:00:00`);

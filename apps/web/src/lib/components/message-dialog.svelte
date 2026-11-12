@@ -1,8 +1,8 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { buttonClasses } from '$lib/css-classes';
-  import DialogTemplate from '$lib/components/dialog-template.svelte';
-  import Ripple from '$lib/components/ripple.svelte';
+  import { buttonClasses } from '#lib/css-classes';
+  import DialogTemplate from '#lib/components/dialog-template.svelte';
+  import Ripple from '#lib/components/ripple.svelte';
 
   export let title: string;
 

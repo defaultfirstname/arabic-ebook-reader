@@ -4,7 +4,7 @@
  * All rights reserved.
  */
 
-import type { BookCardProps } from '$lib/components/book-card/book-card-props';
+import type { BookCardProps } from '#lib/components/book-card/book-card-props';
 
 export enum SortDirection {
   ASC = 'asc',

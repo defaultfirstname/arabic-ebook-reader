@@ -1,11 +1,11 @@
 <script lang="ts">
-  import DialogTemplate from '$lib/components/dialog-template.svelte';
-  import SvelteUserFontAdd from '$lib/components/settings/settings-user-font-add.svelte';
-  import { dialogManager } from '$lib/data/dialog-manager';
-  import { LocalFont, userFontsCacheName } from '$lib/data/fonts';
-  import { logger } from '$lib/data/logger';
-  import { fontFamilyGroupOne$, fontFamilyGroupTwo$, userFonts$ } from '$lib/data/store';
-  import { dummyFn } from '$lib/functions/utils';
+  import DialogTemplate from '#lib/components/dialog-template.svelte';
+  import SvelteUserFontAdd from '#lib/components/settings/settings-user-font-add.svelte';
+  import { dialogManager } from '#lib/data/dialog-manager';
+  import { LocalFont, userFontsCacheName } from '#lib/data/fonts';
+  import { logger } from '#lib/data/logger';
+  import { fontFamilyGroupOne$, fontFamilyGroupTwo$, userFonts$ } from '#lib/data/store';
+  import { dummyFn } from '#lib/functions/utils';
   import { faSpinner, faTrashCan } from '@fortawesome/free-solid-svg-icons';
   import type { BehaviorSubject } from 'rxjs';
   import { onMount } from 'svelte';

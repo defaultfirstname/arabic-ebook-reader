@@ -8,14 +8,14 @@ import {
   StorageKey,
   StorageSourceDefault,
   internalStorageSourceName
-} from '$lib/data/storage/storage-types';
-import { fsStorageSource$, gDriveStorageSource$, oneDriveStorageSource$ } from '$lib/data/store';
+} from '#lib/data/storage/storage-types';
+import { fsStorageSource$, gDriveStorageSource$, oneDriveStorageSource$ } from '#lib/data/store';
 
-import type { BooksDbStorageSource } from '$lib/data/database/books-db/versions/books-db';
-import StorageUnlock from '$lib/components/storage-unlock.svelte';
-import { dialogManager } from '$lib/data/dialog-manager';
-import { logger } from '$lib/data/logger';
-import { storageSource$ } from '$lib/data/storage/storage-view';
+import type { BooksDbStorageSource } from '#lib/data/database/books-db/versions/books-db';
+import StorageUnlock from '#lib/components/storage-unlock.svelte';
+import { dialogManager } from '#lib/data/dialog-manager';
+import { logger } from '#lib/data/logger';
+import { storageSource$ } from '#lib/data/storage/storage-view';
 
 const saltByteLength = 16;
 const ivByteLength = 12;

@@ -9,7 +9,7 @@ import {
   sectionProgress$,
   sectionList$,
   type SectionWithProgress
-} from '$lib/components/book-reader/book-toc/book-toc';
+} from '#lib/components/book-reader/book-toc/book-toc';
 import type { PageManager } from '../types';
 
 export class PageManagerPaginated implements PageManager {

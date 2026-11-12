@@ -2,7 +2,7 @@
   import {
     Confetti,
     confettiParams
-  } from '$lib/components/book-reader/book-completion-confetti/book-completion-confetti';
+  } from '#lib/components/book-reader/book-completion-confetti/book-completion-confetti';
   import { onMount } from 'svelte';
 
   export let confettiWidthModifier: number;

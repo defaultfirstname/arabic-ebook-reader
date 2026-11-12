@@ -7,8 +7,8 @@
 import {
   getChapterData,
   type SectionWithProgress
-} from '$lib/components/book-reader/book-toc/book-toc';
-import { getWeightedAverage } from '$lib/functions/utils';
+} from '#lib/components/book-reader/book-toc/book-toc';
+import { getWeightedAverage } from '#lib/functions/utils';
 
 type ChapterProgressOptions = {
   exploredCharCount: number;

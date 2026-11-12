@@ -11,27 +11,27 @@ import type {
   BooksDbReadingGoal,
   BooksDbStatistic,
   BooksDbSubtitleData
-} from '$lib/data/database/books-db/versions/books-db';
-import { logger } from '$lib/data/logger';
-import { MergeMode } from '$lib/data/merge-mode';
-import { mergeReadingGoals, readingGoalSortFunction } from '$lib/data/reading-goal';
+} from '#lib/data/database/books-db/versions/books-db';
+import { logger } from '#lib/data/logger';
+import { MergeMode } from '#lib/data/merge-mode';
+import { mergeReadingGoals, readingGoalSortFunction } from '#lib/data/reading-goal';
 import {
   BaseStorageHandler,
   FilePrefix,
   type ExternalFile
-} from '$lib/data/storage/handler/base-handler';
-import { getStorageHandler } from '$lib/data/storage/storage-handler-factory';
-import { StorageOAuthManager } from '$lib/data/storage/storage-oauth-manager';
-import { StorageKey } from '$lib/data/storage/storage-types';
-import { database } from '$lib/data/store';
+} from '#lib/data/storage/handler/base-handler';
+import { getStorageHandler } from '#lib/data/storage/storage-handler-factory';
+import { StorageOAuthManager } from '#lib/data/storage/storage-oauth-manager';
+import { StorageKey } from '#lib/data/storage/storage-types';
+import { database } from '#lib/data/store';
 import {
   convertAuthErrorResponse,
   handleErrorDuringReplication
-} from '$lib/functions/replication/error-handler';
-import { AbortError, throwIfAborted } from '$lib/functions/replication/replication-error';
-import { ReplicationSaveBehavior } from '$lib/functions/replication/replication-options';
-import { replicationProgress$ } from '$lib/functions/replication/replication-progress';
-import { mergeStatistics, updateStatisticToStore } from '$lib/functions/statistic-util';
+} from '#lib/functions/replication/error-handler';
+import { AbortError, throwIfAborted } from '#lib/functions/replication/replication-error';
+import { ReplicationSaveBehavior } from '#lib/functions/replication/replication-options';
+import { replicationProgress$ } from '#lib/functions/replication/replication-progress';
+import { mergeStatistics, updateStatisticToStore } from '#lib/functions/statistic-util';
 import pLimit from 'p-limit';
 
 interface RequestOptions {

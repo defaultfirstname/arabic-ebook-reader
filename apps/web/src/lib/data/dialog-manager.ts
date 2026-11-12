@@ -5,7 +5,7 @@
  */
 
 import type { StorageKey } from './storage/storage-types';
-import { writableSubject } from '$lib/functions/svelte/store';
+import { writableSubject } from '#lib/functions/svelte/store';
 import type { Component } from 'svelte';
 
 export interface SyncSelection {

@@ -4,11 +4,11 @@
  * All rights reserved.
  */
 
-import { getParagraphNodes } from '$lib/components/book-reader/get-paragraph-nodes';
+import { getParagraphNodes } from '#lib/components/book-reader/get-paragraph-nodes';
 import type {
   BooksDbBookData,
   BooksDbBookmarkData
-} from '$lib/data/database/books-db/versions/books-db';
+} from '#lib/data/database/books-db/versions/books-db';
 import { countArabicCharacters, countLatinLettersAndDigits } from '../get-character-count';
 
 export function getArabicBookMetrics(book: BooksDbBookData, document: Document) {

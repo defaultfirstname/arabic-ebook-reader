@@ -1,8 +1,8 @@
 # Run from pnpm workspace root (e.g. docker build -t ebook-reader -f apps/web/Dockerfile .)
 
-FROM node:20.11-alpine as builder
+FROM node:24.22.0-alpine AS builder
 
-RUN npm install -g pnpm
+RUN npm install -g pnpm@12.14.0
 
 WORKDIR /workspace
 COPY package.json pnpm-lock.yaml pnpm-*.yaml ./

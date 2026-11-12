@@ -548,7 +548,7 @@ docker-compose up
 
 ### Using HTTP Hosting App
 
-1. Have [Node.js](https://nodejs.org/) and [pnpm](https://pnpm.io/installation) installed
+1. Install [Node.js 24](https://nodejs.org/) and [pnpm 12.14.0](https://pnpm.io/installation) to match the Docker build and CI
 2. Run the commands below
 
 ```sh

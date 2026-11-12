@@ -1,20 +1,20 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
+  import { browser } from '$app/env';
   import {
     nextChapter$,
     sectionList$,
     sectionProgress$,
     type SectionWithProgress
-  } from '$lib/components/book-reader/book-toc/book-toc';
-  import HtmlRenderer from '$lib/components/html-renderer.svelte';
-  import type { BooksDbBookmarkData } from '$lib/data/database/books-db/versions/books-db';
-  import { getReaderFontStack, isStoredFont } from '$lib/data/fonts';
-  import { logger } from '$lib/data/logger';
-  import { customReadingPointEnabled$, disableWheelNavigation$, userFonts$ } from '$lib/data/store';
-  import type { TextMarginMode } from '$lib/data/text-margin-mode';
-  import { prependValue } from '$lib/functions/file-loaders/epub/generate-epub-html';
-  import { getReferencePoints } from '$lib/functions/range-util';
-  import { getExternalTargetElement } from '$lib/functions/utils';
+  } from '#lib/components/book-reader/book-toc/book-toc';
+  import HtmlRenderer from '#lib/components/html-renderer.svelte';
+  import type { BooksDbBookmarkData } from '#lib/data/database/books-db/versions/books-db';
+  import { getReaderFontStack, isStoredFont } from '#lib/data/fonts';
+  import { logger } from '#lib/data/logger';
+  import { customReadingPointEnabled$, disableWheelNavigation$, userFonts$ } from '#lib/data/store';
+  import type { TextMarginMode } from '#lib/data/text-margin-mode';
+  import { prependValue } from '#lib/functions/file-loaders/epub/generate-epub-html';
+  import { getReferencePoints } from '#lib/functions/range-util';
+  import { getExternalTargetElement } from '#lib/functions/utils';
   import { faBookmark, faSpinner } from '@fortawesome/free-solid-svg-icons';
   import {
     animationFrameScheduler,

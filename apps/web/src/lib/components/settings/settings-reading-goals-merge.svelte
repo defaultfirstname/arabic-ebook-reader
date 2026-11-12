@@ -1,25 +1,25 @@
 <script lang="ts">
   import { faSpinner } from '@fortawesome/free-solid-svg-icons';
-  import DialogTemplate from '$lib/components/dialog-template.svelte';
-  import Ripple from '$lib/components/ripple.svelte';
-  import { buttonClasses } from '$lib/css-classes';
-  import type { BooksDbReadingGoal } from '$lib/data/database/books-db/versions/books-db';
+  import DialogTemplate from '#lib/components/dialog-template.svelte';
+  import Ripple from '#lib/components/ripple.svelte';
+  import { buttonClasses } from '#lib/css-classes';
+  import type { BooksDbReadingGoal } from '#lib/data/database/books-db/versions/books-db';
   import {
     getDateRangeLabel,
     getReadingGoalWindow,
     type ReadingGoal,
     type ReadingGoalArchivalOption,
     type ReadingGoalSaveResult
-  } from '$lib/data/reading-goal';
-  import { database, readingGoal$, startDayHoursForTracker$ } from '$lib/data/store';
+  } from '#lib/data/reading-goal';
+  import { database, readingGoal$, startDayHoursForTracker$ } from '#lib/data/store';
   import {
     advanceDateDays,
     getDate,
     getDateKey,
     getPreviousDayKey,
     secondsToMinutes
-  } from '$lib/functions/statistic-util';
-  import { pluralize } from '$lib/functions/utils';
+  } from '#lib/functions/statistic-util';
+  import { pluralize } from '#lib/functions/utils';
   import { createEventDispatcher, onMount, tick } from 'svelte';
   import Fa from 'svelte-fa';
 

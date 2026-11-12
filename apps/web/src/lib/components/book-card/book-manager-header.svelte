@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
-  import type { BookCardProps } from '$lib/components/book-card/book-card-props';
-  import { mergeEntries } from '$lib/components/merged-header-icon/merged-entries';
-  import MergedHeaderIcon from '$lib/components/merged-header-icon/merged-header-icon.svelte';
-  import Popover from '$lib/components/popover/popover.svelte';
+  import { browser } from '$app/env';
+  import type { BookCardProps } from '#lib/components/book-card/book-card-props';
+  import { mergeEntries } from '#lib/components/merged-header-icon/merged-entries';
+  import MergedHeaderIcon from '#lib/components/merged-header-icon/merged-header-icon.svelte';
+  import Popover from '#lib/components/popover/popover.svelte';
   import {
     baseHeaderClasses,
     baseIconClasses,
@@ -11,16 +11,16 @@
     pHeaderFa,
     pxScreen,
     translateXHeaderFa
-  } from '$lib/css-classes';
-  import { SortDirection } from '$lib/data/sort-types';
-  import { FilesystemStorageHandler } from '$lib/data/storage/handler/filesystem-handler';
-  import { getStorageHandler } from '$lib/data/storage/storage-handler-factory';
-  import { StorageKey } from '$lib/data/storage/storage-types';
+  } from '#lib/css-classes';
+  import { SortDirection } from '#lib/data/sort-types';
+  import { FilesystemStorageHandler } from '#lib/data/storage/handler/filesystem-handler';
+  import { getStorageHandler } from '#lib/data/storage/storage-handler-factory';
+  import { StorageKey } from '#lib/data/storage/storage-types';
   import {
     isStorageSourceAvailable,
     storageIcon$,
     storageSource$
-  } from '$lib/data/storage/storage-view';
+  } from '#lib/data/storage/storage-view';
   import {
     booklistSortOptions$,
     cacheStorageData$,
@@ -29,10 +29,10 @@
     gDriveStorageSource$,
     isOnline$,
     oneDriveStorageSource$
-  } from '$lib/data/store';
-  import { inputAllowDirectory } from '$lib/functions/file-dom/input-allow-directory';
-  import { inputFile } from '$lib/functions/file-dom/input-file';
-  import { dummyFn, isMobile$ } from '$lib/functions/utils';
+  } from '#lib/data/store';
+  import { inputAllowDirectory } from '#lib/functions/file-dom/input-allow-directory';
+  import { inputFile } from '#lib/functions/file-dom/input-file';
+  import { dummyFn, isMobile$ } from '#lib/functions/utils';
   import {
     faArrowDownShortWide,
     faArrowDownWideShort,

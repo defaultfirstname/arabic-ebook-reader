@@ -4,12 +4,12 @@
  * All rights reserved.
  */
 
-import type { BookCardProps } from '$lib/components/book-card/book-card-props';
-import { gDriveRefreshEndpoint } from '$lib/data/env';
-import { ApiStorageHandler } from '$lib/data/storage/handler/api-handler';
-import { BaseStorageHandler, type ExternalFile } from '$lib/data/storage/handler/base-handler';
-import { StorageKey } from '$lib/data/storage/storage-types';
-import { database, gDriveStorageSource$ } from '$lib/data/store';
+import type { BookCardProps } from '#lib/components/book-card/book-card-props';
+import { gDriveRefreshEndpoint } from '#lib/data/env';
+import { ApiStorageHandler } from '#lib/data/storage/handler/api-handler';
+import { BaseStorageHandler, type ExternalFile } from '#lib/data/storage/handler/base-handler';
+import { StorageKey } from '#lib/data/storage/storage-types';
+import { database, gDriveStorageSource$ } from '#lib/data/store';
 import pLimit from 'p-limit';
 
 interface GDriveFile extends ExternalFile {

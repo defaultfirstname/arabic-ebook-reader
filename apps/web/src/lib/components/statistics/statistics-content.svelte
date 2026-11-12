@@ -1,17 +1,17 @@
 <script lang="ts">
   import { onKeyUpStatisticsTab } from '../../../routes/b/on-keydown-reader';
   import { faSpinner } from '@fortawesome/free-solid-svg-icons';
-  import { getDefaultStatistic } from '$lib/components/book-reader/book-reading-tracker/book-reading-tracker';
-  import ConfirmDialog from '$lib/components/confirm-dialog.svelte';
-  import MessageDialog from '$lib/components/message-dialog.svelte';
-  import { HeatmapType } from '$lib/components/statistics/statistics-heatmap/statistics-heatmap';
-  import StatisticsHeatmap from '$lib/components/statistics/statistics-heatmap/statistics-heatmap.svelte';
-  import StatisticsSummary from '$lib/components/statistics/statistics-summary/statistics-summary.svelte';
+  import { getDefaultStatistic } from '#lib/components/book-reader/book-reading-tracker/book-reading-tracker';
+  import ConfirmDialog from '#lib/components/confirm-dialog.svelte';
+  import MessageDialog from '#lib/components/message-dialog.svelte';
+  import { HeatmapType } from '#lib/components/statistics/statistics-heatmap/statistics-heatmap';
+  import StatisticsHeatmap from '#lib/components/statistics/statistics-heatmap/statistics-heatmap.svelte';
+  import StatisticsSummary from '#lib/components/statistics/statistics-summary/statistics-summary.svelte';
   import type {
     StatisticsDeleteRequest,
     StatisticsEditRequest
-  } from '$lib/components/statistics/statistics-summary/statistics-summary';
-  import StatisticsTitleFilter from '$lib/components/statistics/statistics-title-filter.svelte';
+  } from '#lib/components/statistics/statistics-summary/statistics-summary';
+  import StatisticsTitleFilter from '#lib/components/statistics/statistics-title-filter.svelte';
   import {
     type BookStatistic,
     StatisticsTab,
@@ -28,16 +28,16 @@
     deleteStatisticsData$,
     setStatisticsDatesToAllTime$,
     StatisticsRangeTemplate
-  } from '$lib/components/statistics/statistics-types';
+  } from '#lib/components/statistics/statistics-types';
   import type {
     BooksDbReadingGoal,
     BooksDbStatistic
-  } from '$lib/data/database/books-db/versions/books-db';
-  import { dialogManager } from '$lib/data/dialog-manager';
-  import { logger } from '$lib/data/logger';
-  import { getDateRangeLabel } from '$lib/data/reading-goal';
-  import { getStorageHandler } from '$lib/data/storage/storage-handler-factory';
-  import { StorageDataType, StorageKey } from '$lib/data/storage/storage-types';
+  } from '#lib/data/database/books-db/versions/books-db';
+  import { dialogManager } from '#lib/data/dialog-manager';
+  import { logger } from '#lib/data/logger';
+  import { getDateRangeLabel } from '#lib/data/reading-goal';
+  import { getStorageHandler } from '#lib/data/storage/storage-handler-factory';
+  import { StorageDataType, StorageKey } from '#lib/data/storage/storage-types';
   import {
     confirmStatisticsDeletion$,
     database,
@@ -51,16 +51,16 @@
     skipKeyDownListener$,
     startDayHoursForTracker$,
     statisticsTabKeybindMap$
-  } from '$lib/data/store';
-  import { reduceToEmptyString } from '$lib/functions/rxjs/reduce-to-empty-string';
+  } from '#lib/data/store';
+  import { reduceToEmptyString } from '#lib/functions/rxjs/reduce-to-empty-string';
   import {
     getDateString,
     getNumberFromObject,
     getStartHoursDate,
     secondsToMinutes
-  } from '$lib/functions/statistic-util';
-  import { clickOutside } from '$lib/functions/use-click-outside';
-  import { pluralize } from '$lib/functions/utils';
+  } from '#lib/functions/statistic-util';
+  import { clickOutside } from '#lib/functions/use-click-outside';
+  import { pluralize } from '#lib/functions/utils';
   import pLimit from 'p-limit';
   import { tap } from 'rxjs';
   import { onDestroy, onMount, tick } from 'svelte';

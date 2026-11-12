@@ -4,16 +4,16 @@
  * All rights reserved.
  */
 
-import { BlurMode } from '$lib/data/blur-mode';
-import type { BooksDbBookData } from '$lib/data/database/books-db/versions/books-db';
+import { BlurMode } from '#lib/data/blur-mode';
+import type { BooksDbBookData } from '#lib/data/database/books-db/versions/books-db';
 import { Observable } from 'rxjs';
-import { BaseStorageHandler } from '$lib/data/storage/handler/base-handler';
-import buildDummyBookImage from '$lib/functions/file-loaders/utils/build-dummy-book-image';
+import { BaseStorageHandler } from '#lib/data/storage/handler/base-handler';
+import buildDummyBookImage from '#lib/functions/file-loaders/utils/build-dummy-book-image';
 import { map } from 'rxjs/operators';
 import {
   readerImageGalleryPictures$,
   type ReaderImageGalleryPicture
-} from '$lib/components/book-reader/book-reader-image-gallery/book-reader-image-gallery';
+} from '#lib/components/book-reader/book-reader-image-gallery/book-reader-image-gallery';
 
 export default function formatBookDataHtml(
   bookData: BooksDbBookData,

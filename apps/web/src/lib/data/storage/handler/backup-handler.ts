@@ -11,12 +11,12 @@ import type {
   BooksDbReadingGoal,
   BooksDbStatistic,
   BooksDbSubtitleData
-} from '$lib/data/database/books-db/versions/books-db';
-import type { MergeMode } from '$lib/data/merge-mode';
-import { readingGoalSortFunction } from '$lib/data/reading-goal';
-import { BaseStorageHandler, FilePrefix } from '$lib/data/storage/handler/base-handler';
-import { ReplicationSaveBehavior } from '$lib/functions/replication/replication-options';
-import type { ReplicationContext } from '$lib/functions/replication/replication-progress';
+} from '#lib/data/database/books-db/versions/books-db';
+import type { MergeMode } from '#lib/data/merge-mode';
+import { readingGoalSortFunction } from '#lib/data/reading-goal';
+import { BaseStorageHandler, FilePrefix } from '#lib/data/storage/handler/base-handler';
+import { ReplicationSaveBehavior } from '#lib/functions/replication/replication-options';
+import type { ReplicationContext } from '#lib/functions/replication/replication-progress';
 import { BlobReader, BlobWriter, ZipReader, type Entry, type ZipWriter } from '@zip.js/zip.js';
 
 export class BackupStorageHandler extends BaseStorageHandler {

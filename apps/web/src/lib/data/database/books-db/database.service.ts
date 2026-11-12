@@ -12,43 +12,43 @@ import type {
   BooksDbStatistic,
   BooksDbStorageSource,
   BooksDbSubtitleData
-} from '$lib/data/database/books-db/versions/books-db';
+} from '#lib/data/database/books-db/versions/books-db';
 import { Observable, Subject, from } from 'rxjs';
-import { StorageDataType, StorageKey } from '$lib/data/storage/storage-types';
+import { StorageDataType, StorageKey } from '#lib/data/storage/storage-types';
 import {
   advanceDateDays,
   getDate,
   getDateKey,
   mergeStatistics,
   updateStatisticToStore
-} from '$lib/functions/statistic-util';
+} from '#lib/functions/statistic-util';
 import { catchError, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators';
 import {
   getCurrentReadingGoal,
   mergeReadingGoals,
   readingGoalSortFunction
-} from '$lib/data/reading-goal';
-import { lastReadingGoalsModified$, readingGoal$, syncTarget$ } from '$lib/data/store';
+} from '#lib/data/reading-goal';
+import { lastReadingGoalsModified$, readingGoal$, syncTarget$ } from '#lib/data/store';
 
-import type { BaseStorageHandler } from '$lib/data/storage/handler/base-handler';
-import type { BookStatistic } from '$lib/components/statistics/statistics-types';
-import type BooksDb from '$lib/data/database/books-db/versions/books-db';
+import type { BaseStorageHandler } from '#lib/data/storage/handler/base-handler';
+import type { BookStatistic } from '#lib/components/statistics/statistics-types';
+import type BooksDb from '#lib/data/database/books-db/versions/books-db';
 import type { IDBPDatabase } from 'idb';
-import LogReportDialog from '$lib/components/log-report-dialog.svelte';
-import { MergeMode } from '$lib/data/merge-mode';
-import MessageDialog from '$lib/components/message-dialog.svelte';
-import { ReplicationSaveBehavior } from '$lib/functions/replication/replication-options';
-import { dialogManager } from '$lib/data/dialog-manager';
-import { getDefaultStatistic } from '$lib/components/book-reader/book-reading-tracker/book-reading-tracker';
-import { getStorageHandler } from '$lib/data/storage/storage-handler-factory';
-import { handleErrorDuringReplication } from '$lib/functions/replication/error-handler';
-import { iffBrowser } from '$lib/functions/rxjs/iff-browser';
-import { logger } from '$lib/data/logger';
+import LogReportDialog from '#lib/components/log-report-dialog.svelte';
+import { MergeMode } from '#lib/data/merge-mode';
+import MessageDialog from '#lib/components/message-dialog.svelte';
+import { ReplicationSaveBehavior } from '#lib/functions/replication/replication-options';
+import { dialogManager } from '#lib/data/dialog-manager';
+import { getDefaultStatistic } from '#lib/components/book-reader/book-reading-tracker/book-reading-tracker';
+import { getStorageHandler } from '#lib/data/storage/storage-handler-factory';
+import { handleErrorDuringReplication } from '#lib/functions/replication/error-handler';
+import { iffBrowser } from '#lib/functions/rxjs/iff-browser';
+import { logger } from '#lib/data/logger';
 import pLimit from 'p-limit';
-import { replicationProgress$ } from '$lib/functions/replication/replication-progress';
-import { setStorageSourceDefault } from '$lib/data/storage/storage-source-manager';
-import { storageSource$ } from '$lib/data/storage/storage-view';
-import { throwIfAborted } from '$lib/functions/replication/replication-error';
+import { replicationProgress$ } from '#lib/functions/replication/replication-progress';
+import { setStorageSourceDefault } from '#lib/data/storage/storage-source-manager';
+import { storageSource$ } from '#lib/data/storage/storage-view';
+import { throwIfAborted } from '#lib/functions/replication/replication-error';
 
 const LAST_ITEM_KEY = 0;
 

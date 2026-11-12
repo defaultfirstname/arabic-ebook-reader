@@ -4,16 +4,16 @@
  * All rights reserved.
  */
 
-import { InternalStorageSources, StorageKey } from '$lib/data/storage/storage-types';
+import { InternalStorageSources, StorageKey } from '#lib/data/storage/storage-types';
 
-import { BackupStorageHandler } from '$lib/data/storage/handler/backup-handler';
-import type { BaseStorageHandler } from '$lib/data/storage/handler/base-handler';
-import { BrowserStorageHandler } from '$lib/data/storage/handler/browser-handler';
-import { FilesystemStorageHandler } from '$lib/data/storage/handler/filesystem-handler';
-import { GDriveStorageHandler } from '$lib/data/storage/handler/gdrive-handler';
-import { MergeMode } from '$lib/data/merge-mode';
-import { OneDriveStorageHandler } from '$lib/data/storage/handler/onedrive-handler';
-import { ReplicationSaveBehavior } from '$lib/functions/replication/replication-options';
+import { BackupStorageHandler } from '#lib/data/storage/handler/backup-handler';
+import type { BaseStorageHandler } from '#lib/data/storage/handler/base-handler';
+import { BrowserStorageHandler } from '#lib/data/storage/handler/browser-handler';
+import { FilesystemStorageHandler } from '#lib/data/storage/handler/filesystem-handler';
+import { GDriveStorageHandler } from '#lib/data/storage/handler/gdrive-handler';
+import { MergeMode } from '#lib/data/merge-mode';
+import { OneDriveStorageHandler } from '#lib/data/storage/handler/onedrive-handler';
+import { ReplicationSaveBehavior } from '#lib/functions/replication/replication-options';
 
 let backupStorageHandler: BackupStorageHandler;
 let browserStorageHandler: BrowserStorageHandler;

@@ -5,8 +5,8 @@
     faRightLong,
     faXmark
   } from '@fortawesome/free-solid-svg-icons';
-  import Popover from '$lib/components/popover/popover.svelte';
-  import SettingsItemGroup from '$lib/components/settings/settings-item-group.svelte';
+  import Popover from '#lib/components/popover/popover.svelte';
+  import SettingsItemGroup from '#lib/components/settings/settings-item-group.svelte';
   import {
     type StatisticsDateChange,
     statisticsRangeTemplates,
@@ -18,9 +18,9 @@
     statisticsActionInProgress$,
     deleteStatisticsData$,
     setStatisticsDatesToAllTime$
-  } from '$lib/components/statistics/statistics-types';
-  import { daysOfWeek } from '$lib/components/statistics/statistics-heatmap/statistics-heatmap';
-  import { dialogManager } from '$lib/data/dialog-manager';
+  } from '#lib/components/statistics/statistics-types';
+  import { daysOfWeek } from '#lib/components/statistics/statistics-heatmap/statistics-heatmap';
+  import { dialogManager } from '#lib/data/dialog-manager';
   import {
     confirmStatisticsDeletion$,
     lastCharactersDataSource$,
@@ -31,7 +31,7 @@
     lastStatisticsEndDate$,
     lastStatisticsRangeTemplate$,
     lastStatisticsStartDate$
-  } from '$lib/data/store';
+  } from '#lib/data/store';
   import { createEventDispatcher, onMount } from 'svelte';
   import Fa from 'svelte-fa';
 

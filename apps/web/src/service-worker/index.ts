@@ -1,23 +1,26 @@
-/// <reference lib="webworker" />
+import { version } from '$app/env';
+import { assets, immutable, prerendered } from '$app/manifest';
+import { resolve } from '$app/paths';
+import { self as worker } from '$app/service-worker';
 
-import { build, files, prerendered, version } from '$service-worker';
+import { pagePath } from '#lib/data/env';
+import { toSearchParams } from '#lib/functions/to-search-params';
+import { userFontsCacheName } from '#lib/data/fonts';
 
-import { pagePath } from '$lib/data/env';
-import { toSearchParams } from '$lib/functions/to-search-params';
-import { userFontsCacheName } from '$lib/data/fonts';
-
-// eslint-disable-next-line no-restricted-globals
-const worker = self as unknown as ServiceWorkerGlobalScope;
 const BUILD_CACHE_NAME = `build:${version}`;
 
-const prerenderedSet = new Set(prerendered);
-
-const assetsToCache = build.concat(files).concat(prerendered);
-const cachedAssets = new Set(assetsToCache);
+const rootPath = resolve('/');
+const prerenderedPaths = prerendered.map(({ path }) => rootPath + path);
+const prerenderedSet = new Set<string>(prerenderedPaths);
+const cachedAssets = new Set<string>([
+  ...immutable.map(({ path }) => rootPath + path),
+  ...assets.map(({ path }) => rootPath + path),
+  ...prerenderedPaths
+]);
 
 worker.addEventListener('install', (event) => {
   worker.skipWaiting();
-  event.waitUntil(caches.open(BUILD_CACHE_NAME).then((cache) => cache.addAll(assetsToCache)));
+  event.waitUntil(caches.open(BUILD_CACHE_NAME).then((cache) => cache.addAll([...cachedAssets])));
 });
 
 worker.addEventListener('activate', (event) => {
@@ -135,7 +138,7 @@ function selfHostParameterizedUrlResponse(request: Request) {
   const readerRegex = /\/b\/(?<id>\d+)\/?(\?|$)/;
   const readerRegexResult = readerRegex.exec(url.pathname);
   if (readerRegexResult?.groups) {
-    return createRedirectResponse(`${[[pagePath]]}/b?${toSearchParams(readerRegexResult.groups)}`);
+    return createRedirectResponse(`${pagePath}/b?${toSearchParams(readerRegexResult.groups)}`);
   }
   return undefined;
 }

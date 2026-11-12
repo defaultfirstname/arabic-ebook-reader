@@ -1,7 +1,7 @@
 <script lang="ts">
-  import DialogTemplate from '$lib/components/dialog-template.svelte';
-  import Ripple from '$lib/components/ripple.svelte';
-  import { buttonClasses } from '$lib/css-classes';
+  import DialogTemplate from '#lib/components/dialog-template.svelte';
+  import Ripple from '#lib/components/ripple.svelte';
+  import { buttonClasses } from '#lib/css-classes';
   import { createEventDispatcher } from 'svelte';
 
   export let dialogHeader: string;

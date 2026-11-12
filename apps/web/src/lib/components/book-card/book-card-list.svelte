@@ -1,9 +1,9 @@
 <script lang="ts">
   import { faCheckCircle, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
-  import BookCard from '$lib/components/book-card/book-card.svelte';
-  import type { BookCardProps } from '$lib/components/book-card/book-card-props';
-  import Popover from '$lib/components/popover/popover.svelte';
-  import { dummyFn } from '$lib/functions/utils';
+  import BookCard from '#lib/components/book-card/book-card.svelte';
+  import type { BookCardProps } from '#lib/components/book-card/book-card-props';
+  import Popover from '#lib/components/popover/popover.svelte';
+  import { dummyFn } from '#lib/functions/utils';
   import { createEventDispatcher } from 'svelte';
   import Fa from 'svelte-fa';
 

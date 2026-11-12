@@ -9,19 +9,19 @@
     faRotateLeft,
     type IconDefinition
   } from '@fortawesome/free-solid-svg-icons';
-  import { readerImageGalleryPictures$ } from '$lib/components/book-reader/book-reader-image-gallery/book-reader-image-gallery';
-  import { mergeEntries } from '$lib/components/merged-header-icon/merged-entries';
-  import MergedHeaderIcon from '$lib/components/merged-header-icon/merged-header-icon.svelte';
-  import Popover from '$lib/components/popover/popover.svelte';
+  import { readerImageGalleryPictures$ } from '#lib/components/book-reader/book-reader-image-gallery/book-reader-image-gallery';
+  import { mergeEntries } from '#lib/components/merged-header-icon/merged-entries';
+  import MergedHeaderIcon from '#lib/components/merged-header-icon/merged-header-icon.svelte';
+  import Popover from '#lib/components/popover/popover.svelte';
   import {
     baseHeaderClasses,
     baseIconClasses,
     nTranslateXHeaderFa,
     translateXHeaderFa
-  } from '$lib/css-classes';
-  import { customReadingPointEnabled$, viewMode$ } from '$lib/data/store';
-  import { ViewMode } from '$lib/data/view-mode';
-  import { dummyFn, isMobile$ } from '$lib/functions/utils';
+  } from '#lib/css-classes';
+  import { customReadingPointEnabled$, viewMode$ } from '#lib/data/store';
+  import { ViewMode } from '#lib/data/view-mode';
+  import { dummyFn, isMobile$ } from '#lib/functions/utils';
   import { createEventDispatcher } from 'svelte';
   import Fa from 'svelte-fa';
 

@@ -1,23 +1,23 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
-  import BookExportSelection from '$lib/components/book-export/book-export-selection.svelte';
-  import DialogTemplate from '$lib/components/dialog-template.svelte';
-  import Ripple from '$lib/components/ripple.svelte';
-  import { buttonClasses } from '$lib/css-classes';
-  import { StorageKey } from '$lib/data/storage/storage-types';
+  import { browser } from '$app/env';
+  import BookExportSelection from '#lib/components/book-export/book-export-selection.svelte';
+  import DialogTemplate from '#lib/components/dialog-template.svelte';
+  import Ripple from '#lib/components/ripple.svelte';
+  import { buttonClasses } from '#lib/css-classes';
+  import { StorageKey } from '#lib/data/storage/storage-types';
   import {
     getStorageIconData,
     isStorageSourceAvailable,
     storageSource$
-  } from '$lib/data/storage/storage-view';
+  } from '#lib/data/storage/storage-view';
   import {
     fsStorageSource$,
     gDriveStorageSource$,
     lastExportedTarget$,
     lastExportedTypes$,
     oneDriveStorageSource$
-  } from '$lib/data/store';
-  import { executeReplicate$ } from '$lib/functions/replication/replication-progress';
+  } from '#lib/data/store';
+  import { executeReplicate$ } from '#lib/functions/replication/replication-progress';
   import { createEventDispatcher } from 'svelte';
 
   let icons = [

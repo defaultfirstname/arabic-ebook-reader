@@ -67,6 +67,15 @@ test('reads an Arabic book and resumes from a saved bookmark', async ({ page, co
   await expect(reopened.getByTitle('Click to copy Progress', { exact: true })).toHaveText(
     savedProgress
   );
+
+  await reopened.evaluate(() => navigator.serviceWorker.ready.then(() => undefined));
+  await context.setOffline(true);
+  const offline = await context.newPage();
+  await offline.goto(reopened.url());
+  await expect(offline.locator('.book-content')).toContainText(paragraph);
+  await expect(offline.getByTitle('Click to copy Progress', { exact: true })).toHaveText(
+    savedProgress
+  );
 });
 
 test('updates Arabic reading progress while scrolling in continuous mode', async ({ page }) => {

@@ -5,8 +5,8 @@
  */
 
 import type { LimitFunction } from 'p-limit';
-import { logger } from '$lib/data/logger';
-import { replicationProgress$ } from '$lib/functions/replication/replication-progress';
+import { logger } from '#lib/data/logger';
+import { replicationProgress$ } from '#lib/functions/replication/replication-progress';
 
 export function handleErrorDuringReplication(
   error: any,

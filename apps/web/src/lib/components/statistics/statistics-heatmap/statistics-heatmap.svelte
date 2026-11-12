@@ -6,8 +6,8 @@
     faLayerGroup,
     faRepeat
   } from '@fortawesome/free-solid-svg-icons';
-  import { ReadingGoalFrequency } from '$lib/components/book-reader/book-reading-tracker/book-reading-tracker';
-  import Popover from '$lib/components/popover/popover.svelte';
+  import { ReadingGoalFrequency } from '#lib/components/book-reader/book-reading-tracker/book-reading-tracker';
+  import Popover from '#lib/components/popover/popover.svelte';
   import {
     type HeatmapMonthLabel,
     type HeatmapStreak,
@@ -27,18 +27,18 @@
     heatmapMinValueColor,
     heatmapMaxValueColor,
     type StatisticsHeatmapDayData
-  } from '$lib/components/statistics/statistics-heatmap/statistics-heatmap';
+  } from '#lib/components/statistics/statistics-heatmap/statistics-heatmap';
   import type {
     BooksDbReadingGoal,
     BooksDbStatistic
-  } from '$lib/data/database/books-db/versions/books-db';
-  import { getDateRangeLabel } from '$lib/data/reading-goal';
+  } from '#lib/data/database/books-db/versions/books-db';
+  import { getDateRangeLabel } from '#lib/data/reading-goal';
   import {
     lastStartDayOfWeek$,
     lastStatisticsEndDate$,
     lastStatisticsStartDate$
-  } from '$lib/data/store';
-  import { reduceToEmptyString } from '$lib/functions/rxjs/reduce-to-empty-string';
+  } from '#lib/data/store';
+  import { reduceToEmptyString } from '#lib/functions/rxjs/reduce-to-empty-string';
   import {
     advanceDateDays,
     getDate,
@@ -46,8 +46,8 @@
     getDaysBetween,
     getPreviousDayKey,
     secondsToMinutes
-  } from '$lib/functions/statistic-util';
-  import { caluclatePercentage, dummyFn, limitToRange, pluralize } from '$lib/functions/utils';
+  } from '#lib/functions/statistic-util';
+  import { caluclatePercentage, dummyFn, limitToRange, pluralize } from '#lib/functions/utils';
   import { debounceTime, fromEvent, tap } from 'rxjs';
   import { onMount, tick } from 'svelte';
   import Fa from 'svelte-fa';

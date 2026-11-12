@@ -1,8 +1,14 @@
 {
-  "extends": "./.svelte-kit/tsconfig.json",
+  "extends": "$app/tsconfig",
+  "include": ["src", "tests", "vite.config.js"],
+  "exclude": ["src/service-worker", "node_modules"],
   "compilerOptions": {
     "allowJs": true,
-    "types": ["@types/webappsec-credential-management", "@types/wicg-file-system-access"],
+    "types": [
+      "$app/types",
+      "@types/webappsec-credential-management",
+      "@types/wicg-file-system-access"
+    ],
     "strict": true,
     "noImplicitReturns": true,
     "allowSyntheticDefaultImports": true

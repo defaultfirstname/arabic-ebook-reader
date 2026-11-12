@@ -1,26 +1,26 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { faUpload } from '@fortawesome/free-solid-svg-icons';
-  import BookCardList from '$lib/components/book-card/book-card-list.svelte';
-  import type { BookCardProps } from '$lib/components/book-card/book-card-props';
-  import BookManagerHeader from '$lib/components/book-card/book-manager-header.svelte';
-  import BookExportDialog from '$lib/components/book-export/book-export-dialog.svelte';
-  import ConfirmDialog from '$lib/components/confirm-dialog.svelte';
-  import ExternalReadDialog from '$lib/components/external-read-dialog.svelte';
-  import LogReportDialog from '$lib/components/log-report-dialog.svelte';
-  import { mergeEntries } from '$lib/components/merged-header-icon/merged-entries';
-  import MessageDialog from '$lib/components/message-dialog.svelte';
-  import { preFilteredTitlesForStatistics$ } from '$lib/components/statistics/statistics-types';
-  import { pxScreen } from '$lib/css-classes';
-  import type { BooksDbBookmarkData } from '$lib/data/database/books-db/versions/books-db';
-  import { dialogManager } from '$lib/data/dialog-manager';
-  import { pagePath } from '$lib/data/env';
-  import { logger } from '$lib/data/logger';
-  import { SortDirection, type SortOption } from '$lib/data/sort-types';
-  import { ApiStorageHandler } from '$lib/data/storage/handler/api-handler';
-  import { getStorageHandler } from '$lib/data/storage/storage-handler-factory';
-  import { StorageKey } from '$lib/data/storage/storage-types';
-  import { storageSource$ } from '$lib/data/storage/storage-view';
+  import BookCardList from '#lib/components/book-card/book-card-list.svelte';
+  import type { BookCardProps } from '#lib/components/book-card/book-card-props';
+  import BookManagerHeader from '#lib/components/book-card/book-manager-header.svelte';
+  import BookExportDialog from '#lib/components/book-export/book-export-dialog.svelte';
+  import ConfirmDialog from '#lib/components/confirm-dialog.svelte';
+  import ExternalReadDialog from '#lib/components/external-read-dialog.svelte';
+  import LogReportDialog from '#lib/components/log-report-dialog.svelte';
+  import { mergeEntries } from '#lib/components/merged-header-icon/merged-entries';
+  import MessageDialog from '#lib/components/message-dialog.svelte';
+  import { preFilteredTitlesForStatistics$ } from '#lib/components/statistics/statistics-types';
+  import { pxScreen } from '#lib/css-classes';
+  import type { BooksDbBookmarkData } from '#lib/data/database/books-db/versions/books-db';
+  import { dialogManager } from '#lib/data/dialog-manager';
+  import { pagePath } from '#lib/data/env';
+  import { logger } from '#lib/data/logger';
+  import { SortDirection, type SortOption } from '#lib/data/sort-types';
+  import { ApiStorageHandler } from '#lib/data/storage/handler/api-handler';
+  import { getStorageHandler } from '#lib/data/storage/storage-handler-factory';
+  import { StorageKey } from '#lib/data/storage/storage-types';
+  import { storageSource$ } from '#lib/data/storage/storage-view';
   import {
     booklistSortOptions$,
     cacheStorageData$,
@@ -36,22 +36,22 @@
     replicationSaveBehavior$,
     showExternalPlaceholder$,
     statisticsMergeMode$
-  } from '$lib/data/store';
-  import { cloneMutateSet } from '$lib/functions/clone-mutate-set';
-  import { getDropEventFiles } from '$lib/functions/file-dom/get-drop-event-files';
-  import { inputFile } from '$lib/functions/file-dom/input-file';
-  import { formatPageTitle } from '$lib/functions/format-page-title';
-  import { keyBy } from '$lib/functions/key-by';
-  import { handleErrorDuringReplication } from '$lib/functions/replication/error-handler';
-  import { importBackup, importData, replicateData } from '$lib/functions/replication/replicator';
-  import { throwIfAborted } from '$lib/functions/replication/replication-error';
+  } from '#lib/data/store';
+  import { cloneMutateSet } from '#lib/functions/clone-mutate-set';
+  import { getDropEventFiles } from '#lib/functions/file-dom/get-drop-event-files';
+  import { inputFile } from '#lib/functions/file-dom/input-file';
+  import { formatPageTitle } from '#lib/functions/format-page-title';
+  import { keyBy } from '#lib/functions/key-by';
+  import { handleErrorDuringReplication } from '#lib/functions/replication/error-handler';
+  import { importBackup, importData, replicateData } from '#lib/functions/replication/replicator';
+  import { throwIfAborted } from '#lib/functions/replication/replication-error';
   import {
     replicationProgress$,
     executeReplicate$,
     type ReplicationProgress
-  } from '$lib/functions/replication/replication-progress';
-  import { pluralize } from '$lib/functions/utils';
-  import { reduceToEmptyString } from '$lib/functions/rxjs/reduce-to-empty-string';
+  } from '#lib/functions/replication/replication-progress';
+  import { pluralize } from '#lib/functions/utils';
+  import { reduceToEmptyString } from '#lib/functions/rxjs/reduce-to-empty-string';
   import pLimit from 'p-limit';
   import { combineLatest, map, Observable, share, Subject, switchMap, takeUntil } from 'rxjs';
   import { onDestroy, tick } from 'svelte';

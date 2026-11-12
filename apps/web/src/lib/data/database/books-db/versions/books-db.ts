@@ -4,7 +4,7 @@
  * All rights reserved.
  */
 
-import type BooksDbV6 from '$lib/data/database/books-db/versions/v6/books-db-v6';
+import type BooksDbV6 from '#lib/data/database/books-db/versions/v6/books-db-v6';
 
 type BooksDb = BooksDbV6;
 

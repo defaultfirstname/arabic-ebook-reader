@@ -1,7 +1,7 @@
 <script lang="ts">
   import { faFont } from '@fortawesome/free-solid-svg-icons';
-  import Popover from '$lib/components/popover/popover.svelte';
-  import type { LocalFont } from '$lib/data/fonts';
+  import Popover from '#lib/components/popover/popover.svelte';
+  import type { LocalFont } from '#lib/data/fonts';
   import Fa from 'svelte-fa';
 
   interface Props {

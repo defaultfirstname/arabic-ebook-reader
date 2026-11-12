@@ -9,6 +9,7 @@
     merge,
     NEVER,
     of,
+    ReplaySubject,
     share,
     shareReplay,
     skip,
@@ -21,19 +22,18 @@
   } from 'rxjs';
   import { quintInOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import { browser } from '$app/environment';
-  import { page } from '$app/stores';
-  import { goto } from '$app/navigation';
+  import { browser } from '$app/env';
+  import { afterNavigate, goto } from '$app/navigation';
   import { faCloudBolt, faPause, faPlay, faSpinner } from '@fortawesome/free-solid-svg-icons';
-  import BookReader from '$lib/components/book-reader/book-reader.svelte';
+  import BookReader from '#lib/components/book-reader/book-reader.svelte';
   import type {
     AutoScroller,
     BookmarkManager,
     PageManager
-  } from '$lib/components/book-reader/types';
-  import LogReportDialog from '$lib/components/log-report-dialog.svelte';
-  import MessageDialog from '$lib/components/message-dialog.svelte';
-  import StyleSheetRenderer from '$lib/components/style-sheet-renderer.svelte';
+  } from '#lib/components/book-reader/types';
+  import LogReportDialog from '#lib/components/log-report-dialog.svelte';
+  import MessageDialog from '#lib/components/message-dialog.svelte';
+  import StyleSheetRenderer from '#lib/components/style-sheet-renderer.svelte';
   import {
     autoBookmark$,
     autoBookmarkTime$,
@@ -86,77 +86,76 @@
     hideSpoilerImageMode$,
     showCharacterCounter$,
     showPercentage$
-  } from '$lib/data/store';
-  import BookCompletionConfetti from '$lib/components/book-reader/book-completion-confetti/book-completion-confetti.svelte';
-  import BookReaderHeader from '$lib/components/book-reader/book-reader-header.svelte';
+  } from '#lib/data/store';
+  import BookCompletionConfetti from '#lib/components/book-reader/book-completion-confetti/book-completion-confetti.svelte';
+  import BookReaderHeader from '#lib/components/book-reader/book-reader-header.svelte';
   import {
     readerImageGalleryPictures$,
     toggleImageGalleryPictureSpoiler$,
     updateImageGalleryPictureSpoilers$
-  } from '$lib/components/book-reader/book-reader-image-gallery/book-reader-image-gallery';
-  import BookReaderImageGallery from '$lib/components/book-reader/book-reader-image-gallery/book-reader-image-gallery.svelte';
+  } from '#lib/components/book-reader/book-reader-image-gallery/book-reader-image-gallery';
+  import BookReaderImageGallery from '#lib/components/book-reader/book-reader-image-gallery/book-reader-image-gallery.svelte';
   import {
     getDefaultStatistic,
     isTrackerMenuOpen$,
     isTrackerPaused$
-  } from '$lib/components/book-reader/book-reading-tracker/book-reading-tracker';
-  import BookReadingTracker from '$lib/components/book-reader/book-reading-tracker/book-reading-tracker.svelte';
+  } from '#lib/components/book-reader/book-reading-tracker/book-reading-tracker';
+  import BookReadingTracker from '#lib/components/book-reader/book-reading-tracker/book-reading-tracker.svelte';
   import {
     getChapterData,
     nextChapter$,
     sectionList$,
     sectionProgress$,
     tocIsOpen$
-  } from '$lib/components/book-reader/book-toc/book-toc';
-  import BookToc from '$lib/components/book-reader/book-toc/book-toc.svelte';
-  import ConfirmDialog from '$lib/components/confirm-dialog.svelte';
-  import NumberDialog from '$lib/components/number-dialog.svelte';
-  import { mergeEntries } from '$lib/components/merged-header-icon/merged-entries';
-  import { preFilteredTitlesForStatistics$ } from '$lib/components/statistics/statistics-types';
+  } from '#lib/components/book-reader/book-toc/book-toc';
+  import BookToc from '#lib/components/book-reader/book-toc/book-toc.svelte';
+  import ConfirmDialog from '#lib/components/confirm-dialog.svelte';
+  import NumberDialog from '#lib/components/number-dialog.svelte';
+  import { mergeEntries } from '#lib/components/merged-header-icon/merged-entries';
+  import { preFilteredTitlesForStatistics$ } from '#lib/components/statistics/statistics-types';
   import {
     currentDbVersion,
     type BooksDbBookData,
     type BooksDbBookmarkData,
     type BooksDbStatistic
-  } from '$lib/data/database/books-db/versions/books-db';
-  import { dialogManager } from '$lib/data/dialog-manager';
-  import { pagePath } from '$lib/data/env';
-  import { DB_VERSION, PAGE_CHANGE, SKIPKEYLISTENER, SYNCED } from '$lib/data/events';
-  import { fullscreenManager } from '$lib/data/fullscreen-manager';
-  import { logger } from '$lib/data/logger';
-  import { MergeMode } from '$lib/data/merge-mode';
-  import { getStorageHandler } from '$lib/data/storage/storage-handler-factory';
-  import { BaseStorageHandler } from '$lib/data/storage/handler/base-handler';
-  import type { BrowserStorageHandler } from '$lib/data/storage/handler/browser-handler';
+  } from '#lib/data/database/books-db/versions/books-db';
+  import { dialogManager } from '#lib/data/dialog-manager';
+  import { pagePath } from '#lib/data/env';
+  import { DB_VERSION, PAGE_CHANGE, SKIPKEYLISTENER, SYNCED } from '#lib/data/events';
+  import { fullscreenManager } from '#lib/data/fullscreen-manager';
+  import { logger } from '#lib/data/logger';
+  import { MergeMode } from '#lib/data/merge-mode';
+  import { getStorageHandler } from '#lib/data/storage/storage-handler-factory';
+  import { BaseStorageHandler } from '#lib/data/storage/handler/base-handler';
+  import type { BrowserStorageHandler } from '#lib/data/storage/handler/browser-handler';
   import {
     StorageDataType,
     StorageSourceDefault,
     StorageKey
-  } from '$lib/data/storage/storage-types';
-  import { storageSource$ } from '$lib/data/storage/storage-view';
-  import { availableThemes } from '$lib/data/theme-option';
-  import { ViewMode } from '$lib/data/view-mode';
-  import loadBookData from '$lib/functions/book-data-loader/load-book-data';
-  import { getArabicBookMetrics } from '$lib/functions/book-data-loader/get-arabic-book-metrics';
-  import { formatPageTitle } from '$lib/functions/format-page-title';
-  import { iffBrowser } from '$lib/functions/rxjs/iff-browser';
+  } from '#lib/data/storage/storage-types';
+  import { storageSource$ } from '#lib/data/storage/storage-view';
+  import { availableThemes } from '#lib/data/theme-option';
+  import { ViewMode } from '#lib/data/view-mode';
+  import loadBookData from '#lib/functions/book-data-loader/load-book-data';
+  import { getArabicBookMetrics } from '#lib/functions/book-data-loader/get-arabic-book-metrics';
+  import { formatPageTitle } from '#lib/functions/format-page-title';
+  import { iffBrowser } from '#lib/functions/rxjs/iff-browser';
   import {
     AutoReplicationType,
     ReplicationSaveBehavior
-  } from '$lib/functions/replication/replication-options';
-  import { replicateData } from '$lib/functions/replication/replicator';
-  import { readableToObservable } from '$lib/functions/rxjs/readable-to-observable';
-  import { reduceToEmptyString } from '$lib/functions/rxjs/reduce-to-empty-string';
-  import { takeWhenBrowser } from '$lib/functions/rxjs/take-when-browser';
-  import { tapDom } from '$lib/functions/rxjs/tap-dom';
-  import { multiClickHandler } from '$lib/functions/multi-click-handler';
+  } from '#lib/functions/replication/replication-options';
+  import { replicateData } from '#lib/functions/replication/replicator';
+  import { reduceToEmptyString } from '#lib/functions/rxjs/reduce-to-empty-string';
+  import { takeWhenBrowser } from '#lib/functions/rxjs/take-when-browser';
+  import { tapDom } from '#lib/functions/rxjs/tap-dom';
+  import { multiClickHandler } from '#lib/functions/multi-click-handler';
   import {
     executeReplicate$,
     type ReplicationContext
-  } from '$lib/functions/replication/replication-progress';
-  import { getDateKey } from '$lib/functions/statistic-util';
-  import { clickOutside } from '$lib/functions/use-click-outside';
-  import { dummyFn, isMobile$ } from '$lib/functions/utils';
+  } from '#lib/functions/replication/replication-progress';
+  import { getDateKey } from '#lib/functions/statistic-util';
+  import { clickOutside } from '#lib/functions/use-click-outside';
+  import { dummyFn, isMobile$ } from '#lib/functions/utils';
   import { formatChapterProgress } from './format-chapter-progress';
   import { onKeydownReader } from './on-keydown-reader';
   import { onDestroy, onMount, tick } from 'svelte';
@@ -167,7 +166,7 @@
     getRangeForUserSelection,
     getReferencePoints,
     pulseElement
-  } from '$lib/functions/range-util';
+  } from '#lib/functions/range-util';
 
   let showSpinner = true;
   let showHeader = false;
@@ -213,10 +212,10 @@
     syncedResolver = resolver;
   });
   const queuedReaderImageGalleryPictures = new Map<string, boolean>();
-  const bookId$ = iffBrowser(() => readableToObservable(page)).pipe(
-    map((pageObj) => Number(pageObj.url.searchParams.get('id'))),
-    shareReplay({ refCount: true, bufferSize: 1 })
-  );
+  const bookId$ = new ReplaySubject<number>(1);
+  afterNavigate(({ to }) => {
+    if (to) bookId$.next(Number(to.url.searchParams.get('id')));
+  });
 
   const rawBookData$ = bookId$.pipe(
     switchMap(async (id) => {

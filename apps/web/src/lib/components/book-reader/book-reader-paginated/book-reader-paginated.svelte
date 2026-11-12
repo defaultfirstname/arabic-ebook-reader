@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
-  import { nextChapter$ } from '$lib/components/book-reader/book-toc/book-toc';
-  import HtmlRenderer from '$lib/components/html-renderer.svelte';
-  import type { BooksDbBookmarkData } from '$lib/data/database/books-db/versions/books-db';
-  import { SECTION_CHANGE } from '$lib/data/events';
-  import { getReaderFontStack, isStoredFont } from '$lib/data/fonts';
-  import { logger } from '$lib/data/logger';
+  import { browser } from '$app/env';
+  import { nextChapter$ } from '#lib/components/book-reader/book-toc/book-toc';
+  import HtmlRenderer from '#lib/components/html-renderer.svelte';
+  import type { BooksDbBookmarkData } from '#lib/data/database/books-db/versions/books-db';
+  import { SECTION_CHANGE } from '#lib/data/events';
+  import { getReaderFontStack, isStoredFont } from '#lib/data/fonts';
+  import { logger } from '#lib/data/logger';
   import {
     disableWheelNavigation$,
     firstDimensionMargin$,
@@ -13,11 +13,11 @@
     skipKeyDownListener$,
     swipeThreshold$,
     userFonts$
-  } from '$lib/data/store';
-  import type { TextMarginMode } from '$lib/data/text-margin-mode';
-  import { clearRange, createRange, pulseElement } from '$lib/functions/range-util';
-  import { iffBrowser } from '$lib/functions/rxjs/iff-browser';
-  import { getExternalTargetElement, isMobile$ } from '$lib/functions/utils';
+  } from '#lib/data/store';
+  import type { TextMarginMode } from '#lib/data/text-margin-mode';
+  import { clearRange, createRange, pulseElement } from '#lib/functions/range-util';
+  import { iffBrowser } from '#lib/functions/rxjs/iff-browser';
+  import { getExternalTargetElement, isMobile$ } from '#lib/functions/utils';
   import { faBookmark, faSpinner } from '@fortawesome/free-solid-svg-icons';
   import {
     BehaviorSubject,

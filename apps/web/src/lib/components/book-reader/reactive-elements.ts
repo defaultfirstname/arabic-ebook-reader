@@ -17,9 +17,9 @@ import {
   timer
 } from 'rxjs';
 
-import { nextChapter$ } from '$lib/components/book-reader/book-toc/book-toc';
-import { pulseElement } from '$lib/functions/range-util';
-import { toggleImageGalleryPictureSpoiler$ } from '$lib/components/book-reader/book-reader-image-gallery/book-reader-image-gallery';
+import { nextChapter$ } from '#lib/components/book-reader/book-toc/book-toc';
+import { pulseElement } from '#lib/functions/range-util';
+import { toggleImageGalleryPictureSpoiler$ } from '#lib/components/book-reader/book-reader-image-gallery/book-reader-image-gallery';
 
 export function reactiveElements(
   document: Document,

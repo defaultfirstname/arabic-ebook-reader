@@ -4,7 +4,7 @@
  * All rights reserved.
  */
 
-import type { BookStatistic } from '$lib/components/statistics/statistics-types';
+import type { BookStatistic } from '#lib/components/statistics/statistics-types';
 
 export interface StatisticsDeleteRequest {
   startDate: string;

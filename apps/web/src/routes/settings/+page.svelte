@@ -2,9 +2,9 @@
   import { onMount } from 'svelte';
   import { tap } from 'rxjs';
   import { afterNavigate } from '$app/navigation';
-  import SettingsContent from '$lib/components/settings/settings-content.svelte';
-  import SettingsHeader from '$lib/components/settings/settings-header.svelte';
-  import { pxScreen } from '$lib/css-classes';
+  import SettingsContent from '#lib/components/settings/settings-content.svelte';
+  import SettingsHeader from '#lib/components/settings/settings-header.svelte';
+  import { pxScreen } from '#lib/css-classes';
   import {
     addCharactersOnCompletion$,
     adjustStatisticsAfterIdleTime$,
@@ -64,13 +64,13 @@
     viewMode$,
     readingGoalsMergeMode$,
     hideSpoilerImageMode$
-  } from '$lib/data/store';
-  import { mergeEntries } from '$lib/components/merged-header-icon/merged-entries';
-  import { pagePath } from '$lib/data/env';
-  import { storage } from '$lib/data/window/navigator/storage';
-  import { formatPageTitle } from '$lib/functions/format-page-title';
-  import { writableSubject } from '$lib/functions/svelte/store';
-  import { reduceToEmptyString } from '$lib/functions/rxjs/reduce-to-empty-string';
+  } from '#lib/data/store';
+  import { mergeEntries } from '#lib/components/merged-header-icon/merged-entries';
+  import { pagePath } from '#lib/data/env';
+  import { storage } from '#lib/data/window/navigator/storage';
+  import { formatPageTitle } from '#lib/functions/format-page-title';
+  import { writableSubject } from '#lib/functions/svelte/store';
+  import { reduceToEmptyString } from '#lib/functions/rxjs/reduce-to-empty-string';
 
   const persistentStorage$ = writableSubject(false);
   let persistentStorageReactive = false;

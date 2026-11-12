@@ -4,7 +4,7 @@
  * All rights reserved.
  */
 
-import { getParagraphNodes } from '$lib/components/book-reader/get-paragraph-nodes';
+import { getParagraphNodes } from '#lib/components/book-reader/get-paragraph-nodes';
 
 export function getParagraphToPoint(x: number, y: number) {
   const element = document.elementFromPoint(x, y)?.closest('p');

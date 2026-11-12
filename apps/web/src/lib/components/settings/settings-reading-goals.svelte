@@ -8,25 +8,25 @@
     faSave,
     faTrash
   } from '@fortawesome/free-solid-svg-icons';
-  import { ReadingGoalFrequency } from '$lib/components/book-reader/book-reading-tracker/book-reading-tracker';
-  import ConfirmDialog from '$lib/components/confirm-dialog.svelte';
-  import MessageDialog from '$lib/components/message-dialog.svelte';
-  import SettingsReadingGoalsMerge from '$lib/components/settings/settings-reading-goals-merge.svelte';
-  import SettingsSyncDialog from '$lib/components/settings/settings-sync-dialog.svelte';
-  import { buttonClasses } from '$lib/css-classes';
+  import { ReadingGoalFrequency } from '#lib/components/book-reader/book-reading-tracker/book-reading-tracker';
+  import ConfirmDialog from '#lib/components/confirm-dialog.svelte';
+  import MessageDialog from '#lib/components/message-dialog.svelte';
+  import SettingsReadingGoalsMerge from '#lib/components/settings/settings-reading-goals-merge.svelte';
+  import SettingsSyncDialog from '#lib/components/settings/settings-sync-dialog.svelte';
+  import { buttonClasses } from '#lib/css-classes';
   import type {
     BooksDbReadingGoal,
     BooksDbStorageSource
-  } from '$lib/data/database/books-db/versions/books-db';
-  import { dialogManager, type SyncSelection } from '$lib/data/dialog-manager';
+  } from '#lib/data/database/books-db/versions/books-db';
+  import { dialogManager, type SyncSelection } from '#lib/data/dialog-manager';
   import {
     getCurrentReadingGoal,
     getDateRangeLabel,
     type ReadingGoal,
     type ReadingGoalSaveResult
-  } from '$lib/data/reading-goal';
-  import { getStorageHandler } from '$lib/data/storage/storage-handler-factory';
-  import { StorageDataType, StorageKey } from '$lib/data/storage/storage-types';
+  } from '#lib/data/reading-goal';
+  import { getStorageHandler } from '#lib/data/storage/storage-handler-factory';
+  import { StorageDataType, StorageKey } from '#lib/data/storage/storage-types';
   import {
     cacheStorageData$,
     database,
@@ -36,10 +36,10 @@
     replicationSaveBehavior$,
     startDayHoursForTracker$,
     statisticsMergeMode$
-  } from '$lib/data/store';
-  import { replicateData } from '$lib/functions/replication/replicator';
-  import { isOnlineSourceAvailable, pluralize } from '$lib/functions/utils';
-  import { getDateKey, secondsToMinutes } from '$lib/functions/statistic-util';
+  } from '#lib/data/store';
+  import { replicateData } from '#lib/functions/replication/replicator';
+  import { isOnlineSourceAvailable, pluralize } from '#lib/functions/utils';
+  import { getDateKey, secondsToMinutes } from '#lib/functions/statistic-util';
   import { createEventDispatcher, onMount, tick } from 'svelte';
   import Fa from 'svelte-fa';
 

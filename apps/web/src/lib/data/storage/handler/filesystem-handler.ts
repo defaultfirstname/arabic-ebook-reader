@@ -11,27 +11,27 @@ import type {
   BooksDbReadingGoal,
   BooksDbStatistic,
   BooksDbSubtitleData
-} from '$lib/data/database/books-db/versions/books-db';
-import { database, fsStorageSource$ } from '$lib/data/store';
-import { mergeReadingGoals, readingGoalSortFunction } from '$lib/data/reading-goal';
-import { mergeStatistics, updateStatisticToStore } from '$lib/functions/statistic-util';
+} from '#lib/data/database/books-db/versions/books-db';
+import { database, fsStorageSource$ } from '#lib/data/store';
+import { mergeReadingGoals, readingGoalSortFunction } from '#lib/data/reading-goal';
+import { mergeStatistics, updateStatisticToStore } from '#lib/functions/statistic-util';
 
-import { BaseStorageHandler, FilePrefix } from '$lib/data/storage/handler/base-handler';
-import type { BookCardProps } from '$lib/components/book-card/book-card-props';
-import { MergeMode } from '$lib/data/merge-mode';
-import { ReplicationSaveBehavior } from '$lib/functions/replication/replication-options';
-import { StorageKey } from '$lib/data/storage/storage-types';
-import StorageUnlock from '$lib/components/storage-unlock.svelte';
+import { BaseStorageHandler, FilePrefix } from '#lib/data/storage/handler/base-handler';
+import type { BookCardProps } from '#lib/components/book-card/book-card-props';
+import { MergeMode } from '#lib/data/merge-mode';
+import { ReplicationSaveBehavior } from '#lib/functions/replication/replication-options';
+import { StorageKey } from '#lib/data/storage/storage-types';
+import StorageUnlock from '#lib/components/storage-unlock.svelte';
 import {
   isRemoteContext,
   type StorageUnlockAction
-} from '$lib/data/storage/storage-source-manager';
-import { dialogManager } from '$lib/data/dialog-manager';
-import { getStorageHandler } from '$lib/data/storage/storage-handler-factory';
-import { handleErrorDuringReplication } from '$lib/functions/replication/error-handler';
+} from '#lib/data/storage/storage-source-manager';
+import { dialogManager } from '#lib/data/dialog-manager';
+import { getStorageHandler } from '#lib/data/storage/storage-handler-factory';
+import { handleErrorDuringReplication } from '#lib/functions/replication/error-handler';
 import pLimit from 'p-limit';
-import { replicationProgress$ } from '$lib/functions/replication/replication-progress';
-import { throwIfAborted } from '$lib/functions/replication/replication-error';
+import { replicationProgress$ } from '#lib/functions/replication/replication-progress';
+import { throwIfAborted } from '#lib/functions/replication/replication-error';
 
 export class FilesystemStorageHandler extends BaseStorageHandler {
   private rootDirectory: FileSystemDirectoryHandle | undefined;

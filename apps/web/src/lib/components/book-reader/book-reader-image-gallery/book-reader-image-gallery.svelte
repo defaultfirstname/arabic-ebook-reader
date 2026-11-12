@@ -1,12 +1,12 @@
 <script lang="ts">
   import { onKeyDownReaderImageGallery } from '../../../../routes/b/on-keydown-reader';
   import { faChevronLeft, faChevronRight, faXmark } from '@fortawesome/free-solid-svg-icons';
-  import { readerImageGalleryPictures$ } from '$lib/components/book-reader/book-reader-image-gallery/book-reader-image-gallery';
+  import { readerImageGalleryPictures$ } from '#lib/components/book-reader/book-reader-image-gallery/book-reader-image-gallery';
   import {
     hideSpoilerImage$,
     readerImageGalleryKeybindMap$,
     skipKeyDownListener$
-  } from '$lib/data/store';
+  } from '#lib/data/store';
   import { createEventDispatcher, onMount } from 'svelte';
   import { quintInOut } from 'svelte/easing';
   import Fa from 'svelte-fa';

@@ -5,8 +5,8 @@
  */
 
 import type { DBSchema } from 'idb';
-import type { FsHandle } from '$lib/data/storage/storage-source-manager';
-import type { StorageKey } from '$lib/data/storage/storage-types';
+import type { FsHandle } from '#lib/data/storage/storage-source-manager';
+import type { StorageKey } from '#lib/data/storage/storage-types';
 
 interface BooksDbV4BookData {
   id: number;

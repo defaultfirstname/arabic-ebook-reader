@@ -4,11 +4,11 @@
  * All rights reserved.
  */
 
-import type { FsHandle, RemoteContext } from '$lib/data/storage/storage-source-manager';
+import type { FsHandle, RemoteContext } from '#lib/data/storage/storage-source-manager';
 
 import type { DBSchema } from 'idb';
-import type { ReadingGoal } from '$lib/data/reading-goal';
-import type { StorageKey } from '$lib/data/storage/storage-types';
+import type { ReadingGoal } from '#lib/data/reading-goal';
+import type { StorageKey } from '#lib/data/storage/storage-types';
 
 interface Subtitle {
   id: string;

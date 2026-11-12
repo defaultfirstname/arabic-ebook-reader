@@ -4,8 +4,8 @@
  * All rights reserved.
  */
 
-import type { BooksDbStatistic } from '$lib/data/database/books-db/versions/books-db';
-import { writableSubject } from '$lib/functions/svelte/store';
+import type { BooksDbStatistic } from '#lib/data/database/books-db/versions/books-db';
+import { writableSubject } from '#lib/functions/svelte/store';
 
 export const isTrackerMenuOpen$ = writableSubject<boolean>(false);
 

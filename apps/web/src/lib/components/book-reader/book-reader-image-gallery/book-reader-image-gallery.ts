@@ -5,7 +5,7 @@
  */
 
 import { Subject } from 'rxjs';
-import { writableSubject } from '$lib/functions/svelte/store';
+import { writableSubject } from '#lib/functions/svelte/store';
 
 export enum ReaderImageGalleryAvailableKeybind {
   PREVIOUS_IMAGE = 'previousImage',

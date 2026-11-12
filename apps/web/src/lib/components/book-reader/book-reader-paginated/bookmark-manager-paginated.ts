@@ -6,8 +6,8 @@
 
 import type { BehaviorSubject, Observable } from 'rxjs';
 
-import type { BookmarkManager } from '$lib/components/book-reader/types';
-import type { BooksDbBookmarkData } from '$lib/data/database/books-db/versions/books-db';
+import type { BookmarkManager } from '#lib/components/book-reader/types';
+import type { BooksDbBookmarkData } from '#lib/data/database/books-db/versions/books-db';
 import type { PageManagerPaginated } from './page-manager-paginated';
 import type { SectionCharacterStatsCalculator } from './section-character-stats-calculator';
 

@@ -1,22 +1,18 @@
-import dns from 'dns';
+import adapter from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import { defineConfig } from 'vite';
 
-const nodeVersion = Number.parseInt(process.versions.node.match(/^(\d+)\./)?.[1] || '17', 10);
-
-if (nodeVersion < 17) {
-  dns.setDefaultResultOrder('verbatim');
-}
-
-/** @type {import('vite').UserConfig} */
-const config = {
-  plugins: [sveltekit()],
+export default defineConfig({
+  plugins: [
+    sveltekit({
+      adapter: adapter({ fallback: '404.html' }),
+      compilerOptions: { immutable: true },
+      preprocess: vitePreprocess()
+    })
+  ],
   ssr: {
     // https://github.com/FortAwesome/Font-Awesome/issues/18677
     noExternal: ['@fortawesome/*', '@popperjs/*']
-  },
-  experimental: {
-    prebundleSvelteLibraries: true
   }
-};
-
-export default config;
+});

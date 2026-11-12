@@ -1,29 +1,29 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
+  import { browser } from '$app/env';
   import { faComputer, faSpinner } from '@fortawesome/free-solid-svg-icons';
   import {
     TrackerAutoPause,
     TrackerSkipThresholdAction
-  } from '$lib/components/book-reader/book-reading-tracker/book-reading-tracker';
-  import MessageDialog from '$lib/components/message-dialog.svelte';
-  import SettingsCustomTheme from '$lib/components/settings/settings-custom-theme.svelte';
-  import SettingsDimensionPopover from '$lib/components/settings/settings-dimension-popover.svelte';
-  import SettingsFontSelector from '$lib/components/settings/settings-font-selector.svelte';
-  import SettingsReadingGoals from '$lib/components/settings/settings-reading-goals.svelte';
-  import SettingsItemGroup from '$lib/components/settings/settings-item-group.svelte';
-  import SettingsSection from '$lib/components/settings/settings-section.svelte';
-  import SettingsStorageSourceList from '$lib/components/settings/settings-storage-source-list.svelte';
-  import SettingsUserFontDialog from '$lib/components/settings/settings-user-font-dialog.svelte';
-  import { inputClasses } from '$lib/css-classes';
-  import { BlurMode } from '$lib/data/blur-mode';
-  import { dialogManager } from '$lib/data/dialog-manager';
-  import { arabicReaderFonts, LocalFont } from '$lib/data/fonts';
-  import { ImportHTMLFixMode } from '$lib/data/import-html-fix-mode';
-  import { logger } from '$lib/data/logger';
-  import { MergeMode } from '$lib/data/merge-mode';
-  import { isAppDefault } from '$lib/data/storage/storage-source-manager';
-  import { defaultStorageSources } from '$lib/data/storage/storage-types';
-  import { isStorageSourceAvailable } from '$lib/data/storage/storage-view';
+  } from '#lib/components/book-reader/book-reading-tracker/book-reading-tracker';
+  import MessageDialog from '#lib/components/message-dialog.svelte';
+  import SettingsCustomTheme from '#lib/components/settings/settings-custom-theme.svelte';
+  import SettingsDimensionPopover from '#lib/components/settings/settings-dimension-popover.svelte';
+  import SettingsFontSelector from '#lib/components/settings/settings-font-selector.svelte';
+  import SettingsReadingGoals from '#lib/components/settings/settings-reading-goals.svelte';
+  import SettingsItemGroup from '#lib/components/settings/settings-item-group.svelte';
+  import SettingsSection from '#lib/components/settings/settings-section.svelte';
+  import SettingsStorageSourceList from '#lib/components/settings/settings-storage-source-list.svelte';
+  import SettingsUserFontDialog from '#lib/components/settings/settings-user-font-dialog.svelte';
+  import { inputClasses } from '#lib/css-classes';
+  import { BlurMode } from '#lib/data/blur-mode';
+  import { dialogManager } from '#lib/data/dialog-manager';
+  import { arabicReaderFonts, LocalFont } from '#lib/data/fonts';
+  import { ImportHTMLFixMode } from '#lib/data/import-html-fix-mode';
+  import { logger } from '#lib/data/logger';
+  import { MergeMode } from '#lib/data/merge-mode';
+  import { isAppDefault } from '#lib/data/storage/storage-source-manager';
+  import { defaultStorageSources } from '#lib/data/storage/storage-types';
+  import { isStorageSourceAvailable } from '#lib/data/storage/storage-view';
   import {
     customThemes$,
     database,
@@ -32,16 +32,16 @@
     horizontalCustomReadingPosition$,
     textMarginMode$,
     textMarginValue$
-  } from '$lib/data/store';
-  import type { TextMarginMode } from '$lib/data/text-margin-mode';
-  import { availableThemes } from '$lib/data/theme-option';
-  import { ViewMode } from '$lib/data/view-mode';
-  import { secondsToMinutes } from '$lib/functions/statistic-util';
-  import { dummyFn } from '$lib/functions/utils';
+  } from '#lib/data/store';
+  import type { TextMarginMode } from '#lib/data/text-margin-mode';
+  import { availableThemes } from '#lib/data/theme-option';
+  import { ViewMode } from '#lib/data/view-mode';
+  import { secondsToMinutes } from '#lib/functions/statistic-util';
+  import { dummyFn } from '#lib/functions/utils';
   import {
     ReplicationSaveBehavior,
     AutoReplicationType
-  } from '$lib/functions/replication/replication-options';
+  } from '#lib/functions/replication/replication-options';
   import { map } from 'rxjs';
   import Fa from 'svelte-fa';
   import { onDestroy } from 'svelte';

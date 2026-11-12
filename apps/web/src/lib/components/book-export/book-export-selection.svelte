@@ -1,9 +1,9 @@
 <script lang="ts">
-  import BookExportIcon from '$lib/components/book-export/book-export-icon.svelte';
-  import { StorageDataType, StorageKey } from '$lib/data/storage/storage-types';
-  import type { StorageIconElement } from '$lib/data/storage/storage-view';
-  import { isOnline$ } from '$lib/data/store';
-  import { isOnlineSourceAvailable } from '$lib/functions/utils';
+  import BookExportIcon from '#lib/components/book-export/book-export-icon.svelte';
+  import { StorageDataType, StorageKey } from '#lib/data/storage/storage-types';
+  import type { StorageIconElement } from '#lib/data/storage/storage-view';
+  import { isOnline$ } from '#lib/data/store';
+  import { isOnlineSourceAvailable } from '#lib/functions/utils';
   import { onMount } from 'svelte';
 
   export let icons: StorageIconElement[];

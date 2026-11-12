@@ -5,10 +5,10 @@
  */
 
 import type { BehaviorSubject } from 'rxjs';
-import { CharacterStatsCalculator } from '$lib/components/book-reader/book-reader-continuous/character-stats-calculator';
-import { binarySearchNoNegative } from '$lib/functions/binary-search';
-import { dev } from '$app/environment';
-import { getCharacterCount } from '$lib/functions/get-character-count';
+import { CharacterStatsCalculator } from '#lib/components/book-reader/book-reader-continuous/character-stats-calculator';
+import { binarySearchNoNegative } from '#lib/functions/binary-search';
+import { dev } from '$app/env';
+import { getCharacterCount } from '#lib/functions/get-character-count';
 import { getParagraphNodes } from '../get-paragraph-nodes';
 
 export class SectionCharacterStatsCalculator {

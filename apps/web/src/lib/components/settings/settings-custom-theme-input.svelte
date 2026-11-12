@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { CustomThemeValue, ThemeOption } from '$lib/data/theme-option';
+  import type { CustomThemeValue, ThemeOption } from '#lib/data/theme-option';
 
   interface Props {
     label: string;

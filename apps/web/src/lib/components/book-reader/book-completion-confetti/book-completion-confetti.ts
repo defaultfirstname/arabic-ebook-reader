@@ -4,7 +4,7 @@
  * All rights reserved.
  */
 
-import { randomize } from '$lib/functions/utils';
+import { randomize } from '#lib/functions/utils';
 
 const confettiColors = [
   { front: '#3B870A', back: '#235106' },

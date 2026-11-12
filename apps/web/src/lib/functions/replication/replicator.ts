@@ -4,21 +4,21 @@
  * All rights reserved.
  */
 
-import { BackupStorageHandler } from '$lib/data/storage/handler/backup-handler';
-import { BaseStorageHandler, FilePrefix } from '$lib/data/storage/handler/base-handler';
-import { storage } from '$lib/data/window/navigator/storage';
-import { StorageDataType, StorageKey } from '$lib/data/storage/storage-types';
-import { database, requestPersistentStorage$ } from '$lib/data/store';
-import loadEpub from '$lib/functions/file-loaders/epub/load-epub';
-import loadHtmlz from '$lib/functions/file-loaders/htmlz/load-htmlz';
-import loadTxt from '$lib/functions/file-loaders/txt/load-txt';
-import type { LoadData } from '$lib/functions/file-loaders/types';
-import { handleErrorDuringReplication } from '$lib/functions/replication/error-handler';
-import { throwIfAborted } from '$lib/functions/replication/replication-error';
+import { BackupStorageHandler } from '#lib/data/storage/handler/backup-handler';
+import { BaseStorageHandler, FilePrefix } from '#lib/data/storage/handler/base-handler';
+import { storage } from '#lib/data/window/navigator/storage';
+import { StorageDataType, StorageKey } from '#lib/data/storage/storage-types';
+import { database, requestPersistentStorage$ } from '#lib/data/store';
+import loadEpub from '#lib/functions/file-loaders/epub/load-epub';
+import loadHtmlz from '#lib/functions/file-loaders/htmlz/load-htmlz';
+import loadTxt from '#lib/functions/file-loaders/txt/load-txt';
+import type { LoadData } from '#lib/functions/file-loaders/types';
+import { handleErrorDuringReplication } from '#lib/functions/replication/error-handler';
+import { throwIfAborted } from '#lib/functions/replication/replication-error';
 import {
   replicationProgress$,
   type ReplicationContext
-} from '$lib/functions/replication/replication-progress';
+} from '#lib/functions/replication/replication-progress';
 import pLimit from 'p-limit';
 
 export const exporterVersion = 1;

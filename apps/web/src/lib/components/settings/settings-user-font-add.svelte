@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { inputClasses } from '$lib/css-classes';
-  import { reservedFontNames } from '$lib/data/fonts';
-  import { userFonts$ } from '$lib/data/store';
-  import { dummyFn } from '$lib/functions/utils';
+  import { inputClasses } from '#lib/css-classes';
+  import { reservedFontNames } from '#lib/data/fonts';
+  import { userFonts$ } from '#lib/data/store';
+  import { dummyFn } from '#lib/functions/utils';
   import { faFloppyDisk } from '@fortawesome/free-solid-svg-icons';
   import Fa from 'svelte-fa';
 

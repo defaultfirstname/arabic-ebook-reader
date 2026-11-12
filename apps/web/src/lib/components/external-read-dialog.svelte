@@ -1,8 +1,8 @@
 <script lang="ts">
-  import DialogTemplate from '$lib/components/dialog-template.svelte';
-  import Ripple from '$lib/components/ripple.svelte';
-  import { buttonClasses } from '$lib/css-classes';
-  import { hideExternalReadHint$ } from '$lib/data/store';
+  import DialogTemplate from '#lib/components/dialog-template.svelte';
+  import Ripple from '#lib/components/ripple.svelte';
+  import { buttonClasses } from '#lib/css-classes';
+  import { hideExternalReadHint$ } from '#lib/data/store';
   import { createEventDispatcher } from 'svelte';
 
   export let resolver: (arg0: string) => void;

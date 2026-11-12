@@ -2,12 +2,12 @@
   import Fa from 'svelte-fa';
   import { createEventDispatcher } from 'svelte';
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
-  import { mergeEntries } from '$lib/components/merged-header-icon/merged-entries';
-  import Popover from '$lib/components/popover/popover.svelte';
-  import { baseIconClasses } from '$lib/css-classes';
-  import { pagePath } from '$lib/data/env';
-  import { dummyFn } from '$lib/functions/utils';
+  import { page } from '$app/state';
+  import { mergeEntries } from '#lib/components/merged-header-icon/merged-entries';
+  import Popover from '#lib/components/popover/popover.svelte';
+  import { baseIconClasses } from '#lib/css-classes';
+  import { pagePath } from '#lib/data/env';
+  import { dummyFn } from '#lib/functions/utils';
 
   export let leavePageLink = '';
   export let items = [mergeEntries.MANAGE, mergeEntries.SETTINGS, mergeEntries.BUG_REPORT];
@@ -16,7 +16,7 @@
 
   const dispatch = createEventDispatcher<{ action: string }>();
 
-  const actionItems = items.filter((item) => item.routeId !== $page.route.id);
+  const actionItems = items.filter((item) => item.routeId !== page.route.id);
 
   let menuElm: Popover;
 

@@ -4,9 +4,9 @@
  * All rights reserved.
  */
 
-import StorageUnlock from '$lib/components/storage-unlock.svelte';
-import type { BooksDbStorageSource } from '$lib/data/database/books-db/versions/books-db';
-import { dialogManager } from '$lib/data/dialog-manager';
+import StorageUnlock from '#lib/components/storage-unlock.svelte';
+import type { BooksDbStorageSource } from '#lib/data/database/books-db/versions/books-db';
+import { dialogManager } from '#lib/data/dialog-manager';
 import {
   gDriveAuthEndpoint,
   gDriveClientId,
@@ -17,19 +17,19 @@ import {
   oneDriveScope,
   oneDriveTokenEndpoint,
   pagePath
-} from '$lib/data/env';
-import { logger } from '$lib/data/logger';
+} from '#lib/data/env';
+import { logger } from '#lib/data/logger';
 import {
   encrypt,
   isAppDefault,
   unlockStorageData,
   type RemoteContext,
   type StorageUnlockAction
-} from '$lib/data/storage/storage-source-manager';
-import { StorageSourceDefault, StorageKey } from '$lib/data/storage/storage-types';
-import { database } from '$lib/data/store';
-import { convertAuthErrorResponse } from '$lib/functions/replication/error-handler';
-import { isMobile } from '$lib/functions/utils';
+} from '#lib/data/storage/storage-source-manager';
+import { StorageSourceDefault, StorageKey } from '#lib/data/storage/storage-types';
+import { database } from '#lib/data/store';
+import { convertAuthErrorResponse } from '#lib/functions/replication/error-handler';
+import { isMobile } from '#lib/functions/utils';
 
 interface OAuthTokenData {
   accessToken: string;

@@ -4,9 +4,9 @@
  * All rights reserved.
  */
 
-import { StorageKey } from '$lib/data/storage/storage-types';
+import { StorageKey } from '#lib/data/storage/storage-types';
 import { getCharacterCount } from './get-character-count';
-import { writableSubject } from '$lib/functions/svelte/store';
+import { writableSubject } from '#lib/functions/svelte/store';
 
 function externalTargetFilterFunction(element: HTMLElement) {
   return !element.closest('rt') && getCharacterCount(element) > 0;

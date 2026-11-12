@@ -1,13 +1,13 @@
 <script lang="ts">
   import { faArrowsUpDown } from '@fortawesome/free-solid-svg-icons';
-  import DialogTemplate from '$lib/components/dialog-template.svelte';
-  import Ripple from '$lib/components/ripple.svelte';
-  import { baseIconClasses, buttonClasses } from '$lib/css-classes';
-  import { InternalStorageSources, StorageKey } from '$lib/data/storage/storage-types';
-  import type { BooksDbStorageSource } from '$lib/data/database/books-db/versions/books-db';
-  import type { SyncSelection } from '$lib/data/dialog-manager';
-  import { lastSyncedSettingsSource$, lastSyncedSettingsTarget$ } from '$lib/data/store';
-  import { dummyFn } from '$lib/functions/utils';
+  import DialogTemplate from '#lib/components/dialog-template.svelte';
+  import Ripple from '#lib/components/ripple.svelte';
+  import { baseIconClasses, buttonClasses } from '#lib/css-classes';
+  import { InternalStorageSources, StorageKey } from '#lib/data/storage/storage-types';
+  import type { BooksDbStorageSource } from '#lib/data/database/books-db/versions/books-db';
+  import type { SyncSelection } from '#lib/data/dialog-manager';
+  import { lastSyncedSettingsSource$, lastSyncedSettingsTarget$ } from '#lib/data/store';
+  import { dummyFn } from '#lib/functions/utils';
   import { createEventDispatcher } from 'svelte';
   import Fa from 'svelte-fa';
 

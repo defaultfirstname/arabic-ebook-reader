@@ -1,19 +1,19 @@
 <script lang="ts">
   import { faArrowDownWideShort, faArrowUpShortWide } from '@fortawesome/free-solid-svg-icons';
-  import Popover from '$lib/components/popover/popover.svelte';
+  import Popover from '#lib/components/popover/popover.svelte';
   import type {
     StatisticsDataSourceChange,
     StatisticsSummaryKey
-  } from '$lib/components/statistics/statistics-summary/statistics-summary';
+  } from '#lib/components/statistics/statistics-summary/statistics-summary';
   import type {
     BookStatistic,
     StatisticsDataSource
-  } from '$lib/components/statistics/statistics-types';
-  import { SortDirection } from '$lib/data/sort-types';
+  } from '#lib/components/statistics/statistics-types';
+  import { SortDirection } from '#lib/data/sort-types';
   import {
     lastStatisticsSummarySortDirection$,
     lastStatisticsSummarySortProperty$
-  } from '$lib/data/store';
+  } from '#lib/data/store';
   import { createEventDispatcher } from 'svelte';
   import Fa from 'svelte-fa';
 

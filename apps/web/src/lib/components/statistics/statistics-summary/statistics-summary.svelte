@@ -8,14 +8,14 @@
     faTrash,
     faXmark
   } from '@fortawesome/free-solid-svg-icons';
-  import Popover from '$lib/components/popover/popover.svelte';
+  import Popover from '#lib/components/popover/popover.svelte';
   import {
     StatisticsSummaryKey,
     type StatisticsDataSourceChange,
     type StatisticsDeleteRequest,
     type StatisticsEditRequest
-  } from '$lib/components/statistics/statistics-summary/statistics-summary';
-  import StatisticsSummaryHeader from '$lib/components/statistics/statistics-summary/statistics-summary-header.svelte';
+  } from '#lib/components/statistics/statistics-summary/statistics-summary';
+  import StatisticsSummaryHeader from '#lib/components/statistics/statistics-summary/statistics-summary-header.svelte';
   import {
     type BookStatistic,
     StatisticsReadingDataAggregationMode,
@@ -24,9 +24,9 @@
     readingSpeedDataSources,
     dateDataSources,
     titleDataSources
-  } from '$lib/components/statistics/statistics-types';
-  import { CLOSE_POPOVER } from '$lib/data/events';
-  import { SortDirection } from '$lib/data/sort-types';
+  } from '#lib/components/statistics/statistics-types';
+  import { CLOSE_POPOVER } from '#lib/data/events';
+  import { SortDirection } from '#lib/data/sort-types';
   import {
     lastBlurredTrackerItems$,
     lastCharactersDataSource$,
@@ -37,10 +37,10 @@
     lastStatisticsStartDate$,
     lastStatisticsSummarySortDirection$,
     lastStatisticsSummarySortProperty$
-  } from '$lib/data/store';
-  import { getNumberFromObject, secondsToMinutes } from '$lib/functions/statistic-util';
-  import { reduceToEmptyString } from '$lib/functions/rxjs/reduce-to-empty-string';
-  import { convertRemToPixels, dummyFn, getFullHeight, limitToRange } from '$lib/functions/utils';
+  } from '#lib/data/store';
+  import { getNumberFromObject, secondsToMinutes } from '#lib/functions/statistic-util';
+  import { reduceToEmptyString } from '#lib/functions/rxjs/reduce-to-empty-string';
+  import { convertRemToPixels, dummyFn, getFullHeight, limitToRange } from '#lib/functions/utils';
   import { debounceTime, fromEvent, tap } from 'rxjs';
   import { createEventDispatcher, tick } from 'svelte';
   import Fa from 'svelte-fa';

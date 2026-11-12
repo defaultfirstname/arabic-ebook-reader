@@ -8,11 +8,11 @@ import {
   binarySearch,
   binarySearchNoNegative,
   binarySearchNodeInRange
-} from '$lib/functions/binary-search';
+} from '#lib/functions/binary-search';
 
-import { countTextCharacters, getCharacterCount } from '$lib/functions/get-character-count';
-import { getNodeBoundingRect } from '$lib/functions/range-util';
-import { getParagraphNodes } from '$lib/components/book-reader/get-paragraph-nodes';
+import { countTextCharacters, getCharacterCount } from '#lib/functions/get-character-count';
+import { getNodeBoundingRect } from '#lib/functions/range-util';
+import { getParagraphNodes } from '#lib/components/book-reader/get-paragraph-nodes';
 
 export class CharacterStatsCalculator {
   readonly charCount: number;

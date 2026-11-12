@@ -6,19 +6,19 @@
     isTrackerMenuOpen$,
     TrackerSkipThresholdAction,
     TrackerAutoPause
-  } from '$lib/components/book-reader/book-reading-tracker/book-reading-tracker';
-  import BookTimerMenu from '$lib/components/book-reader/book-reading-tracker/book-reading-tracker-menu.svelte';
-  import type { SectionWithProgress } from '$lib/components/book-reader/book-toc/book-toc';
-  import type { AutoScroller } from '$lib/components/book-reader/types';
+  } from '#lib/components/book-reader/book-reading-tracker/book-reading-tracker';
+  import BookTimerMenu from '#lib/components/book-reader/book-reading-tracker/book-reading-tracker-menu.svelte';
+  import type { SectionWithProgress } from '#lib/components/book-reader/book-toc/book-toc';
+  import type { AutoScroller } from '#lib/components/book-reader/types';
   import type {
     BooksDbReadingGoal,
     BooksDbStatistic
-  } from '$lib/data/database/books-db/versions/books-db';
-  import { dialogManager } from '$lib/data/dialog-manager';
-  import { PAGE_CHANGE } from '$lib/data/events';
-  import { logger } from '$lib/data/logger';
-  import { MergeMode } from '$lib/data/merge-mode';
-  import { getReadingGoalWindow, type ReadingGoal } from '$lib/data/reading-goal';
+  } from '#lib/data/database/books-db/versions/books-db';
+  import { dialogManager } from '#lib/data/dialog-manager';
+  import { PAGE_CHANGE } from '#lib/data/events';
+  import { logger } from '#lib/data/logger';
+  import { MergeMode } from '#lib/data/merge-mode';
+  import { getReadingGoalWindow, type ReadingGoal } from '#lib/data/reading-goal';
   import {
     adjustStatisticsAfterIdleTime$,
     database,
@@ -30,9 +30,9 @@
     trackerIdleTime$,
     trackerPopupDetection$,
     trackerSkipThresholdAction$
-  } from '$lib/data/store';
-  import { ReplicationSaveBehavior } from '$lib/functions/replication/replication-options';
-  import { reduceToEmptyString } from '$lib/functions/rxjs/reduce-to-empty-string';
+  } from '#lib/data/store';
+  import { ReplicationSaveBehavior } from '#lib/functions/replication/replication-options';
+  import { reduceToEmptyString } from '#lib/functions/rxjs/reduce-to-empty-string';
   import {
     getDate,
     getDateKey,
@@ -40,9 +40,9 @@
     getPreviousDayKey,
     getSecondsToDate,
     toTimeString
-  } from '$lib/functions/statistic-util';
-  import { clickOutside } from '$lib/functions/use-click-outside';
-  import { filterNotNullAndNotUndefined } from '$lib/functions/utils';
+  } from '#lib/functions/statistic-util';
+  import { clickOutside } from '#lib/functions/use-click-outside';
+  import { filterNotNullAndNotUndefined } from '#lib/functions/utils';
   import {
     fromEvent,
     interval,

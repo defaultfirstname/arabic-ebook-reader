@@ -1,14 +1,14 @@
 <script lang="ts">
-  import StatisticsContent from '$lib/components/statistics/statistics-content.svelte';
-  import StatisticsHeader from '$lib/components/statistics/statistics-header.svelte';
-  import StatisticsSettings from '$lib/components/statistics/statistics-settings.svelte';
+  import StatisticsContent from '#lib/components/statistics/statistics-content.svelte';
+  import StatisticsHeader from '#lib/components/statistics/statistics-header.svelte';
+  import StatisticsSettings from '#lib/components/statistics/statistics-settings.svelte';
   import {
     StatisticsRangeTemplate,
     type StatisticsDateChange,
     preFilteredTitlesForStatistics$,
     statisticsActionInProgress$
-  } from '$lib/components/statistics/statistics-types';
-  import { pxScreen } from '$lib/css-classes';
+  } from '#lib/components/statistics/statistics-types';
+  import { pxScreen } from '#lib/css-classes';
   import {
     database,
     lastStartDayOfWeek$,
@@ -16,14 +16,14 @@
     lastStatisticsRangeTemplate$,
     lastStatisticsStartDate$,
     startDayHoursForTracker$
-  } from '$lib/data/store';
+  } from '#lib/data/store';
   import {
     advanceDateDays,
     getDateKey,
     getDateString,
     getStartHoursDate
-  } from '$lib/functions/statistic-util';
-  import { clickOutside } from '$lib/functions/use-click-outside';
+  } from '#lib/functions/statistic-util';
+  import { clickOutside } from '#lib/functions/use-click-outside';
   import { map, share } from 'rxjs';
   import { onDestroy, tick } from 'svelte';
   import { quintInOut } from 'svelte/easing';

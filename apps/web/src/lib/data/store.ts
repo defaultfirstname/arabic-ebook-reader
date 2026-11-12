@@ -4,43 +4,43 @@
  * All rights reserved.
  */
 
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 import {
   ReaderImageGalleryAvailableKeybind,
   type ReaderImageGalleryKeybindMap
-} from '$lib/components/book-reader/book-reader-image-gallery/book-reader-image-gallery';
+} from '#lib/components/book-reader/book-reader-image-gallery/book-reader-image-gallery';
 import {
   ReadingGoalFrequency,
   TrackerAutoPause,
   TrackerSkipThresholdAction
-} from '$lib/components/book-reader/book-reading-tracker/book-reading-tracker';
-import { HeatmapDataAggregration } from '$lib/components/statistics/statistics-heatmap/statistics-heatmap';
+} from '#lib/components/book-reader/book-reading-tracker/book-reading-tracker';
+import { HeatmapDataAggregration } from '#lib/components/statistics/statistics-heatmap/statistics-heatmap';
 import {
   StatisticsRangeTemplate,
   StatisticsTab,
   type BookStatistic,
   StatisticsReadingDataAggregationMode
-} from '$lib/components/statistics/statistics-types';
-import { BlurMode } from '$lib/data/blur-mode';
-import { LocalFont, type UserFont } from '$lib/data/fonts';
-import { MergeMode } from '$lib/data/merge-mode';
-import type { ReadingGoal } from '$lib/data/reading-goal';
-import { SortDirection, type SortOption } from '$lib/data/sort-types';
+} from '#lib/components/statistics/statistics-types';
+import { BlurMode } from '#lib/data/blur-mode';
+import { LocalFont, type UserFont } from '#lib/data/fonts';
+import { MergeMode } from '#lib/data/merge-mode';
+import type { ReadingGoal } from '#lib/data/reading-goal';
+import { SortDirection, type SortOption } from '#lib/data/sort-types';
 import {
   StatisticsTabAvailableKeybind,
   type StatisticsTabKeybindMap
-} from '$lib/data/statistics-tab-keybind';
+} from '#lib/data/statistics-tab-keybind';
 import {
   InternalStorageSources,
   StorageDataType,
   StorageKey,
   StorageSourceDefault
-} from '$lib/data/storage/storage-types';
+} from '#lib/data/storage/storage-types';
 import {
   AutoReplicationType,
   ReplicationSaveBehavior
-} from '$lib/functions/replication/replication-options';
-import { writableSubject } from '$lib/functions/svelte/store';
+} from '#lib/functions/replication/replication-options';
+import { writableSubject } from '#lib/functions/svelte/store';
 import { BookReaderAvailableKeybind, type BookReaderKeybindMap } from './book-reader-keybind';
 import { DatabaseService } from './database/books-db/database.service';
 import { createBooksDb } from './database/books-db/factory';

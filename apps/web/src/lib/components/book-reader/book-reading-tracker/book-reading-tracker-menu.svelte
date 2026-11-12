@@ -12,17 +12,17 @@
     faXmark,
     type IconDefinition
   } from '@fortawesome/free-solid-svg-icons';
-  import type { TrackingHistory } from '$lib/components/book-reader/book-reading-tracker/book-reading-tracker';
+  import type { TrackingHistory } from '#lib/components/book-reader/book-reading-tracker/book-reading-tracker';
   import {
     getChapterData,
     type SectionWithProgress
-  } from '$lib/components/book-reader/book-toc/book-toc';
-  import { dialogManager } from '$lib/data/dialog-manager';
-  import type { BooksDbStatistic } from '$lib/data/database/books-db/versions/books-db';
-  import type { ReadingGoal } from '$lib/data/reading-goal';
-  import { lastBlurredTrackerItems$, skipKeyDownListener$ } from '$lib/data/store';
-  import { secondsToMinutes, toTimeString } from '$lib/functions/statistic-util';
-  import { caluclatePercentage, dummyFn } from '$lib/functions/utils';
+  } from '#lib/components/book-reader/book-toc/book-toc';
+  import { dialogManager } from '#lib/data/dialog-manager';
+  import type { BooksDbStatistic } from '#lib/data/database/books-db/versions/books-db';
+  import type { ReadingGoal } from '#lib/data/reading-goal';
+  import { lastBlurredTrackerItems$, skipKeyDownListener$ } from '#lib/data/store';
+  import { secondsToMinutes, toTimeString } from '#lib/functions/statistic-util';
+  import { caluclatePercentage, dummyFn } from '#lib/functions/utils';
   import { createEventDispatcher, onMount } from 'svelte';
   import Fa from 'svelte-fa';
 

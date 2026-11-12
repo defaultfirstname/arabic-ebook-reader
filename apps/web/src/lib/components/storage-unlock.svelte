@@ -1,9 +1,9 @@
 <script lang="ts">
-  import DialogTemplate from '$lib/components/dialog-template.svelte';
-  import Ripple from '$lib/components/ripple.svelte';
-  import { buttonClasses } from '$lib/css-classes';
-  import { decrypt, type StorageUnlockAction } from '$lib/data/storage/storage-source-manager';
-  import { skipKeyDownListener$ } from '$lib/data/store';
+  import DialogTemplate from '#lib/components/dialog-template.svelte';
+  import Ripple from '#lib/components/ripple.svelte';
+  import { buttonClasses } from '#lib/css-classes';
+  import { decrypt, type StorageUnlockAction } from '#lib/data/storage/storage-source-manager';
+  import { skipKeyDownListener$ } from '#lib/data/store';
   import { createEventDispatcher, onMount } from 'svelte';
 
   export let description: string;
@@ -52,7 +52,9 @@
   onMount(() => {
     skipKeyDownListener$.next(true);
 
-    if (passwordElm) { passwordElm.focus() }
+    if (passwordElm) {
+      passwordElm.focus();
+    }
 
     return () => skipKeyDownListener$.next(false);
   });
@@ -63,7 +65,17 @@
     <div>{description}</div>
     <div class="my-2">{action}</div>
     {#if requiresSecret}
-      <input type="password" placeholder="Password" bind:value={secret} bind:this={passwordElm} on:keyup={(evt) => {if (evt.key === 'Enter') {unlock()}}}/>
+      <input
+        type="password"
+        placeholder="Password"
+        bind:value={secret}
+        bind:this={passwordElm}
+        on:keyup={(evt) => {
+          if (evt.key === 'Enter') {
+            unlock();
+          }
+        }}
+      />
     {/if}
     <div class="text-red-500">{error}</div>
   </div>

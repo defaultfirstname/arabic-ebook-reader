@@ -6,7 +6,7 @@
 
 import { BehaviorSubject, Subject } from 'rxjs';
 
-import type { Section } from '$lib/data/database/books-db/versions/v3/books-db-v3';
+import type { Section } from '#lib/data/database/books-db/versions/v3/books-db-v3';
 
 export const sectionList$ = new BehaviorSubject<Section[]>([]);
 export const sectionProgress$ = new Subject<Map<string, SectionWithProgress>>();

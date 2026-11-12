@@ -1,22 +1,22 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
-  import DialogTemplate from '$lib/components/dialog-template.svelte';
-  import Ripple from '$lib/components/ripple.svelte';
-  import { buttonClasses } from '$lib/css-classes';
-  import type { BooksDbStorageSource } from '$lib/data/database/books-db/versions/books-db';
-  import { gDriveRevokeEndpoint } from '$lib/data/env';
-  import { BaseStorageHandler } from '$lib/data/storage/handler/base-handler';
-  import { getStorageHandler } from '$lib/data/storage/storage-handler-factory';
-  import { StorageOAuthManager, storageOAuthTokens } from '$lib/data/storage/storage-oauth-manager';
+  import { browser } from '$app/env';
+  import DialogTemplate from '#lib/components/dialog-template.svelte';
+  import Ripple from '#lib/components/ripple.svelte';
+  import { buttonClasses } from '#lib/css-classes';
+  import type { BooksDbStorageSource } from '#lib/data/database/books-db/versions/books-db';
+  import { gDriveRevokeEndpoint } from '#lib/data/env';
+  import { BaseStorageHandler } from '#lib/data/storage/handler/base-handler';
+  import { getStorageHandler } from '#lib/data/storage/storage-handler-factory';
+  import { StorageOAuthManager, storageOAuthTokens } from '#lib/data/storage/storage-oauth-manager';
   import {
     encrypt,
     isAppDefault,
     type FsHandle,
     type StorageSourceSaveResult,
     type StorageUnlockAction
-  } from '$lib/data/storage/storage-source-manager';
-  import { StorageKey } from '$lib/data/storage/storage-types';
-  import { database, isOnline$ } from '$lib/data/store';
+  } from '#lib/data/storage/storage-source-manager';
+  import { StorageKey } from '#lib/data/storage/storage-types';
+  import { database, isOnline$ } from '#lib/data/store';
   import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
   import { createEventDispatcher } from 'svelte';
   import Fa from 'svelte-fa';

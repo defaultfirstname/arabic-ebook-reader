@@ -7,20 +7,20 @@
     faMap,
     faSliders
   } from '@fortawesome/free-solid-svg-icons';
-  import { mergeEntries } from '$lib/components/merged-header-icon/merged-entries';
-  import MergedHeaderIcon from '$lib/components/merged-header-icon/merged-header-icon.svelte';
-  import Popover from '$lib/components/popover/popover.svelte';
+  import { mergeEntries } from '#lib/components/merged-header-icon/merged-entries';
+  import MergedHeaderIcon from '#lib/components/merged-header-icon/merged-header-icon.svelte';
+  import Popover from '#lib/components/popover/popover.svelte';
   import {
     StatisticsTab,
     copyStatisticsData$,
     statisticsTitleFilterEnabled$,
     statisticsTitleFilterIsOpen$,
     type StatisticsDataSource
-  } from '$lib/components/statistics/statistics-types';
-  import { baseHeaderClasses, baseIconClasses, pxScreen } from '$lib/css-classes';
-  import { pagePath } from '$lib/data/env';
-  import { lastStatisticsTab$ } from '$lib/data/store';
-  import { dummyFn } from '$lib/functions/utils';
+  } from '#lib/components/statistics/statistics-types';
+  import { baseHeaderClasses, baseIconClasses, pxScreen } from '#lib/css-classes';
+  import { pagePath } from '#lib/data/env';
+  import { lastStatisticsTab$ } from '#lib/data/store';
+  import { dummyFn } from '#lib/functions/utils';
   import Fa from 'svelte-fa';
 
   export let currentBookId: number | undefined;

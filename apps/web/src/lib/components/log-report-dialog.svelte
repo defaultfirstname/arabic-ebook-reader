@@ -1,9 +1,9 @@
 <script lang="ts">
-  import DialogTemplate from '$lib/components/dialog-template.svelte';
-  import Ripple from '$lib/components/ripple.svelte';
-  import { buttonClasses } from '$lib/css-classes';
-  import { logger } from '$lib/data/logger';
-  import { StorageSourceDefault } from '$lib/data/storage/storage-types';
+  import DialogTemplate from '#lib/components/dialog-template.svelte';
+  import Ripple from '#lib/components/ripple.svelte';
+  import { buttonClasses } from '#lib/css-classes';
+  import { logger } from '#lib/data/logger';
+  import { StorageSourceDefault } from '#lib/data/storage/storage-types';
   import {
     theme$,
     viewMode$,
@@ -72,7 +72,7 @@
     showFooterChapterCharacterCounter$,
     showFooterChapterPercentage$,
     enableReaderWakeLock$
-  } from '$lib/data/store';
+  } from '#lib/data/store';
 
   export let title = 'Error';
 

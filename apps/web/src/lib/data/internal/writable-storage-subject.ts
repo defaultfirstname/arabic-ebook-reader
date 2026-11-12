@@ -6,7 +6,7 @@
 
 import { skip } from 'rxjs';
 import type { localStorage } from '../window/local-storage';
-import { writableSubject } from '$lib/functions/svelte/store';
+import { writableSubject } from '#lib/functions/svelte/store';
 
 type Storage = typeof localStorage;
 

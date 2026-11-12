@@ -14,21 +14,21 @@
     Subject,
     tap
   } from 'rxjs';
-  import BookReaderContinuous from '$lib/components/book-reader/book-reader-continuous/book-reader-continuous.svelte';
-  import { pxReader } from '$lib/components/book-reader/css-classes';
-  import type { BooksDbBookmarkData } from '$lib/data/database/books-db/versions/books-db';
-  import type { TextMarginMode } from '$lib/data/text-margin-mode';
-  import { ViewMode } from '$lib/data/view-mode';
-  import { iffBrowser } from '$lib/functions/rxjs/iff-browser';
-  import { reduceToEmptyString } from '$lib/functions/rxjs/reduce-to-empty-string';
-  import { writableSubject } from '$lib/functions/svelte/store';
-  import { convertRemToPixels } from '$lib/functions/utils';
-  import { logger } from '$lib/data/logger';
+  import BookReaderContinuous from '#lib/components/book-reader/book-reader-continuous/book-reader-continuous.svelte';
+  import { pxReader } from '#lib/components/book-reader/css-classes';
+  import type { BooksDbBookmarkData } from '#lib/data/database/books-db/versions/books-db';
+  import type { TextMarginMode } from '#lib/data/text-margin-mode';
+  import { ViewMode } from '#lib/data/view-mode';
+  import { iffBrowser } from '#lib/functions/rxjs/iff-browser';
+  import { reduceToEmptyString } from '#lib/functions/rxjs/reduce-to-empty-string';
+  import { writableSubject } from '#lib/functions/svelte/store';
+  import { convertRemToPixels } from '#lib/functions/utils';
+  import { logger } from '#lib/data/logger';
   import { imageLoadingState } from './image-loading-state';
   import { reactiveElements } from './reactive-elements';
   import type { AutoScroller, BookmarkManager, PageManager } from './types';
   import BookReaderPaginated from './book-reader-paginated/book-reader-paginated.svelte';
-  import { enableReaderWakeLock$, enableTapEdgeToFlip$ } from '$lib/data/store';
+  import { enableReaderWakeLock$, enableTapEdgeToFlip$ } from '#lib/data/store';
   import { onDestroy } from 'svelte';
 
   export let htmlContent: string;

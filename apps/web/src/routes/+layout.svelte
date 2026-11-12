@@ -1,16 +1,17 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
-  import { page } from '$app/stores';
-  import { appName } from '$lib/functions/format-page-title';
-  import { basePath, clearConsoleOnReload } from '$lib/data/env';
-  import { dialogManager, type Dialog } from '$lib/data/dialog-manager';
-  import { LocalFont, userFontsCacheName, type UserFont } from '$lib/data/fonts';
-  import { fontFamilyGroupOne$, isOnline$, userFonts$ } from '$lib/data/store';
-  import { dummyFn, isMobile, isMobile$ } from '$lib/functions/utils';
+  import { browser } from '$app/env';
+  import { afterNavigate } from '$app/navigation';
+  import { page } from '$app/state';
+  import { appName } from '#lib/functions/format-page-title';
+  import { basePath, clearConsoleOnReload } from '#lib/data/env';
+  import { dialogManager, type Dialog } from '#lib/data/dialog-manager';
+  import { LocalFont, userFontsCacheName, type UserFont } from '#lib/data/fonts';
+  import { fontFamilyGroupOne$, isOnline$, userFonts$ } from '#lib/data/store';
+  import { dummyFn, isMobile, isMobile$ } from '#lib/functions/utils';
   import { MetaTags } from 'svelte-meta-tags';
   import '../app.scss';
 
-  let path = '';
+  let path = page.url.pathname;
   let dialogs: Dialog[] = [];
   let clickOnCloseDisabled = false;
   let zIndex = '';
@@ -81,7 +82,9 @@
     dialogs = d;
   });
 
-  page.subscribe((p) => (path = p.url.pathname));
+  afterNavigate(({ to }) => {
+    if (to) path = to.url.pathname;
+  });
 </script>
 
 <svelte:window bind:online={$isOnline$} />

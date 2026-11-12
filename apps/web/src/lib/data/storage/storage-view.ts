@@ -4,7 +4,7 @@
  * All rights reserved.
  */
 
-import { StorageKey, StorageSourceDefault } from '$lib/data/storage/storage-types';
+import { StorageKey, StorageSourceDefault } from '#lib/data/storage/storage-types';
 import {
   gDriveAuthEndpoint,
   gDriveClientId,
@@ -12,10 +12,10 @@ import {
   oneDriveAuthEndpoint,
   oneDriveClientId,
   oneDriveScope
-} from '$lib/data/env';
+} from '#lib/data/env';
 
-import { writableStringLocalStorageSubject } from '$lib/data/internal/writable-string-local-storage-subject';
-import { writableSubject } from '$lib/functions/svelte/store';
+import { writableStringLocalStorageSubject } from '#lib/data/internal/writable-string-local-storage-subject';
+import { writableSubject } from '#lib/functions/svelte/store';
 
 interface StorageIcon {
   d: string;

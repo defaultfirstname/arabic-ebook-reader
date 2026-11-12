@@ -7,16 +7,16 @@
 import {
   ReaderImageGalleryAvailableKeybind,
   type ReaderImageGalleryKeybindMap
-} from '$lib/components/book-reader/book-reader-image-gallery/book-reader-image-gallery';
-import type { AutoScroller, PageManager } from '$lib/components/book-reader/types';
+} from '#lib/components/book-reader/book-reader-image-gallery/book-reader-image-gallery';
+import type { AutoScroller, PageManager } from '#lib/components/book-reader/types';
 import {
   BookReaderAvailableKeybind,
   type BookReaderKeybindMap
-} from '$lib/data/book-reader-keybind';
+} from '#lib/data/book-reader-keybind';
 import {
   StatisticsTabAvailableKeybind,
   type StatisticsTabKeybindMap
-} from '$lib/data/statistics-tab-keybind';
+} from '#lib/data/statistics-tab-keybind';
 
 export function onKeydownReader(
   ev: KeyboardEvent,

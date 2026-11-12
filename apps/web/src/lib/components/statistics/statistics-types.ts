@@ -4,9 +4,9 @@
  * All rights reserved.
  */
 
-import type { BooksDbStatistic } from '$lib/data/database/books-db/versions/books-db';
+import type { BooksDbStatistic } from '#lib/data/database/books-db/versions/books-db';
 import { Subject } from 'rxjs';
-import { writableSubject } from '$lib/functions/svelte/store';
+import { writableSubject } from '#lib/functions/svelte/store';
 
 export interface StatisticsDateChange {
   dateString: string;

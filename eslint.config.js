@@ -18,7 +18,7 @@ module.exports = (async () => {
       ignores: [
         '**/build/*',
         '**/.svelte-kit/*',
-        '**/service-worker.ts',
+        '**/service-worker/**',
         '**/postcss.config.cjs',
         '**/.prettierrc.cjs',
         '**/material-elevation.cjs',
@@ -87,12 +87,6 @@ module.exports = (async () => {
       rules: {
         'except-parens': 'off',
         quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }]
-      }
-    },
-    {
-      files: ['service-worker.ts'],
-      rules: {
-        'headers/header-format': 'off'
       }
     }
   );

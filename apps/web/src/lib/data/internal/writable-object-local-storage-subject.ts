@@ -4,8 +4,8 @@
  * All rights reserved.
  */
 
-import { localStorage } from '$lib/data/window/local-storage';
-import { writableStorageSubject } from '$lib/data/internal/writable-storage-subject';
+import { localStorage } from '#lib/data/window/local-storage';
+import { writableStorageSubject } from '#lib/data/internal/writable-storage-subject';
 
 function createWritableObjectLocalStorageSubject<T>(fallback: string, storage = localStorage) {
   return writableStorageSubject(

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
+  import { browser } from '$app/env';
   import {
     faCircleQuestion,
     faCloudArrowUp,
@@ -10,15 +10,15 @@
     faTrash,
     faTriangleExclamation
   } from '@fortawesome/free-solid-svg-icons';
-  import MessageDialog from '$lib/components/message-dialog.svelte';
-  import Popover from '$lib/components/popover/popover.svelte';
-  import Ripple from '$lib/components/ripple.svelte';
-  import SettingsStorageSource from '$lib/components/settings/settings-storage-source.svelte';
-  import { buttonClasses } from '$lib/css-classes';
-  import type { BooksDbStorageSource } from '$lib/data/database/books-db/versions/books-db';
-  import { dialogManager } from '$lib/data/dialog-manager';
-  import { gDriveRevokeEndpoint } from '$lib/data/env';
-  import { StorageOAuthManager, storageOAuthTokens } from '$lib/data/storage/storage-oauth-manager';
+  import MessageDialog from '#lib/components/message-dialog.svelte';
+  import Popover from '#lib/components/popover/popover.svelte';
+  import Ripple from '#lib/components/ripple.svelte';
+  import SettingsStorageSource from '#lib/components/settings/settings-storage-source.svelte';
+  import { buttonClasses } from '#lib/css-classes';
+  import type { BooksDbStorageSource } from '#lib/data/database/books-db/versions/books-db';
+  import { dialogManager } from '#lib/data/dialog-manager';
+  import { gDriveRevokeEndpoint } from '#lib/data/env';
+  import { StorageOAuthManager, storageOAuthTokens } from '#lib/data/storage/storage-oauth-manager';
   import {
     isAppDefault,
     setStorageSourceDefault,
@@ -27,9 +27,9 @@
     type StorageUnlockAction,
     type RemoteContext,
     unlockStorageData
-  } from '$lib/data/storage/storage-source-manager';
-  import { StorageKey } from '$lib/data/storage/storage-types';
-  import { getStorageIconData } from '$lib/data/storage/storage-view';
+  } from '#lib/data/storage/storage-source-manager';
+  import { StorageKey } from '#lib/data/storage/storage-types';
+  import { getStorageIconData } from '#lib/data/storage/storage-view';
   import {
     autoReplication$,
     database,
@@ -38,9 +38,9 @@
     isOnline$,
     oneDriveStorageSource$,
     syncTarget$
-  } from '$lib/data/store';
-  import { AutoReplicationType } from '$lib/functions/replication/replication-options';
-  import { dummyFn } from '$lib/functions/utils';
+  } from '#lib/data/store';
+  import { AutoReplicationType } from '#lib/functions/replication/replication-options';
+  import { dummyFn } from '#lib/functions/utils';
   import Fa from 'svelte-fa';
 
   export let storageSources: BooksDbStorageSource[];

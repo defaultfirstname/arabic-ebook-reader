@@ -4,7 +4,7 @@
  * All rights reserved.
  */
 
-import type { BookCardProps } from '$lib/components/book-card/book-card-props';
+import type { BookCardProps } from '#lib/components/book-card/book-card-props';
 import {
   currentDbVersion,
   type BooksDbBookData,
@@ -13,19 +13,19 @@ import {
   type BooksDbReadingGoal,
   type BooksDbAudioBook,
   type BooksDbSubtitleData
-} from '$lib/data/database/books-db/versions/books-db';
-import type { Section } from '$lib/data/database/books-db/versions/v4/books-db-v4';
-import { storageRootName } from '$lib/data/env';
-import { MergeMode } from '$lib/data/merge-mode';
-import { InternalStorageSources, type StorageKey } from '$lib/data/storage/storage-types';
-import { exporterVersion } from '$lib/functions/replication/replicator';
-import { throwIfAborted } from '$lib/functions/replication/replication-error';
-import { ReplicationSaveBehavior } from '$lib/functions/replication/replication-options';
+} from '#lib/data/database/books-db/versions/books-db';
+import type { Section } from '#lib/data/database/books-db/versions/v4/books-db-v4';
+import { storageRootName } from '#lib/data/env';
+import { MergeMode } from '#lib/data/merge-mode';
+import { InternalStorageSources, type StorageKey } from '#lib/data/storage/storage-types';
+import { exporterVersion } from '#lib/functions/replication/replicator';
+import { throwIfAborted } from '#lib/functions/replication/replication-error';
+import { ReplicationSaveBehavior } from '#lib/functions/replication/replication-options';
 import {
   replicationProgress$,
   type ReplicationContext,
   type ReplicationDeleteResult
-} from '$lib/functions/replication/replication-progress';
+} from '#lib/functions/replication/replication-progress';
 import pLimit from 'p-limit';
 import {
   BlobReader,
