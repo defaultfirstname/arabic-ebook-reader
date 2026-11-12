@@ -1620,8 +1620,8 @@
     bind:customReadingPointScrollOffset
     bind:customReadingPointRange
     bind:showCustomReadingPoint
-    on:bookmark={bookmarkPage}
-    on:trackerPause={() => pauseTracker(true)}
+    onBookmark={bookmarkPage}
+    onTrackerPause={() => pauseTracker(true)}
   />
   {$setBackgroundColor$ ?? ''}
   {$textSelector$ ?? ''}

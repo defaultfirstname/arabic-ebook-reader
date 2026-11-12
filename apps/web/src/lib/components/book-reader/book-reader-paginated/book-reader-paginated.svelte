@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { browser } from '$app/env';
   import { nextChapter$ } from '#lib/components/book-reader/book-toc/book-toc';
-  import HtmlRenderer from '#lib/components/html-renderer.svelte';
   import type { BooksDbBookmarkData } from '#lib/data/database/books-db/versions/books-db';
   import { SECTION_CHANGE } from '#lib/data/events';
   import { getReaderFontStack, isStoredFont } from '#lib/data/fonts';
@@ -23,10 +21,8 @@
     BehaviorSubject,
     combineLatest,
     debounceTime,
-    distinctUntilChanged,
     filter,
     fromEvent,
-    map,
     skip,
     Subject,
     switchMap,
@@ -40,97 +36,101 @@
   import { BookmarkManagerPaginated } from './bookmark-manager-paginated';
   import { PageManagerPaginated } from './page-manager-paginated';
   import { SectionCharacterStatsCalculator } from './section-character-stats-calculator';
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, untrack } from 'svelte';
 
-  export let htmlContent: string;
+  interface Props {
+    htmlContent: string;
+    width: number;
+    height: number;
+    rightToLeft: boolean;
+    prioritizeReaderStyles: boolean;
+    enableTextJustification: boolean;
+    enableTextWrapPretty: boolean;
+    fontColor: string;
+    backgroundColor: string;
+    fontFamilyGroupOne: string;
+    fontFamilyGroupTwo: string;
+    fontWeight: number | null;
+    fontSize: number;
+    lineHeight: number;
+    textIndentation: number;
+    textMarginMode: TextMarginMode;
+    textMarginValue: number;
+    hideSpoilerImage: boolean;
+    loadingState: boolean;
+    bookmarkData: Promise<BooksDbBookmarkData | undefined>;
+    pageManager: PageManager | undefined;
+    bookmarkManager: BookmarkManager | undefined;
+    exploredCharCount: number;
+    bookCharCount: number;
+    isBookmarkScreen?: boolean;
+    avoidPageBreak?: boolean;
+    pageColumns: number;
+    firstDimensionMargin: number;
+    autoBookmark?: boolean;
+    autoBookmarkTime: number;
+    customReadingPointRange: Range | undefined;
+    showCustomReadingPoint: boolean;
+    onBookmark: () => void;
+    onContentChange: (content: HTMLElement) => void;
+    onTrackerPause: () => void;
+  }
 
-  export let width: number;
+  let {
+    htmlContent,
+    width,
+    height,
+    rightToLeft,
+    prioritizeReaderStyles,
+    enableTextJustification,
+    enableTextWrapPretty,
+    fontColor,
+    backgroundColor,
+    fontFamilyGroupOne,
+    fontFamilyGroupTwo,
+    fontWeight,
+    fontSize,
+    lineHeight,
+    textIndentation,
+    textMarginMode,
+    textMarginValue,
+    hideSpoilerImage,
+    loadingState,
+    bookmarkData = $bindable(),
+    pageManager = $bindable(),
+    bookmarkManager = $bindable(),
+    exploredCharCount = $bindable(),
+    bookCharCount = $bindable(),
+    isBookmarkScreen = $bindable(false),
+    avoidPageBreak = true,
+    pageColumns,
+    firstDimensionMargin,
+    autoBookmark = false,
+    autoBookmarkTime,
+    customReadingPointRange = $bindable(),
+    showCustomReadingPoint = $bindable(),
+    onBookmark,
+    onContentChange,
+    onTrackerPause
+  }: Props = $props();
 
-  export let height: number;
+  let scrollEl = $state<HTMLElement>();
 
-  export let rightToLeft: boolean;
+  let contentEl = $state<HTMLElement>();
 
-  export let prioritizeReaderStyles: boolean;
+  let calculator = $state<SectionCharacterStatsCalculator>();
+  let calculatorSectionIndex = -1;
 
-  export let enableTextJustification: boolean;
+  let sections = $state.raw<Element[]>([]);
 
-  export let enableTextWrapPretty: boolean;
-
-  export let fontColor: string;
-
-  export let backgroundColor: string;
-
-  export let fontFamilyGroupOne: string;
-
-  export let fontFamilyGroupTwo: string;
-
-  export let fontWeight: number | null;
-
-  export let fontSize: number;
-
-  export let lineHeight: number;
-
-  export let textIndentation: number;
-
-  export let textMarginMode: TextMarginMode;
-
-  export let textMarginValue: number;
-
-  export let hideSpoilerImage: boolean;
-
-  export let loadingState: boolean;
-
-  export let bookmarkData: Promise<BooksDbBookmarkData | undefined>;
-
-  export let pageManager: PageManager | undefined;
-
-  export let bookmarkManager: BookmarkManager | undefined;
-
-  export let exploredCharCount: number;
-
-  export let bookCharCount: number;
-
-  export let isBookmarkScreen = false;
-
-  export let avoidPageBreak = true;
-
-  export let pageColumns: number;
-
-  export let firstDimensionMargin: number;
-
-  export let autoBookmark = false;
-
-  export let autoBookmarkTime: number;
-
-  export let customReadingPointRange: Range | undefined;
-
-  export let showCustomReadingPoint: boolean;
-
-  const dispatch = createEventDispatcher<{
-    bookmark: void;
-    contentChange: HTMLElement;
-    trackerPause: void;
-  }>();
-
-  let scrollEl: HTMLElement | undefined;
-
-  let contentEl: HTMLElement | undefined;
-
-  let calculator: SectionCharacterStatsCalculator | undefined;
-
-  let sections: Element[] = [];
-
-  let concretePageManager: PageManagerPaginated | undefined;
-
-  let concreteBookmarkManager: BookmarkManagerPaginated | undefined;
+  let concretePageManager = $state<PageManagerPaginated>();
 
   let scrollWhenReady: boolean;
 
-  let allowDisplay = false;
+  let allowDisplay = $state(false);
 
-  let displayedHtml = '';
-
-  let skipFirstHtmlLoad = true;
+  let renderedSection = $state.raw<{ index: number; html: string }>();
+  let sectionFrame = 0;
 
   let previousIntendedCount = 0;
 
@@ -138,13 +138,13 @@
 
   let isResizing = false;
 
-  let bookmarkTopAdjustment: string | undefined;
+  let bookmarkTopAdjustment = $state<string>();
 
-  let bookmarkLeftAdjustment: string | undefined;
+  let bookmarkLeftAdjustment = $state<string>();
 
   let fontLoadingAdded = false;
 
-  let currentSectionId = '';
+  let currentSectionId = $state('');
 
   const width$ = new Subject<number>();
 
@@ -160,101 +160,115 @@
 
   const sectionReady$ = new Subject<SectionCharacterStatsCalculator>();
 
-  const currentSection$ = sectionIndex$.pipe(map((index) => sections[index]?.innerHTML || ''));
-
   const cssClassOverflowHidden = 'overflow-hidden';
 
   const gap = 40;
 
   const destroy$ = new Subject<void>();
 
-  $: bookmarkData.then((data) => {
-    useExploredCharCount = false;
-    updateBookmarkScreen(data);
+  $effect(() => {
+    let current = true;
+    bookmarkData.then((data) => {
+      if (!current) return;
+      useExploredCharCount = false;
+      updateBookmarkScreen(data);
+    });
+    return () => (current = false);
   });
 
-  $: if (width) width$.next(width);
+  $effect(() => {
+    if (width) width$.next(width);
+  });
+  $effect(() => {
+    if (height) height$.next(height);
+  });
 
-  $: if (height) height$.next(height);
+  let columnCount = $derived(pageColumns || Math.ceil(width / 1000));
 
-  $: columnCount = pageColumns || Math.ceil(width / 1000);
+  $effect(() => {
+    const tempContainer = document.createElement('div');
+    tempContainer.innerHTML = htmlContent;
+    scrollWhenReady = !!htmlContent;
+    sections = Array.from(tempContainer.children);
+    untrack(() => sectionIndex$.next(0));
+  });
 
-  $: {
-    if (htmlContent) {
-      scrollWhenReady = true;
-    }
-  }
+  $effect(() => {
+    if (!contentEl || !scrollEl) return;
+    const manager = new PageManagerPaginated(
+      contentEl,
+      scrollEl,
+      sections,
+      sectionIndex$,
+      virtualScrollPos$,
+      width,
+      gap,
+      rightToLeft,
+      pageChange$,
+      sectionRenderComplete$
+    );
+    concretePageManager = manager;
+    pageManager = manager;
+  });
 
-  $: {
-    if (browser) {
-      const tempContainer = document.createElement('div');
-      tempContainer.innerHTML = htmlContent;
-      sections = Array.from(tempContainer.children);
-      sectionIndex$.next(0);
-    }
-  }
+  // Measure only when a section is rendered, after Svelte has inserted its HTML.
+  $effect(() => {
+    const section = renderedSection;
+    if (!section || !scrollEl || !contentEl) return;
+    untrack(() => initializeSection(section.index));
+  });
 
-  $: {
-    if (contentEl && scrollEl && sections) {
-      concretePageManager = new PageManagerPaginated(
-        contentEl,
-        scrollEl,
-        sections,
-        sectionIndex$,
-        virtualScrollPos$,
-        width,
-        gap,
-        rightToLeft,
-        pageChange$,
-        sectionRenderComplete$
-      );
-      pageManager = concretePageManager;
-    }
-  }
+  $effect(() => {
+    const currentCalculator = calculator;
+    if (!currentCalculator || !width || !height || loadingState) return;
+    const section = calculatorSectionIndex;
+    const frame = requestAnimationFrame(() => {
+      if (section === sectionIndex$.getValue()) onContentDisplayChange(currentCalculator);
+    });
+    return () => cancelAnimationFrame(frame);
+  });
 
-  $: {
-    if (calculator && width && height && !loadingState) {
-      const c = calculator;
-      requestAnimationFrame(() => {
-        onContentDisplayChange(c);
-      });
-    }
-  }
-
-  $: {
+  $effect(() => {
     if (calculator && !loadingState) {
-      const sectionIndex = sectionIndex$.getValue();
-      const section = sections[sectionIndex];
+      const index = calculatorSectionIndex;
+      const section = sections[index];
+      if (index !== sectionIndex$.getValue()) return;
 
       currentSectionId = section?.id.startsWith('ttu-') ? section.id : '';
 
-      sectionRenderComplete$.next(sectionIndex);
+      untrack(() => sectionRenderComplete$.next(index));
     }
-  }
+  });
 
-  $: {
+  $effect(() => {
     if (calculator && concretePageManager) {
-      concreteBookmarkManager = new BookmarkManagerPaginated(
+      bookmarkManager = new BookmarkManagerPaginated(
         calculator,
         concretePageManager,
         sectionReady$,
         sectionIndex$,
         (c) => (previousIntendedCount = c)
       );
-      bookmarkManager = concreteBookmarkManager;
     }
-  }
+  });
 
-  $: if (browser) {
+  onMount(() => {
     // Keep dictionary popups from scrolling the paginated document
     document.body.classList.add(cssClassOverflowHidden);
-  }
+    document.addEventListener('ttu-action', handleAction, false);
+    return () => {
+      document.removeEventListener('ttu-action', handleAction, false);
+      document.body.classList.remove(cssClassOverflowHidden);
+      cancelAnimationFrame(sectionFrame);
+    };
+  });
 
-  $: updateAfterCustomReadingPointUpdate(customReadingPointRange);
+  $effect(() => {
+    const range = customReadingPointRange;
+    untrack(() => updateAfterCustomReadingPointUpdate(range));
+  });
 
   /** Experimental Code - May be removed any time without warning */
-  onMount(() => document.addEventListener('ttu-action', handleAction, false));
-
   async function handleAction({ detail }: any) {
     if (!detail.type || !calculator || !concretePageManager) {
       return;
@@ -299,7 +313,7 @@
       }
 
       if (targetSection !== sectionIndex$.getValue()) {
-        dispatch('trackerPause');
+        onTrackerPause();
         return;
       }
 
@@ -314,7 +328,7 @@
       );
 
       if (scrollPos !== currentScrollPos) {
-        dispatch('trackerPause');
+        onTrackerPause();
       }
     }
   }
@@ -355,10 +369,6 @@
   /** Experimental Code - May be removed or changed any time without warning */
 
   onDestroy(() => {
-    document.removeEventListener('ttu-action', handleAction, false);
-
-    document.body.classList.remove(cssClassOverflowHidden);
-
     destroy$.next();
     destroy$.complete();
   });
@@ -410,33 +420,28 @@
     });
   });
 
-  if (autoBookmark) {
-    pageChange$
+  $effect(() => {
+    if (!autoBookmark) return;
+    const subscription = pageChange$
       .pipe(debounceTime(autoBookmarkTime * 1000), takeUntil(destroy$))
       .subscribe((isUser) => {
         if (isUser) {
-          dispatch('bookmark');
+          onBookmark();
         }
       });
-  }
-
-  currentSection$.pipe(distinctUntilChanged(), takeUntil(destroy$)).subscribe(() => {
-    allowDisplay = false;
+    return () => subscription.unsubscribe();
   });
 
-  currentSection$.pipe(takeUntil(destroy$)).subscribe((html) => {
-    const nestAnimationFrame = (fn: () => void, count: number) => {
-      if (count === 0) {
-        fn();
-        return;
-      }
-      requestAnimationFrame(() => nestAnimationFrame(fn, count - 1));
-    };
-
-    // 2x for loading screen to render
-    nestAnimationFrame(() => {
-      displayedHtml = html;
-    }, 2);
+  sectionIndex$.pipe(skip(1), takeUntil(destroy$)).subscribe((index) => {
+    const html = sections[index]?.innerHTML || '';
+    allowDisplay = false;
+    cancelAnimationFrame(sectionFrame);
+    // Give the loading screen a frame before replacing the section.
+    sectionFrame = requestAnimationFrame(() => {
+      sectionFrame = requestAnimationFrame(() => {
+        renderedSection = { index, html };
+      });
+    });
   });
 
   iffBrowser(() => fromEvent<WheelEvent>(document.body, 'wheel', { passive: true }))
@@ -474,13 +479,10 @@
     );
   }
 
-  function onHtmlLoad() {
-    if (skipFirstHtmlLoad) {
-      skipFirstHtmlLoad = false;
-      return;
-    }
+  function initializeSection(index: number) {
     if (!scrollEl || !contentEl) return;
 
+    calculatorSectionIndex = index;
     calculator = new SectionCharacterStatsCalculator(
       rightToLeft ? contentEl : scrollEl,
       sections,
@@ -529,7 +531,7 @@
     if (!calculator || !scrollEl) return;
 
     calculator.updateCurrentSection(sectionIndex$.getValue());
-    dispatch('contentChange', scrollEl);
+    onContentChange(scrollEl);
   }
 
   function onContentDisplayChange(_calculator: SectionCharacterStatsCalculator) {
@@ -672,10 +674,10 @@
   class:ttu-text-wrap-pretty={enableTextWrapPretty}
   class="book-content m-auto"
   use:swipe={{ timeframe: 500, minSwipeDistance: $swipeThreshold$, touchAction: 'pan-y' }}
-  on:swipe={onSwipe}
+  onswipe={onSwipe}
 >
   <div class="book-content-container" id={currentSectionId || null} bind:this={contentEl}>
-    <HtmlRenderer html={displayedHtml} on:load={onHtmlLoad} />
+    {@html renderedSection?.html ?? ''}
   </div>
 </div>
 
@@ -700,7 +702,7 @@
   </div>
 {/if}
 
-<svelte:window on:keydown={onKeydown} on:resize={() => (isResizing = true)} />
+<svelte:window onkeydown={onKeydown} onresize={() => (isResizing = true)} />
 
 <style lang="scss">
   @import '../styles';

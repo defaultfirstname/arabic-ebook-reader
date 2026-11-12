@@ -110,6 +110,8 @@
   export let customReadingPointRange: Range | undefined;
 
   export let showCustomReadingPoint: boolean;
+  export let onBookmark: () => void;
+  export let onTrackerPause: () => void;
 
   let showBlurMessage = false;
 
@@ -294,8 +296,8 @@
       bind:customReadingPointLeft
       bind:customReadingPointScrollOffset
       on:contentChange={(ev) => contentEl$.next(ev.detail)}
-      on:bookmark
-      on:trackerPause
+      on:bookmark={onBookmark}
+      on:trackerPause={onTrackerPause}
     />
   {:else}
     <BookReaderPaginated
@@ -331,9 +333,9 @@
       bind:pageManager
       bind:customReadingPointRange
       bind:showCustomReadingPoint
-      on:contentChange={(ev) => contentEl$.next(ev.detail)}
-      on:bookmark
-      on:trackerPause
+      onContentChange={(content) => contentEl$.next(content)}
+      {onBookmark}
+      {onTrackerPause}
     />
   {/if}
 </div>
