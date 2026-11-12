@@ -32,14 +32,17 @@ Allow **4–8 focused working days** for the full migration, including verificat
 
 ## What counts as done
 
-- [ ] A clean install, lint, both type checks, and the production build pass.
-- [ ] Arabic EPUB, TXT, and HTMLZ import and open in both modes. Verify RTL page turns, chapter navigation where available, progress, and bookmark resume.
+- [x] A clean install, lint, both type checks, and the production build pass.
+- [x] Arabic EPUB, TXT, and HTMLZ import and open in both modes. Verify RTL page turns, EPUB chapter navigation, progress, and bookmark resume.
 - [x] A current browser profile retains its books and settings after upgrading. An older ZIP backup restores books, bookmarks, and statistics into a fresh profile.
-- [ ] Direct book links and offline reopening work after the static deployment updates. Verify phone navigation and Yomitan lookups in a browser with the extension installed.
+- [x] In Chromium's phone emulation, import a book by touch, swipe to the next Arabic page, and create a bookmark.
+- [x] Look up an Arabic word from the reader with Yomitan installed and an Arabic test dictionary enabled.
+- [ ] Direct book links and offline reopening work after the static deployment updates.
+- [ ] Verify navigation on a physical phone.
 
 Run the build and type checks for each pull request. Run the browser smoke test and verify the flows affected by that step before merging.
 
-## Run the baseline smoke test locally
+## Run the smoke tests locally
 
 From the repository root, install the workspace dependencies and Playwright's headless Chromium once:
 
@@ -48,7 +51,7 @@ pnpm install
 pnpm --filter web exec playwright install --only-shell chromium
 ```
 
-Build the current checkout, then run the test. Playwright starts and stops its own production preview.
+Build the current checkout, then run the tests. Playwright starts and stops its own production preview.
 
 ```sh
 pnpm build

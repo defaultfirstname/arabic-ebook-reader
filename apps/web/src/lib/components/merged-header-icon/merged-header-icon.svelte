@@ -79,9 +79,9 @@
       bind:this={menuElm}
     >
       {#snippet icon()}
-        <div class={baseIconClasses}>
+        <button type="button" aria-label={`${mergeTo.label} menu`} class={baseIconClasses}>
           <Fa icon={mergeTo.icon} />
-        </div>
+        </button>
       {/snippet}
       {#snippet content()}
         <div class="w-40 bg-gray-700 md:w-32">
