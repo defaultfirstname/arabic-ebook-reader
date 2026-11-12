@@ -319,20 +319,13 @@
     reduceToEmptyString()
   );
 
-  const initBookmarkData$ = rawBookData$.pipe(
-    tap((rawBookData) => {
-      if (!rawBookData) return;
-      bookmarkData = database
-        .getBookmark(rawBookData.id)
-        .then((bookmark) => rawBookData.arabicMetrics?.restoreBookmark(bookmark) ?? bookmark);
-    }),
-    reduceToEmptyString()
-  );
-
   const bookData$ = rawBookData$.pipe(
     switchMap((rawBookData) => {
       if (!rawBookData) return EMPTY;
 
+      bookmarkData = database
+        .getBookmark(rawBookData.id)
+        .then((bookmark) => rawBookData.arabicMetrics?.restoreBookmark(bookmark) ?? bookmark);
       sectionList$.next(rawBookData.arabicMetrics?.sections ?? rawBookData.sections ?? []);
 
       return loadBookData(
@@ -1631,7 +1624,6 @@
     on:bookmark={bookmarkPage}
     on:trackerPause={() => pauseTracker(true)}
   />
-  {$initBookmarkData$ ?? ''}
   {$setBackgroundColor$ ?? ''}
   {$textSelector$ ?? ''}
   {$replicator$ ?? ''}
