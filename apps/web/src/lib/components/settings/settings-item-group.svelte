@@ -3,10 +3,23 @@
   import Fa from 'svelte-fa';
   import Popover from '../popover/popover.svelte';
 
-  export let title: string;
-  export let tooltip = '';
-  export let inputId = '';
-  export let checked: boolean | undefined = undefined;
+  interface Props {
+    title: string;
+    tooltip?: string;
+    inputId?: string;
+    checked?: boolean | undefined;
+    header?: import('svelte').Snippet;
+    children?: import('svelte').Snippet;
+  }
+
+  let {
+    title,
+    tooltip = '',
+    inputId = '',
+    checked = $bindable(undefined),
+    header,
+    children
+  }: Props = $props();
 </script>
 
 <div
@@ -32,7 +45,7 @@
         </button>
       </Popover>
     {/if}
-    <slot name="header" />
+    {@render header?.()}
     {#if checked !== undefined}
       <label class="ml-auto flex h-11 w-12 shrink-0 cursor-pointer items-center justify-center">
         <input type="checkbox" role="switch" class="peer sr-only" aria-label={title} bind:checked />
@@ -43,5 +56,5 @@
       </label>
     {/if}
   </div>
-  <slot />
+  {@render children?.()}
 </div>

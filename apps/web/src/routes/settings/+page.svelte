@@ -81,11 +81,11 @@
     setStorageQuota();
   });
 
-  let prevPage = `${pagePath}${mergeEntries.MANAGE.routeId}`;
+  let prevPage = $state(`${pagePath}${mergeEntries.MANAGE.routeId}`);
 
-  let activeSettings = 'Reader';
+  let activeSettings = $state('Reader');
 
-  let storageQuota = '';
+  let storageQuota = $state('');
 
   afterNavigate((navigation) => {
     const { from } = navigation;

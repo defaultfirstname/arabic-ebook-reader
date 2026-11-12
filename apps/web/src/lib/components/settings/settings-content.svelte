@@ -46,127 +46,133 @@
   import Fa from 'svelte-fa';
   import { onDestroy } from 'svelte';
 
-  export let selectedTheme: string;
+  interface Props {
+    selectedTheme: string;
+    viewMode: ViewMode;
+    fontFamilyGroupOne: string;
+    fontFamilyGroupTwo: string;
+    fontWeight: number | null;
+    fontSize: number;
+    lineHeight: number;
+    textIndentation: number;
+    textMarginValue: number;
+    blurImage: boolean;
+    blurImageMode: string;
+    prioritizeReaderStyles: boolean;
+    enableTextJustification: boolean;
+    enableTextWrapPretty: boolean;
+    textMarginMode: TextMarginMode;
+    enableReaderWakeLock: boolean;
+    showCharacterCounter: boolean;
+    showPercentage: boolean;
+    showFooterChapterCharacterCounter: boolean;
+    showFooterChapterPercentage: boolean;
+    secondDimensionMaxValue: number;
+    firstDimensionMargin: number;
+    swipeThreshold: number;
+    disableWheelNavigation: boolean;
+    autoPositionOnResize: boolean;
+    avoidPageBreak: boolean;
+    pauseTrackerOnCustomPointChange: boolean;
+    customReadingPointEnabled: boolean;
+    selectionToBookmarkEnabled: boolean;
+    enableTapEdgeToFlip: boolean;
+    pageColumns: number;
+    storageQuota: string;
+    persistentStorage: boolean;
+    hideExternalReadHint: boolean;
+    confirmClose: boolean;
+    manualBookmark: boolean;
+    autoBookmark: boolean;
+    autoBookmarkTime: number;
+    activeSettings: string;
+    importHTMLFixMode: string;
+    restrictImportFixToAnchor: boolean;
+    cacheStorageData: boolean;
+    autoReplication: string;
+    replicationSaveBehavior: string;
+    showExternalPlaceholder: boolean;
+    keepLocalStatisticsOnDeletion: boolean;
+    overwriteBookCompletion: boolean;
+    startDayHoursForTracker: number;
+    statisticsMergeMode: string;
+    readingGoalsMergeMode: string;
+    statisticsEnabled: boolean;
+    trackerAutoPause: string;
+    openTrackerOnCompletion: boolean;
+    addCharactersOnCompletion: boolean;
+    trackerAutoStartTime: number;
+    trackerIdleTime: number;
+    trackerForwardSkipThreshold: number;
+    trackerBackwardSkipThreshold: number;
+    trackerSkipThresholdAction: string;
+    trackerPopupDetection: boolean;
+    adjustStatisticsAfterIdleTime: boolean;
+  }
 
-  export let viewMode: ViewMode;
-
-  export let fontFamilyGroupOne: string;
-
-  export let fontFamilyGroupTwo: string;
-
-  export let fontWeight: number | null;
-
-  export let fontSize: number;
-
-  export let lineHeight: number;
-
-  export let textIndentation: number;
-
-  export let textMarginValue: number;
-
-  export let blurImage: boolean;
-
-  export let blurImageMode: string;
-
-  export let prioritizeReaderStyles: boolean;
-
-  export let enableTextJustification: boolean;
-
-  export let enableTextWrapPretty: boolean;
-
-  export let textMarginMode: TextMarginMode;
-
-  export let enableReaderWakeLock: boolean;
-
-  export let showCharacterCounter: boolean;
-
-  export let showPercentage: boolean;
-
-  export let showFooterChapterCharacterCounter: boolean;
-
-  export let showFooterChapterPercentage: boolean;
-
-  export let secondDimensionMaxValue: number;
-
-  export let firstDimensionMargin: number;
-
-  export let swipeThreshold: number;
-
-  export let disableWheelNavigation: boolean;
-
-  export let autoPositionOnResize: boolean;
-
-  export let avoidPageBreak: boolean;
-
-  export let pauseTrackerOnCustomPointChange: boolean;
-
-  export let customReadingPointEnabled: boolean;
-
-  export let selectionToBookmarkEnabled: boolean;
-
-  export let enableTapEdgeToFlip: boolean;
-
-  export let pageColumns: number;
-
-  export let storageQuota: string;
-
-  export let persistentStorage: boolean;
-
-  export let hideExternalReadHint: boolean;
-
-  export let confirmClose: boolean;
-
-  export let manualBookmark: boolean;
-
-  export let autoBookmark: boolean;
-
-  export let autoBookmarkTime: number;
-
-  export let activeSettings: string;
-
-  export let importHTMLFixMode: string;
-
-  export let restrictImportFixToAnchor: boolean;
-
-  export let cacheStorageData: boolean;
-
-  export let autoReplication: string;
-
-  export let replicationSaveBehavior: string;
-
-  export let showExternalPlaceholder: boolean;
-
-  export let keepLocalStatisticsOnDeletion: boolean;
-
-  export let overwriteBookCompletion: boolean;
-
-  export let startDayHoursForTracker: number;
-
-  export let statisticsMergeMode: string;
-
-  export let readingGoalsMergeMode: string;
-
-  export let statisticsEnabled: boolean;
-
-  export let trackerAutoPause: string;
-
-  export let openTrackerOnCompletion: boolean;
-
-  export let addCharactersOnCompletion: boolean;
-
-  export let trackerAutoStartTime: number;
-
-  export let trackerIdleTime: number;
-
-  export let trackerForwardSkipThreshold: number;
-
-  export let trackerBackwardSkipThreshold: number;
-
-  export let trackerSkipThresholdAction: string;
-
-  export let trackerPopupDetection: boolean;
-
-  export let adjustStatisticsAfterIdleTime: boolean;
+  let {
+    selectedTheme = $bindable(),
+    viewMode = $bindable(),
+    fontFamilyGroupOne = $bindable(),
+    fontFamilyGroupTwo = $bindable(),
+    fontWeight = $bindable(),
+    fontSize = $bindable(),
+    lineHeight = $bindable(),
+    textIndentation = $bindable(),
+    textMarginValue = $bindable(),
+    blurImage = $bindable(),
+    blurImageMode = $bindable(),
+    prioritizeReaderStyles = $bindable(),
+    enableTextJustification = $bindable(),
+    enableTextWrapPretty = $bindable(),
+    textMarginMode = $bindable(),
+    enableReaderWakeLock = $bindable(),
+    showCharacterCounter = $bindable(),
+    showPercentage = $bindable(),
+    showFooterChapterCharacterCounter = $bindable(),
+    showFooterChapterPercentage = $bindable(),
+    secondDimensionMaxValue = $bindable(),
+    firstDimensionMargin = $bindable(),
+    swipeThreshold = $bindable(),
+    disableWheelNavigation = $bindable(),
+    autoPositionOnResize = $bindable(),
+    avoidPageBreak = $bindable(),
+    pauseTrackerOnCustomPointChange = $bindable(),
+    customReadingPointEnabled = $bindable(),
+    selectionToBookmarkEnabled = $bindable(),
+    enableTapEdgeToFlip = $bindable(),
+    pageColumns = $bindable(),
+    storageQuota,
+    persistentStorage = $bindable(),
+    hideExternalReadHint = $bindable(),
+    confirmClose = $bindable(),
+    manualBookmark = $bindable(),
+    autoBookmark = $bindable(),
+    autoBookmarkTime = $bindable(),
+    activeSettings,
+    importHTMLFixMode = $bindable(),
+    restrictImportFixToAnchor = $bindable(),
+    cacheStorageData = $bindable(),
+    autoReplication = $bindable(),
+    replicationSaveBehavior = $bindable(),
+    showExternalPlaceholder = $bindable(),
+    keepLocalStatisticsOnDeletion = $bindable(),
+    overwriteBookCompletion = $bindable(),
+    startDayHoursForTracker = $bindable(),
+    statisticsMergeMode = $bindable(),
+    readingGoalsMergeMode = $bindable(),
+    statisticsEnabled = $bindable(),
+    trackerAutoPause = $bindable(),
+    openTrackerOnCompletion = $bindable(),
+    addCharactersOnCompletion = $bindable(),
+    trackerAutoStartTime = $bindable(),
+    trackerIdleTime = $bindable(),
+    trackerForwardSkipThreshold = $bindable(),
+    trackerBackwardSkipThreshold = $bindable(),
+    trackerSkipThresholdAction = $bindable(),
+    trackerPopupDetection = $bindable(),
+    adjustStatisticsAfterIdleTime = $bindable()
+  }: Props = $props();
 
   const selectClasses =
     'w-full rounded-md border-gray-400 bg-background-color text-sm focus:border-blue-500 focus:ring-blue-500';
@@ -175,10 +181,10 @@
     name: id.replace(/-theme$/, '').replace(/^./, (letter) => letter.toUpperCase())
   }));
 
-  $: themeChoices = [
+  let themeChoices = $derived([
     ...builtInThemes,
     ...(browser ? Object.keys($customThemes$).map((name) => ({ id: name, name })) : [])
-  ];
+  ]);
 
   onDestroy(() => dialogManager.dialogs$.next([]));
 
@@ -186,7 +192,11 @@
     dialogManager.dialogs$.next([
       {
         component: SettingsCustomTheme,
-        props: { selectedTheme: theme, existingThemes: themeChoices }
+        props: {
+          selectedTheme: theme,
+          existingThemes: themeChoices,
+          onClose: () => dialogManager.dialogs$.next([])
+        }
       }
     ]);
   }
@@ -216,92 +226,103 @@
     ])
   );
 
-  let showSpinner = false;
-  let importHTMLFixModeTooltip = '';
-  let autoReplicationTypeTooltip = '';
-  let trackerAutoPauseTooltip = '';
+  let showSpinner = $state(false);
+  let requestedStorageSources = false;
 
-  $: if ($textMarginMode$ === 'auto') {
-    $textMarginValue$ = 0;
-  }
+  $effect(() => {
+    if ($textMarginMode$ === 'auto' && $textMarginValue$ !== 0) {
+      $textMarginValue$ = 0;
+    }
+  });
 
-  $: autoBookmarkTooltip = `If enabled sets a bookmark after ${autoBookmarkTime} seconds without scrolling/page change`;
-  $: wakeLockSupported = browser && 'wakeLock' in navigator;
-  $: fontCacheSupported = browser && 'caches' in window;
-  $: avoidPageBreakTooltip = avoidPageBreak
-    ? 'Avoids breaking words/sentences into different pages'
-    : 'Allow words/sentences to break into different pages';
-  $: persistentStorageTooltip = persistentStorage
-    ? 'Reader uses higher storage limit for local data'
-    : 'Uses lower temporary storage for local data.\nMay require bookmark or notification permissions for enablement';
-  $: switch (importHTMLFixMode) {
-    case ImportHTMLFixMode.OFF:
-      importHTMLFixModeTooltip = 'Imports epub files as is';
-      break;
-    case ImportHTMLFixMode.EXTENDED:
-      importHTMLFixModeTooltip =
-        'Applies additional fixes for epub imports like removing control characters, replacing html entities etc.';
-      break;
-    default:
-      importHTMLFixModeTooltip =
-        'Applies fixes for epub imports like wrong self closing elements etc.';
-      break;
-  }
-  $: cacheStorageDataTooltip = cacheStorageData
-    ? 'Storage data is cached. Saves network traffic/latency but requires to reload current/open a new tab to retrieve data changes'
-    : 'Storage data is refetched on every action. May consume more network traffic/latency but ensures current data';
-  $: replicationSaveBehaviorTooltip =
+  let autoBookmarkTooltip = $derived(
+    `If enabled sets a bookmark after ${autoBookmarkTime} seconds without scrolling/page change`
+  );
+  const wakeLockSupported = browser && 'wakeLock' in navigator;
+  const fontCacheSupported = browser && 'caches' in window;
+  let avoidPageBreakTooltip = $derived(
+    avoidPageBreak
+      ? 'Avoids breaking words/sentences into different pages'
+      : 'Allow words/sentences to break into different pages'
+  );
+  let persistentStorageTooltip = $derived(
+    persistentStorage
+      ? 'Reader uses higher storage limit for local data'
+      : 'Uses lower temporary storage for local data.\nMay require bookmark or notification permissions for enablement'
+  );
+  let importHTMLFixModeTooltip = $derived.by(() => {
+    switch (importHTMLFixMode) {
+      case ImportHTMLFixMode.OFF:
+        return 'Imports epub files as is';
+      case ImportHTMLFixMode.EXTENDED:
+        return 'Applies additional fixes for epub imports like removing control characters, replacing html entities etc.';
+      default:
+        return 'Applies fixes for epub imports like wrong self closing elements etc.';
+    }
+  });
+  let cacheStorageDataTooltip = $derived(
+    cacheStorageData
+      ? 'Storage data is cached. Saves network traffic/latency but requires to reload current/open a new tab to retrieve data changes'
+      : 'Storage data is refetched on every action. May consume more network traffic/latency but ensures current data'
+  );
+  let replicationSaveBehaviorTooltip = $derived(
     replicationSaveBehavior === ReplicationSaveBehavior.Overwrite
       ? 'Data will always be overwritten'
-      : 'Data will only be written if none exist on target, no time data is present or if target data is older';
-  $: switch (autoReplication) {
-    case AutoReplicationType.Up:
-      autoReplicationTypeTooltip =
-        'Updated data will be exported to sync target when reading once per minute';
-      break;
-    case AutoReplicationType.Down:
-      autoReplicationTypeTooltip = 'Data will be imported from sync target when opening a book';
-      break;
-    case AutoReplicationType.All:
-      autoReplicationTypeTooltip = 'Data will be synced in both directions';
-      break;
-    default:
-      autoReplicationTypeTooltip = 'No automatic import/export of data';
-      break;
-  }
-  $: showExternalPlaceholderToolTip = showExternalPlaceholder
-    ? 'Placeholder data for external books is shown in the browser source manager'
-    : 'Placeholder data for external books is hidden';
+      : 'Data will only be written if none exist on target, no time data is present or if target data is older'
+  );
+  let autoReplicationTypeTooltip = $derived.by(() => {
+    switch (autoReplication) {
+      case AutoReplicationType.Up:
+        return 'Updated data will be exported to sync target when reading once per minute';
+      case AutoReplicationType.Down:
+        return 'Data will be imported from sync target when opening a book';
+      case AutoReplicationType.All:
+        return 'Data will be synced in both directions';
+      default:
+        return 'No automatic import/export of data';
+    }
+  });
+  let showExternalPlaceholderToolTip = $derived(
+    showExternalPlaceholder
+      ? 'Placeholder data for external books is shown in the browser source manager'
+      : 'Placeholder data for external books is hidden'
+  );
 
-  $: startOfDayHours = `${`${startDayHoursForTracker}`.padStart(2, '0')}:00`;
+  let startOfDayHours = $derived(`${`${startDayHoursForTracker}`.padStart(2, '0')}:00`);
 
-  $: trackerIdleTimeInMin = secondsToMinutes(trackerIdleTime);
+  let trackerIdleTimeInMin = $derived(secondsToMinutes(trackerIdleTime));
 
-  $: switch (trackerAutoPause) {
-    case TrackerAutoPause.OFF:
-      trackerAutoPauseTooltip = 'Tracker does not auto pause except for certain reader events';
-      break;
-    case TrackerAutoPause.STRICT:
-      trackerAutoPauseTooltip =
-        'Tracker will auto pause on certain reader events and any kind of site focus loss (e. g. dictionary popup)';
-      break;
-    default:
-      trackerAutoPauseTooltip =
-        'Tracker will auto pause on certain reader events and when the reader tab loses focus';
-      break;
-  }
+  let trackerAutoPauseTooltip = $derived.by(() => {
+    switch (trackerAutoPause) {
+      case TrackerAutoPause.OFF:
+        return 'Tracker does not auto pause except for certain reader events';
+      case TrackerAutoPause.STRICT:
+        return 'Tracker will auto pause on certain reader events and any kind of site focus loss (e. g. dictionary popup)';
+      default:
+        return 'Tracker will auto pause on certain reader events and when the reader tab loses focus';
+    }
+  });
 
-  $: if ((activeSettings === 'Data' || activeSettings === 'Statistics') && !$storageSources$) {
-    database
-      .getStorageSources()
-      .then((storageSources) => {
-        database.storageSourcesChanged$.next(storageSources);
-      })
-      .catch((error) => {
-        logger.error(`Failed to retrieve storage sources: ${error.message}`);
-        database.storageSourcesChanged$.next([]);
-      });
-  }
+  $effect(() => {
+    // Subscribe while Reader is open too, so we retain any earlier storage update.
+    const storageSources = $storageSources$;
+    if (
+      (activeSettings === 'Data' || activeSettings === 'Statistics') &&
+      !storageSources &&
+      !requestedStorageSources
+    ) {
+      requestedStorageSources = true;
+      database
+        .getStorageSources()
+        .then((storageSources) => {
+          database.storageSourcesChanged$.next(storageSources);
+        })
+        .catch((error) => {
+          logger.error(`Failed to retrieve storage sources: ${error.message}`);
+          database.storageSourcesChanged$.next([]);
+        });
+    }
+  });
 </script>
 
 <div class="space-y-6">
@@ -315,18 +336,18 @@
         </select>
         {#if browser}
           <div class="mt-2 flex flex-wrap gap-x-3 text-sm">
-            <button type="button" class="underline" on:click={() => openThemeEditor()}>
+            <button type="button" class="underline" onclick={() => openThemeEditor()}>
               New custom theme
             </button>
             {#if !availableThemes.has(selectedTheme) && $customThemes$[selectedTheme]}
               <button
                 type="button"
                 class="underline"
-                on:click={() => openThemeEditor(selectedTheme)}
+                onclick={() => openThemeEditor(selectedTheme)}
               >
                 Edit theme
               </button>
-              <button type="button" class="underline" on:click={deleteSelectedTheme}
+              <button type="button" class="underline" onclick={deleteSelectedTheme}
                 >Delete theme</button
               >
             {/if}
@@ -340,29 +361,31 @@
         </select>
       </SettingsItemGroup>
       <SettingsItemGroup inputId="setting-font-family-group-one" title="Reading font">
-        <div slot="header" class="flex items-center">
-          <SettingsFontSelector
-            availableFonts={[...arabicReaderFonts, LocalFont.SERIF]}
-            bind:fontValue={fontFamilyGroupOne}
-          />
-          {#if fontCacheSupported}
-            <div
-              tabindex="0"
-              role="button"
-              title="Open Custom Font Dialog"
-              on:click={() =>
-                dialogManager.dialogs$.next([
-                  {
-                    component: SettingsUserFontDialog,
-                    props: { fontFamily: fontFamilyGroupOne$ }
-                  }
-                ])}
-              on:keyup={dummyFn}
-            >
-              <Fa icon={faComputer} />
-            </div>
-          {/if}
-        </div>
+        {#snippet header()}
+          <div class="flex items-center">
+            <SettingsFontSelector
+              availableFonts={[...arabicReaderFonts, LocalFont.SERIF]}
+              bind:fontValue={fontFamilyGroupOne}
+            />
+            {#if fontCacheSupported}
+              <div
+                tabindex="0"
+                role="button"
+                title="Open Custom Font Dialog"
+                onclick={() =>
+                  dialogManager.dialogs$.next([
+                    {
+                      component: SettingsUserFontDialog,
+                      props: { fontFamily: fontFamilyGroupOne$ }
+                    }
+                  ])}
+                onkeyup={dummyFn}
+              >
+                <Fa icon={faComputer} />
+              </div>
+            {/if}
+          </div>
+        {/snippet}
         <input
           id="setting-font-family-group-one"
           type="text"
@@ -372,28 +395,30 @@
         />
       </SettingsItemGroup>
       <SettingsItemGroup inputId="setting-font-family-group-two" title="Sans-serif font">
-        <div slot="header" class="flex items-center">
-          <SettingsFontSelector
-            availableFonts={[...arabicReaderFonts, LocalFont.SANSSERIF]}
-            bind:fontValue={fontFamilyGroupTwo}
-          />
-          {#if fontCacheSupported}
-            <div
-              tabindex="0"
-              role="button"
-              on:click={() =>
-                dialogManager.dialogs$.next([
-                  {
-                    component: SettingsUserFontDialog,
-                    props: { fontFamily: fontFamilyGroupTwo$ }
-                  }
-                ])}
-              on:keyup={dummyFn}
-            >
-              <Fa icon={faComputer} />
-            </div>
-          {/if}
-        </div>
+        {#snippet header()}
+          <div class="flex items-center">
+            <SettingsFontSelector
+              availableFonts={[...arabicReaderFonts, LocalFont.SANSSERIF]}
+              bind:fontValue={fontFamilyGroupTwo}
+            />
+            {#if fontCacheSupported}
+              <div
+                tabindex="0"
+                role="button"
+                onclick={() =>
+                  dialogManager.dialogs$.next([
+                    {
+                      component: SettingsUserFontDialog,
+                      props: { fontFamily: fontFamilyGroupTwo$ }
+                    }
+                  ])}
+                onkeyup={dummyFn}
+              >
+                <Fa icon={faComputer} />
+              </div>
+            {/if}
+          </div>
+        {/snippet}
         <input
           id="setting-font-family-group-two"
           type="text"
@@ -416,7 +441,7 @@
           min="100"
           max="1000"
           bind:value={fontWeight}
-          on:change={() => {
+          onchange={() => {
             if (fontWeight === null) {
               return;
             }
@@ -447,7 +472,7 @@
           step="0.05"
           min="1"
           bind:value={lineHeight}
-          on:change={() => {
+          onchange={() => {
             if (!lineHeight || lineHeight < 1) {
               lineHeight = 1.65;
             }
@@ -468,7 +493,7 @@
           step=".5"
           min="0"
           bind:value={textIndentation}
-          on:blur={() => {
+          onblur={() => {
             const newValue = Number.parseFloat(`${textIndentation ?? 0}`);
 
             if (isNaN(newValue) || newValue < 1) {
@@ -500,7 +525,7 @@
             step=".5"
             min="0"
             bind:value={textMarginValue}
-            on:blur={() => {
+            onblur={() => {
               const newValue = Number.parseFloat(`${textMarginValue ?? 0}`);
 
               if (isNaN(newValue) || newValue < 1) {
@@ -511,11 +536,9 @@
         </SettingsItemGroup>
       {/if}
       <SettingsItemGroup inputId="setting-first-dimension-margin" title="Top and bottom margin">
-        <SettingsDimensionPopover
-          slot="header"
-          isFirstDimension
-          bind:dimensionValue={firstDimensionMargin}
-        />
+        {#snippet header()}
+          <SettingsDimensionPopover isFirstDimension bind:dimensionValue={firstDimensionMargin} />
+        {/snippet}
         <input
           id="setting-first-dimension-margin"
           type="number"
@@ -526,7 +549,9 @@
         />
       </SettingsItemGroup>
       <SettingsItemGroup inputId="setting-second-dimension-max-value" title="Maximum text width">
-        <SettingsDimensionPopover slot="header" bind:dimensionValue={secondDimensionMaxValue} />
+        {#snippet header()}
+          <SettingsDimensionPopover bind:dimensionValue={secondDimensionMaxValue} />
+        {/snippet}
         <input
           id="setting-second-dimension-max-value"
           type="number"
@@ -572,7 +597,7 @@
           min="10"
           class={inputClasses}
           bind:value={swipeThreshold}
-          on:blur={() => {
+          onblur={() => {
             if (swipeThreshold < 10 || typeof swipeThreshold !== 'number') {
               swipeThreshold = 10;
             }
@@ -611,7 +636,7 @@
             min="1"
             class={inputClasses}
             bind:value={autoBookmarkTime}
-            on:blur={() => {
+            onblur={() => {
               if (autoBookmarkTime < 1 || typeof autoBookmarkTime !== 'number') {
                 autoBookmarkTime = 3;
               }
@@ -638,10 +663,10 @@
                 tabindex="0"
                 role="button"
                 class="ml-4 hover:underline"
-                on:click={() => {
+                onclick={() => {
                   horizontalCustomReadingPosition$.next(0);
                 }}
-                on:keyup={dummyFn}
+                onkeyup={dummyFn}
               >
                 Reset Points
               </div>
@@ -822,7 +847,7 @@
             step="1"
             min="0"
             bind:value={trackerAutoStartTime}
-            on:blur={() => {
+            onblur={() => {
               const newValue = Number.parseFloat(`${trackerAutoStartTime ?? 0}`);
 
               if (isNaN(newValue) || newValue < 1) {
@@ -843,7 +868,7 @@
             step="0.5"
             min="0"
             bind:value={trackerIdleTimeInMin}
-            on:blur={() => {
+            onblur={() => {
               if (!trackerIdleTimeInMin || trackerIdleTimeInMin < 0) {
                 trackerIdleTime = 0;
               } else if (trackerIdleTimeInMin > 43200) {
@@ -866,7 +891,7 @@
             step="1"
             min="0"
             bind:value={trackerForwardSkipThreshold}
-            on:blur={() => {
+            onblur={() => {
               if (trackerForwardSkipThreshold === 0) {
                 trackerForwardSkipThreshold = 0;
               } else if (!trackerForwardSkipThreshold || trackerForwardSkipThreshold < 0) {
@@ -886,7 +911,7 @@
             class={inputClasses}
             step="1"
             bind:value={trackerBackwardSkipThreshold}
-            on:blur={() => {
+            onblur={() => {
               if (trackerBackwardSkipThreshold < 0) {
                 trackerBackwardSkipThreshold = Math.abs(trackerBackwardSkipThreshold);
               } else if (trackerBackwardSkipThreshold === 0) {
@@ -955,7 +980,7 @@
             tabindex="0"
             role="button"
             class="ml-4 hover:underline"
-            on:click={() => {
+            onclick={() => {
               showSpinner = true;
               database
                 .clearZombieStatistics()
@@ -972,7 +997,7 @@
                 )
                 .finally(() => (showSpinner = false));
             }}
-            on:keyup={() => {}}
+            onkeyup={() => {}}
           >
             Clear statistics for removed books
           </div>
@@ -1033,7 +1058,7 @@
     </SettingsSection>
   {/if}
   {#if showSpinner}
-    <div class="tap-highlight-transparent fixed inset-0 bg-black/[.2]" />
+    <div class="tap-highlight-transparent fixed inset-0 bg-black/[.2]"></div>
     <div class="fixed inset-0 flex h-full w-full items-center justify-center text-7xl">
       <Fa icon={faSpinner} spin />
     </div>

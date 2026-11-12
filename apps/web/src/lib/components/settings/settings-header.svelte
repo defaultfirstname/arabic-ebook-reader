@@ -5,8 +5,12 @@
   import Ripple from '$lib/components/ripple.svelte';
   import { baseHeaderClasses, pxScreen } from '$lib/css-classes';
 
-  export let leavePageLink: string;
-  export let activeSettings: string;
+  interface Props {
+    leavePageLink: string;
+    activeSettings: string;
+  }
+
+  let { leavePageLink, activeSettings = $bindable() }: Props = $props();
 
   const settingItems = [
     {
@@ -34,7 +38,7 @@
           class="flex grow flex-col items-center justify-center text-xs"
           class:bg-gray-900={activeSettings === settingItem.label}
           class:hover:bg-gray-900={activeSettings !== settingItem.label}
-          on:click={() => {
+          onclick={() => {
             if (activeSettings === settingItem.label) return;
             activeSettings = settingItem.label;
             window.scrollTo(0, 0);

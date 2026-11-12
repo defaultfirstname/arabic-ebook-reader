@@ -72,7 +72,10 @@ test('reads an Arabic book and resumes from a saved bookmark', async ({ page, co
 test('updates Arabic reading progress while scrolling in continuous mode', async ({ page }) => {
   await page.goto('/settings');
   await expect(page).toHaveTitle('Settings | Arabic Ebook Reader');
-  await page.getByRole('combobox', { name: 'View mode', exact: true }).selectOption('continuous');
+  const viewMode = page.getByRole('combobox', { name: 'View mode', exact: true });
+  await viewMode.selectOption('continuous');
+  await page.reload();
+  await expect(viewMode).toHaveValue('continuous');
   await importAndOpenBook(page);
 
   const progress = page.getByTitle('Click to copy Progress', { exact: true });
