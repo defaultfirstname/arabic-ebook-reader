@@ -4,8 +4,12 @@
   import Popover from '../popover/popover.svelte';
   import SettingsDimensionContent from './settings-dimension-content.svelte';
 
-  export let isFirstDimension = false;
-  export let dimensionValue = 0;
+  interface Props {
+    isFirstDimension?: boolean;
+    dimensionValue?: number;
+  }
+
+  let { isFirstDimension = false, dimensionValue = $bindable(0) }: Props = $props();
 </script>
 
 <Popover>

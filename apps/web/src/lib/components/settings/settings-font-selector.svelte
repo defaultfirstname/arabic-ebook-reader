@@ -4,10 +4,14 @@
   import type { LocalFont } from '$lib/data/fonts';
   import Fa from 'svelte-fa';
 
-  export let availableFonts: LocalFont[];
-  export let fontValue: string;
+  interface Props {
+    availableFonts: LocalFont[];
+    fontValue: string;
+  }
 
-  let element: Popover;
+  let { availableFonts, fontValue = $bindable() }: Props = $props();
+
+  let element = $state<Popover>();
 </script>
 
 <Popover bind:this={element} placement="bottom">
@@ -26,9 +30,9 @@
         type="button"
         aria-pressed={fontValue === font}
         class="block w-full px-4 py-2 text-left hover:bg-gray-900"
-        on:click={() => {
+        onclick={() => {
           fontValue = font;
-          element.toggleOpen();
+          element?.toggleOpen();
         }}
       >
         <span>{font}</span>

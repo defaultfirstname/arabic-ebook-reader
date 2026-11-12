@@ -10,16 +10,17 @@
     type CustomThemeValue,
     type ThemeOption
   } from '$lib/data/theme-option';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
 
-  export let selectedTheme: string | undefined;
-  export let existingThemes: { id: string; name: string }[];
+  interface Props {
+    selectedTheme: string | undefined;
+    existingThemes: { id: string; name: string }[];
+    onClose: () => void;
+  }
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-  }>();
+  let { selectedTheme, existingThemes, onClose }: Props = $props();
 
-  let customTheme: Record<keyof ThemeOption, CustomThemeValue> = {
+  let customTheme: Record<keyof ThemeOption, CustomThemeValue> = $state({
     fontColor: { hexExpression: '#ffffff', alphaValue: 1, rgbaExpression: 'rgba(255,255,255,1)' },
     backgroundColor: {
       hexExpression: '#000000',
@@ -41,13 +42,15 @@
       alphaValue: 1,
       rgbaExpression: 'rgba(255,255,255,1)'
     }
-  };
+  });
 
-  let themeToCopy = existingThemes[0].id;
-  let themeName = '';
-  let themeNameElm: HTMLInputElement;
+  let themeToCopy = $state(untrack(() => existingThemes[0].id));
+  let themeName = $state('');
+  let themeNameElm = $state<HTMLInputElement>();
 
-  $: themeStyle = `color: ${customTheme.fontColor.rgbaExpression}; background-color: ${customTheme.backgroundColor.rgbaExpression}`;
+  let themeStyle = $derived(
+    `color: ${customTheme.fontColor.rgbaExpression}; background-color: ${customTheme.backgroundColor.rgbaExpression}`
+  );
 
   onMount(() => {
     if (!selectedTheme) return;
@@ -88,10 +91,7 @@
     copyTheme(availableThemes.get(themeToCopy) || $customThemes$[themeToCopy]);
   }
 
-  function handleColorValueChange(
-    event: CustomEvent<{ attribute: keyof ThemeOption; value: string }>
-  ) {
-    const { attribute, value } = event.detail;
+  function handleColorValueChange(attribute: keyof ThemeOption, value: string) {
     const entry = customTheme[attribute];
 
     customTheme = {
@@ -106,10 +106,7 @@
     };
   }
 
-  function handleAlphaValueChange(
-    event: CustomEvent<{ attribute: keyof ThemeOption; value: number }>
-  ) {
-    const { attribute, value } = event.detail;
+  function handleAlphaValueChange(attribute: keyof ThemeOption, value: number) {
     const entry = customTheme[attribute];
 
     customTheme = {
@@ -125,6 +122,8 @@
   }
 
   function handleSave() {
+    if (!themeNameElm) return;
+
     themeNameElm.setCustomValidity('');
 
     if (!themeName) {
@@ -154,7 +153,7 @@
 
     $customThemes$ = { ...$customThemes$, ...{ [themeName]: newTheme } };
     $theme$ = themeName;
-    dispatch('close');
+    onClose();
   }
 
   function copyTheme(theme: Record<keyof ThemeOption, string> | undefined) {
@@ -196,7 +195,7 @@
           </option>
         {/each}
       </select>
-      <button class={buttonClasses} on:click={handleCopyTheme}
+      <button class={buttonClasses} onclick={handleCopyTheme}
         >Copy
         <Ripple />
       </button>
@@ -207,22 +206,22 @@
         label="Font"
         attribute="fontColor"
         values={customTheme.fontColor}
-        on:color={handleColorValueChange}
-        on:alpha={handleAlphaValueChange}
+        onColorChange={handleColorValueChange}
+        onAlphaChange={handleAlphaValueChange}
       />
       <SettingsCustomThemeInput
         label="Background"
         attribute="backgroundColor"
         values={customTheme.backgroundColor}
-        on:color={handleColorValueChange}
-        on:alpha={handleAlphaValueChange}
+        onColorChange={handleColorValueChange}
+        onAlphaChange={handleAlphaValueChange}
       />
       <SettingsCustomThemeInput
         label="Footer Font"
         attribute="tooltipTextFontColor"
         values={customTheme.tooltipTextFontColor}
-        on:color={handleColorValueChange}
-        on:alpha={handleAlphaValueChange}
+        onColorChange={handleColorValueChange}
+        onAlphaChange={handleAlphaValueChange}
       />
       <input
         class="sm:col-span-2"
@@ -239,14 +238,14 @@
         <Ripple />
       </button>
     </div>
-    <div class="flex mt-4" />
+    <div class="flex mt-4"></div>
   </div>
   <div class="mt-2 flex grow justify-between" slot="footer">
-    <button class={buttonClasses} on:click={() => dispatch('close')}>
+    <button class={buttonClasses} onclick={onClose}>
       Cancel
       <Ripple />
     </button>
-    <button class={buttonClasses} on:click={handleSave}>
+    <button class={buttonClasses} onclick={handleSave}>
       Save
       <Ripple />
     </button>

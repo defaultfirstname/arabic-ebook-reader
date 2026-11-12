@@ -1,19 +1,17 @@
 <script lang="ts">
+  import { browser } from '$app/environment';
   import { onMount, tick } from 'svelte';
 
-  export let dimensionValue = 0;
-  export let isFirstDimension = false;
+  interface Props {
+    dimensionValue?: number;
+    isFirstDimension?: boolean;
+  }
+
+  let { dimensionValue = $bindable(0), isFirstDimension = false }: Props = $props();
 
   const progressStep = 5;
 
-  let presetValue = 0;
-
-  $: calculatedValue = Math.ceil(
-    window[getDimension()] * (presetValue / 100 / (isFirstDimension ? 2 : 1))
-  );
-  $: min = isFirstDimension ? 5 : 50;
-  $: max = isFirstDimension ? 50 : 95;
-  $: quarter = isFirstDimension ? 25 : 75;
+  let presetValue = $state(0);
 
   function getDimension() {
     return isFirstDimension ? 'innerHeight' : 'innerWidth';
@@ -35,6 +33,14 @@
     );
     setToValue(Math.round(currentPercentage / progressStep) * progressStep);
   });
+  let calculatedValue = $derived(
+    Math.ceil(
+      (browser ? window[getDimension()] : 0) * (presetValue / 100 / (isFirstDimension ? 2 : 1))
+    )
+  );
+  let min = $derived(isFirstDimension ? 5 : 50);
+  let max = $derived(isFirstDimension ? 50 : 95);
+  let quarter = $derived(isFirstDimension ? 25 : 75);
 </script>
 
 <div class="text-center">
@@ -47,11 +53,11 @@
   {min}
   {max}
   bind:value={presetValue}
-  on:change={() => (dimensionValue = calculatedValue)}
+  onchange={() => (dimensionValue = calculatedValue)}
 />
 <div class="flex justify-evenly">
-  <button on:click={() => setToValue(quarter)}>
+  <button onclick={() => setToValue(quarter)}>
     {quarter}%
   </button>
-  <button on:click={() => setToValue(50)}> 50% </button>
+  <button onclick={() => setToValue(50)}> 50% </button>
 </div>
