@@ -5,11 +5,15 @@
   } from '#lib/components/book-reader/book-completion-confetti/book-completion-confetti';
   import { onMount } from 'svelte';
 
-  export let confettiWidthModifier: number;
-  export let confettiMaxRuns: number;
-  export let window: Window;
+  interface Props {
+    confettiWidthModifier: number;
+    confettiMaxRuns: number;
+    window: Window;
+  }
 
-  let confettiCanvasElement: HTMLCanvasElement;
+  let { confettiWidthModifier, confettiMaxRuns, window }: Props = $props();
+
+  let confettiCanvasElement = $state<HTMLCanvasElement>();
   let confetiiCanvasContext: CanvasRenderingContext2D | null;
   let confettiContainer = { width: 0, height: 0 };
   let confettiElements: Confetti[] = [];
@@ -26,6 +30,8 @@
   });
 
   function setupCanvas() {
+    if (!confettiCanvasElement) return;
+
     confettiContainer = {
       width: confettiCanvasElement.clientWidth,
       height: confettiCanvasElement.clientHeight
@@ -110,9 +116,9 @@
   class="flex fixed top-0 right-0 h-full w-full"
   style={`max-width: calc(100vw - ${confettiWidthModifier}rem);`}
   bind:this={confettiCanvasElement}
-/>
+></canvas>
 <svelte:window
-  on:resize={() => {
+  onresize={() => {
     hideConfetti();
     setupCanvas();
     updateConfetti();

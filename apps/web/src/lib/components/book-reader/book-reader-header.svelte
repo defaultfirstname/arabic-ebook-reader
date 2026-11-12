@@ -6,8 +6,7 @@
     faExpand,
     faFlag,
     faList,
-    faRotateLeft,
-    type IconDefinition
+    faRotateLeft
   } from '@fortawesome/free-solid-svg-icons';
   import { readerImageGalleryPictures$ } from '#lib/components/book-reader/book-reader-image-gallery/book-reader-image-gallery';
   import { mergeEntries } from '#lib/components/merged-header-icon/merged-entries';
@@ -22,70 +21,73 @@
   import { customReadingPointEnabled$, viewMode$ } from '#lib/data/store';
   import { ViewMode } from '#lib/data/view-mode';
   import { dummyFn, isMobile$ } from '#lib/functions/utils';
-  import { createEventDispatcher } from 'svelte';
   import Fa from 'svelte-fa';
 
-  export let hasChapterData: boolean;
-  export let hasText: boolean;
-  export let autoScrollMultiplier: number;
-  export let hasCustomReadingPoint: boolean;
-  export let showFullscreenButton: boolean;
-  export let isBookmarkScreen: boolean;
-  export let hasBookmarkData: boolean;
-
-  const dispatch = createEventDispatcher<{
-    tocClick: void;
-    bookmarkClick: void;
-    scrollToBookmarkClick: void;
-    jumpClick: void;
-    completeBook: void;
-    fullscreenClick: void;
-    showCustomReadingPoint: void;
-    setCustomReadingPoint: void;
-    resetCustomReadingPoint: void;
-    statisticsClick: void;
-    readerImageGalleryClick: void;
-    settingsClick: void;
-    bookManagerClick: void;
-  }>();
-
-  const customReadingPointMenuItems: {
-    label: string;
-    action: any;
-  }[] = [
-    ...(hasCustomReadingPoint ? [{ label: 'Show Point', action: 'showCustomReadingPoint' }] : []),
-    { label: 'Set Point', action: 'setCustomReadingPoint' },
-    ...(hasCustomReadingPoint ? [{ label: 'Reset Point', action: 'resetCustomReadingPoint' }] : [])
-  ];
-
-  let customReadingPointMenuElm: Popover;
-
-  let menuItems: {
-    routeId: string;
-    label: string;
-    icon: IconDefinition;
-    title: string;
-  }[] = [];
-
-  $: {
-    const items = [mergeEntries.STATISTICS];
-
-    if (hasText) {
-      items.push(mergeEntries.JUMP_TO_POSITION);
-    }
-
-    if ($readerImageGalleryPictures$.length) {
-      items.push(mergeEntries.READER_IMAGE_GALLERY);
-    }
-
-    items.push(mergeEntries.SETTINGS, mergeEntries.MANAGE);
-
-    menuItems = items;
+  interface Props {
+    onTocClick: () => void;
+    onBookmarkClick: () => void;
+    onScrollToBookmarkClick: () => void;
+    onJumpClick: () => void;
+    onCompleteBook: () => void;
+    onFullscreenClick: () => void;
+    onShowCustomReadingPoint: () => void;
+    onSetCustomReadingPoint: () => void;
+    onResetCustomReadingPoint: () => void;
+    onStatisticsClick: () => void;
+    onReaderImageGalleryClick: () => void;
+    onSettingsClick: () => void;
+    onBookManagerClick: () => void;
+    hasChapterData: boolean;
+    hasText: boolean;
+    autoScrollMultiplier: number;
+    hasCustomReadingPoint: boolean;
+    showFullscreenButton: boolean;
+    isBookmarkScreen: boolean;
+    hasBookmarkData: boolean;
   }
 
-  function dispatchCustomReadingPointAction(action: any) {
-    dispatch(action);
-    customReadingPointMenuElm.toggleOpen();
+  let {
+    onTocClick,
+    onBookmarkClick,
+    onScrollToBookmarkClick,
+    onJumpClick,
+    onCompleteBook,
+    onFullscreenClick,
+    onShowCustomReadingPoint,
+    onSetCustomReadingPoint,
+    onResetCustomReadingPoint,
+    onStatisticsClick,
+    onReaderImageGalleryClick,
+    onSettingsClick,
+    onBookManagerClick,
+    hasChapterData,
+    hasText,
+    autoScrollMultiplier,
+    hasCustomReadingPoint,
+    showFullscreenButton,
+    isBookmarkScreen,
+    hasBookmarkData
+  }: Props = $props();
+
+  let customReadingPointMenuItems = $derived([
+    ...(hasCustomReadingPoint ? [{ label: 'Show Point', action: onShowCustomReadingPoint }] : []),
+    { label: 'Set Point', action: onSetCustomReadingPoint },
+    ...(hasCustomReadingPoint ? [{ label: 'Reset Point', action: onResetCustomReadingPoint }] : [])
+  ]);
+
+  let customReadingPointMenuElm = $state<Popover>();
+
+  let menuItems = $derived([
+    mergeEntries.STATISTICS,
+    ...(hasText ? [mergeEntries.JUMP_TO_POSITION] : []),
+    ...($readerImageGalleryPictures$.length ? [mergeEntries.READER_IMAGE_GALLERY] : []),
+    mergeEntries.SETTINGS,
+    mergeEntries.MANAGE
+  ]);
+
+  function runCustomReadingPointAction(action: () => void) {
+    action();
+    customReadingPointMenuElm?.toggleOpen();
   }
 </script>
 
@@ -97,8 +99,8 @@
         role="button"
         title="Open Table of Contents"
         class={baseIconClasses}
-        on:click={() => dispatch('tocClick')}
-        on:keyup={dummyFn}
+        onclick={() => onTocClick()}
+        onkeyup={dummyFn}
       >
         <Fa icon={faList} />
       </div>
@@ -108,8 +110,8 @@
       role="button"
       title="Create Bookmark"
       class={baseIconClasses}
-      on:click={() => dispatch('bookmarkClick')}
-      on:keyup={dummyFn}
+      onclick={() => onBookmarkClick()}
+      onkeyup={dummyFn}
     >
       <Fa icon={isBookmarkScreen ? fasBookmark : farBookmark} />
     </div>
@@ -119,8 +121,8 @@
         role="button"
         title="Return to Bookmark"
         class={baseIconClasses}
-        on:click={() => dispatch('scrollToBookmarkClick')}
-        on:keyup={dummyFn}
+        onclick={() => onScrollToBookmarkClick()}
+        onkeyup={dummyFn}
       >
         <Fa icon={faRotateLeft} />
       </div>
@@ -141,8 +143,8 @@
       role="button"
       title="Complete Book"
       class={baseIconClasses}
-      on:click={() => dispatch('completeBook')}
-      on:keyup={dummyFn}
+      onclick={() => onCompleteBook()}
+      onkeyup={dummyFn}
     >
       <Fa icon={faFlag} />
     </div>
@@ -157,14 +159,14 @@
           <div slot="icon" title="Open Custom Point Actions" class={baseIconClasses}>
             <Fa icon={faCrosshairs} />
           </div>
-          <div class="w-40 bg-gray-700 md:w-32" slot="content">
+          <div slot="content" class="w-40 bg-gray-700 md:w-32">
             {#each customReadingPointMenuItems as actionItem (actionItem.label)}
               <div
                 tabindex="0"
                 role="button"
                 class="px-4 py-2 text-sm hover:bg-white hover:text-gray-700"
-                on:click={() => dispatchCustomReadingPointAction(actionItem.action)}
-                on:keyup={dummyFn}
+                onclick={() => runCustomReadingPointAction(actionItem.action)}
+                onkeyup={dummyFn}
               >
                 {actionItem.label}
               </div>
@@ -179,8 +181,8 @@
         role="button"
         title="Toggle Fullscreen"
         class={baseIconClasses}
-        on:click={() => dispatch('fullscreenClick')}
-        on:keyup={dummyFn}
+        onclick={() => onFullscreenClick()}
+        onkeyup={dummyFn}
       >
         <Fa icon={faExpand} />
       </div>
@@ -190,15 +192,15 @@
       items={menuItems}
       on:action={({ detail }) => {
         if (detail === mergeEntries.STATISTICS.label) {
-          dispatch('statisticsClick');
+          onStatisticsClick();
         } else if (detail === mergeEntries.JUMP_TO_POSITION.label) {
-          dispatch('jumpClick');
+          onJumpClick();
         } else if (detail === mergeEntries.READER_IMAGE_GALLERY.label) {
-          dispatch('readerImageGalleryClick');
+          onReaderImageGalleryClick();
         } else if (detail === mergeEntries.SETTINGS.label) {
-          dispatch('settingsClick');
+          onSettingsClick();
         } else if (detail === mergeEntries.MANAGE.label) {
-          dispatch('bookManagerClick');
+          onBookManagerClick();
         }
       }}
     />

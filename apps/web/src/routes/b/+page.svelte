@@ -106,7 +106,8 @@
     nextChapter$,
     sectionList$,
     sectionProgress$,
-    tocIsOpen$
+    tocIsOpen$,
+    type SectionWithProgress
   } from '#lib/components/book-reader/book-toc/book-toc';
   import BookToc from '#lib/components/book-reader/book-toc/book-toc.svelte';
   import ConfirmDialog from '#lib/components/confirm-dialog.svelte';
@@ -158,7 +159,7 @@
   import { dummyFn, isMobile$ } from '#lib/functions/utils';
   import { formatChapterProgress } from './format-chapter-progress';
   import { onKeydownReader } from './on-keydown-reader';
-  import { onDestroy, onMount, tick } from 'svelte';
+  import { onDestroy, onMount, tick, untrack } from 'svelte';
   import Fa from 'svelte-fa';
   import {
     clearRange,
@@ -168,43 +169,43 @@
     pulseElement
   } from '#lib/functions/range-util';
 
-  let showSpinner = true;
-  let showHeader = false;
-  let isBookmarkScreen = false;
-  let showFooter = true;
-  let exploredCharCount = 0;
-  let bookCharCount = 0;
-  let autoScroller: AutoScroller | undefined;
-  let bookmarkManager: BookmarkManager | undefined;
-  let pageManager: PageManager | undefined;
-  let bookmarkData: Promise<BooksDbBookmarkData | undefined> = Promise.resolve(undefined);
-  let customReadingPointTop = -2;
-  let customReadingPointLeft = -2;
-  let customReadingPoint = $horizontalCustomReadingPosition$;
-  let customReadingPointScrollOffset = 0;
-  let customReadingPointRange: Range | undefined;
+  let showSpinner = $state(true);
+  let showHeader = $state(false);
+  let isBookmarkScreen = $state(false);
+  let showFooter = $state(true);
+  let exploredCharCount = $state(0);
+  let bookCharCount = $state(0);
+  let autoScroller: AutoScroller | undefined = $state();
+  let bookmarkManager: BookmarkManager | undefined = $state();
+  let pageManager: PageManager | undefined = $state();
+  let bookmarkData: Promise<BooksDbBookmarkData | undefined> = $state(Promise.resolve(undefined));
+  let customReadingPointTop = $state(-2);
+  let customReadingPointLeft = $state(-2);
+  let customReadingPoint = $state(untrack(() => $horizontalCustomReadingPosition$));
+  let customReadingPointScrollOffset = $state(0);
+  let customReadingPointRange: Range | undefined = $state();
   let lastSelectedRange: Range | undefined;
   let lastSelectedRangeWasEmpty = true;
-  let isSelectingCustomReadingPoint = false;
-  let showCustomReadingPoint = false;
+  let isSelectingCustomReadingPoint = $state(false);
+  let showCustomReadingPoint = $state(false);
   let localStorageHandler: BrowserStorageHandler;
-  let dataToReplicate: StorageDataType[] = [];
+  let dataToReplicate: StorageDataType[] = $state([]);
   let dataToReplicateQueue: StorageDataType[] = [];
-  let externalStorageHandler: BaseStorageHandler | undefined;
-  let externalStorageErrors = 0;
-  let isReplicating = false;
-  let storedExploredCharacter = 0;
-  let hasBookmarkData = false;
-  let blockDataUpdates = false;
-  let trackerElm: BookReadingTracker;
-  let showTrackerIcon = false;
-  let wasTrackerPaused = true;
-  let frozenPosition = -1;
+  let externalStorageHandler: BaseStorageHandler | undefined = $state();
+  let externalStorageErrors = $state(0);
+  let isReplicating = $state(false);
+  let storedExploredCharacter = $state(0);
+  let hasBookmarkData = $state(false);
+  let blockDataUpdates = $state(false);
+  let trackerElm = $state<ReturnType<typeof BookReadingTracker>>();
+  let showTrackerIcon = $state(false);
+  let wasTrackerPaused = $state(true);
+  let frozenPosition = $state(-1);
   let skipFirstFreezeChange = false;
-  let bookCompleted = false;
-  let confettiWidthModifier = 36;
-  let confettiMaxRuns = 0;
-  let showReaderImageGallery = false;
+  let bookCompleted = $state(false);
+  let confettiWidthModifier = $state(36);
+  let confettiMaxRuns = $state(0);
+  let showReaderImageGallery = $state(false);
   let dismissDialogs = true;
   let syncedResolver: () => void;
 
@@ -325,6 +326,7 @@
       bookmarkData = database
         .getBookmark(rawBookData.id)
         .then((bookmark) => rawBookData.arabicMetrics?.restoreBookmark(bookmark) ?? bookmark);
+      sectionData = [];
       sectionList$.next(rawBookData.arabicMetrics?.sections ?? rawBookData.sections ?? []);
 
       return loadBookData(
@@ -406,9 +408,11 @@
     takeWhenBrowser()
   );
 
-  const sectionData$ = iffBrowser(() => sectionProgress$).pipe(
-    map((sectionProgress) => [...sectionProgress.values()])
-  );
+  // Chapter updates can arrive before the header or tracker menu reads them.
+  let sectionData = $state.raw<SectionWithProgress[]>([]);
+  const sectionProgressSubscription = iffBrowser(() => sectionProgress$).subscribe((progress) => {
+    sectionData = [...progress.values()];
+  });
 
   const textSelector$ = iffBrowser(() => fromEvent(document, 'selectionchange')).pipe(
     debounceTime(200),
@@ -445,73 +449,6 @@
     reduceToEmptyString()
   );
 
-  $: if ($tocIsOpen$) {
-    autoScroller?.off();
-  }
-
-  $: if (browser && bookCharCount) {
-    document.dispatchEvent(new CustomEvent(PAGE_CHANGE, { detail: { exploredCharCount } }));
-  }
-
-  $: if (browser) {
-    document.dispatchEvent(new CustomEvent(PAGE_CHANGE, { detail: { bookCharCount } }));
-  }
-
-  $: if (showCustomReadingPoint) {
-    pauseTracker();
-
-    pulseElement(customReadingPointRange?.endContainer?.parentElement, 'add', 1);
-
-    fromEvent(document, 'click')
-      .pipe(skip(1), take(1))
-      .subscribe(() => {
-        showCustomReadingPoint = false;
-        pulseElement(customReadingPointRange?.endContainer?.parentElement, 'remove', 1);
-        restartTrackerAfterCharacterChangeOrTime(1);
-      });
-  }
-
-  $: if (frozenPosition !== -1 && exploredCharCount >= frozenPosition) {
-    if (skipFirstFreezeChange) {
-      skipFirstFreezeChange = false;
-    } else {
-      frozenPosition = -1;
-    }
-  }
-
-  $: isPaginated = $viewMode$ === ViewMode.Paginated;
-  $: bookLanguage = $rawBookData$?.language;
-  $: hasArabicLanguage = /^ar(?:-|$)/i.test(bookLanguage ?? '');
-  $: rightToLeft = hasArabicLanguage || !!$rawBookData$?.arabicMetrics;
-  $: readingLanguage = rightToLeft && !hasArabicLanguage ? 'ar' : bookLanguage;
-
-  $: firstDimensionMargin = $firstDimensionMargin$ ?? 0;
-
-  $: tapButtonHeight = `calc(100% - ${showHeader ? 5 : 4}rem)`;
-
-  $: tapButtonTop = `${showHeader ? 3 : 2}rem`;
-
-  $: footerChapterProgress = formatChapterProgress($sectionData$, {
-    exploredCharCount,
-    showCharacterCounter: $showFooterChapterCharacterCounter$,
-    showPercentage: $showFooterChapterPercentage$
-  });
-
-  $: upSyncEnabled =
-    externalStorageHandler &&
-    ($autoReplication$ === AutoReplicationType.Up || $autoReplication$ === AutoReplicationType.All);
-
-  $: bookmarkData.then((data) => {
-    hasBookmarkData = !!data;
-    storedExploredCharacter = data?.exploredCharCount || 0;
-  });
-
-  /** Experimental Code - May be removed any time without warning */
-
-  $: if (browser) {
-    document.dispatchEvent(new CustomEvent(SKIPKEYLISTENER, { detail: $skipKeyDownListener$ }));
-  }
-
   onMount(() => document.addEventListener('ttu-action', handleAction, false));
 
   function handleAction({ detail }: any) {
@@ -536,6 +473,7 @@
   /** Experimental Code - May be removed any time without warning */
 
   onDestroy(() => {
+    sectionProgressSubscription.unsubscribe();
     if (browser) {
       document.removeEventListener('ttu-action', handleAction, false);
     }
@@ -683,7 +621,7 @@
     ]);
 
     try {
-      if (diffToComplete) {
+      if (diffToComplete && trackerElm) {
         const [hadError] = await trackerElm.processStatistics(diffToComplete);
 
         if (hadError) {
@@ -1107,11 +1045,11 @@
   }
 
   function changeChapter(offset: number) {
-    if (!$sectionData$?.length) {
+    if (!sectionData.length) {
       return;
     }
 
-    const [mainChapters, currentChapterIndex] = getChapterData($sectionData$);
+    const [mainChapters, currentChapterIndex] = getChapterData(sectionData);
 
     if (
       (!currentChapterIndex && offset === -1) ||
@@ -1460,6 +1398,90 @@
       }
     }
   }
+  $effect(() => {
+    if ($tocIsOpen$) {
+      const scroller = autoScroller;
+      untrack(() => scroller?.off());
+    }
+  });
+  $effect(() => {
+    if (bookCharCount) {
+      const count = exploredCharCount;
+      untrack(() =>
+        document.dispatchEvent(
+          new CustomEvent(PAGE_CHANGE, { detail: { exploredCharCount: count } })
+        )
+      );
+    }
+  });
+  $effect(() => {
+    const count = bookCharCount;
+    untrack(() =>
+      document.dispatchEvent(new CustomEvent(PAGE_CHANGE, { detail: { bookCharCount: count } }))
+    );
+  });
+  $effect(() => {
+    if (!showCustomReadingPoint) return;
+    const element = customReadingPointRange?.endContainer?.parentElement;
+    untrack(() => {
+      pauseTracker();
+      pulseElement(element, 'add', 1);
+    });
+    const subscription = fromEvent(document, 'click')
+      .pipe(skip(1), take(1))
+      .subscribe(() => {
+        showCustomReadingPoint = false;
+        pulseElement(element, 'remove', 1);
+        restartTrackerAfterCharacterChangeOrTime(1);
+      });
+    return () => subscription.unsubscribe();
+  });
+  $effect(() => {
+    if (frozenPosition !== -1 && exploredCharCount >= frozenPosition) {
+      if (skipFirstFreezeChange) {
+        skipFirstFreezeChange = false;
+      } else {
+        frozenPosition = -1;
+      }
+    }
+  });
+  let isPaginated = $derived($viewMode$ === ViewMode.Paginated);
+  let bookLanguage = $derived($rawBookData$?.language);
+  let hasArabicLanguage = $derived(/^ar(?:-|$)/i.test(bookLanguage ?? ''));
+  let rightToLeft = $derived(hasArabicLanguage || !!$rawBookData$?.arabicMetrics);
+  let readingLanguage = $derived(rightToLeft && !hasArabicLanguage ? 'ar' : bookLanguage);
+  let firstDimensionMargin = $derived($firstDimensionMargin$ ?? 0);
+  let tapButtonHeight = $derived(`calc(100% - ${showHeader ? 5 : 4}rem)`);
+  let tapButtonTop = $derived(`${showHeader ? 3 : 2}rem`);
+  let footerChapterProgress = $derived(
+    formatChapterProgress(sectionData, {
+      exploredCharCount,
+      showCharacterCounter: $showFooterChapterCharacterCounter$,
+      showPercentage: $showFooterChapterPercentage$
+    })
+  );
+  let upSyncEnabled = $derived(
+    externalStorageHandler &&
+      ($autoReplication$ === AutoReplicationType.Up ||
+        $autoReplication$ === AutoReplicationType.All)
+  );
+  $effect(() => {
+    let current = true;
+    bookmarkData.then((data) => {
+      if (!current) return;
+      hasBookmarkData = !!data;
+      storedExploredCharacter = data?.exploredCharCount || 0;
+    });
+    return () => (current = false);
+  });
+  /** Experimental Code - May be removed any time without warning */
+
+  $effect(() => {
+    const skipListener = $skipKeyDownListener$;
+    untrack(() =>
+      document.dispatchEvent(new CustomEvent(SKIPKEYLISTENER, { detail: skipListener }))
+    );
+  });
 </script>
 
 <svelte:head>
@@ -1471,8 +1493,8 @@
 <button
   aria-label="Show reader controls"
   class="fixed inset-x-0 top-0 z-10 h-8 w-full"
-  on:click={() => (showHeader = true)}
-/>
+  onclick={() => (showHeader = true)}
+></button>
 {#if showHeader}
   <div
     class="elevation-4 writing-horizontal-tb fixed inset-x-0 top-0 z-10 w-full"
@@ -1480,7 +1502,7 @@
     use:clickOutside={() => (showHeader = false)}
   >
     <BookReaderHeader
-      hasChapterData={!!$sectionData$?.length}
+      hasChapterData={sectionData.length > 0}
       hasText={!!bookCharCount}
       hasCustomReadingPoint={!!(
         ($customReadingPointEnabled$ || isPaginated) &&
@@ -1490,21 +1512,21 @@
       showFullscreenButton={fullscreenManager.fullscreenEnabled}
       autoScrollMultiplier={$multiplier$}
       {hasBookmarkData}
-      bind:isBookmarkScreen
-      on:tocClick={() => {
+      {isBookmarkScreen}
+      onTocClick={() => {
         pauseTracker();
 
         showHeader = false;
         tocIsOpen$.next(true);
       }}
-      on:jumpClick={handleJump}
-      on:completeBook={completeBook}
-      on:setCustomReadingPoint={handleSetCustomReadingPoint}
-      on:showCustomReadingPoint={() => {
+      onJumpClick={handleJump}
+      onCompleteBook={completeBook}
+      onSetCustomReadingPoint={handleSetCustomReadingPoint}
+      onShowCustomReadingPoint={() => {
         showHeader = false;
         showCustomReadingPoint = true;
       }}
-      on:resetCustomReadingPoint={() => {
+      onResetCustomReadingPoint={() => {
         showHeader = false;
 
         if ($pauseTrackerOnCustomPointChange$) {
@@ -1522,25 +1544,25 @@
           restartTrackerAfterCharacterChangeOrTime(1000);
         }
       }}
-      on:fullscreenClick={onFullscreenClick}
-      on:bookmarkClick={bookmarkPage}
-      on:scrollToBookmarkClick={() => {
+      {onFullscreenClick}
+      onBookmarkClick={bookmarkPage}
+      onScrollToBookmarkClick={() => {
         showHeader = false;
         scrollToBookmark();
       }}
-      on:statisticsClick={() => {
+      onStatisticsClick={() => {
         if ($rawBookData$) {
           $preFilteredTitlesForStatistics$ = new Set([$rawBookData$.title]);
         }
 
         leaveReader(mergeEntries.STATISTICS.routeId, false);
       }}
-      on:readerImageGalleryClick={() => {
+      onReaderImageGalleryClick={() => {
         showHeader = false;
         showReaderImageGallery = true;
       }}
-      on:settingsClick={() => leaveReader(mergeEntries.SETTINGS.routeId, false)}
-      on:bookManagerClick={() => leaveReader(mergeEntries.MANAGE.routeId)}
+      onSettingsClick={() => leaveReader(mergeEntries.SETTINGS.routeId, false)}
+      onBookManagerClick={() => leaveReader(mergeEntries.MANAGE.routeId)}
     />
   </div>
 {/if}
@@ -1551,7 +1573,7 @@
       fontColor={$themeOption$.fontColor}
       backgroundColor={$backgroundColor$}
       bookTitle={$rawBookData$.title}
-      sectionData={$sectionData$}
+      {sectionData}
       {frozenPosition}
       {exploredCharCount}
       {bookCharCount}
@@ -1559,14 +1581,14 @@
       {blockDataUpdates}
       bind:wasTrackerPaused
       bind:this={trackerElm}
-      on:freezeCurrentLocation={freezeTrackerPosition}
-      on:statisticsSaved={() => {
+      onFreezeCurrentLocation={freezeTrackerPosition}
+      onStatisticsSaved={() => {
         if (!blockDataUpdates) {
           scheduleReplication(StorageDataType.STATISTICS);
         }
       }}
-      on:trackerAvailable={() => (showTrackerIcon = true)}
-      on:trackerMenuClosed={() => {
+      onTrackerAvailable={() => (showTrackerIcon = true)}
+      onTrackerMenuClosed={() => {
         if (!wasTrackerPaused) {
           isTrackerPaused$.next(false);
         }
@@ -1631,7 +1653,7 @@
   {$leaveIfBookMissing$ ?? ''}
 {/if}
 
-{#if $tocIsOpen$ && $sectionData$}
+{#if $tocIsOpen$ && sectionData.length}
   <div
     class="writing-horizontal-tb fixed top-0 left-0 z-[60] flex h-full w-full max-w-xl flex-col justify-between"
     style:color={$themeOption$?.fontColor}
@@ -1644,7 +1666,7 @@
       tocIsOpen$.next(false);
     }}
   >
-    <BookToc sectionData={$sectionData$} {exploredCharCount} {wasTrackerPaused} />
+    <BookToc {sectionData} {exploredCharCount} {wasTrackerPaused} />
   </div>
 {/if}
 
@@ -1652,7 +1674,7 @@
   <BookReaderImageGallery
     fontColor={$themeOption$.fontColor}
     backgroundColor={$backgroundColor$}
-    on:close={() => (showReaderImageGallery = false)}
+    onClose={() => (showReaderImageGallery = false)}
   />
 {/if}
 
@@ -1660,26 +1682,26 @@
   <div
     class="fixed left-0 z-20 h-[1px] w-full border border-red-500"
     style:top={`${customReadingPointTop}px`}
-  />
+  ></div>
   <div
     class="fixed top-0 z-20 h-full w-[1px] border border-red-500"
     style:left={`${customReadingPointLeft}px`}
-  />
+  ></div>
 {/if}
 
 {#if $enableTapEdgeToFlip$ && isPaginated && !$skipKeyDownListener$}
   <button
     class="fixed left-0 z-10 w-5"
-    on:click={rightToLeft ? () => pageManager?.nextPage() : () => pageManager?.prevPage()}
+    onclick={rightToLeft ? () => pageManager?.nextPage() : () => pageManager?.prevPage()}
     style:height={tapButtonHeight}
     style:top={tapButtonTop}
-  />
+  ></button>
   <button
     class="fixed right-0 z-10 w-5"
-    on:click={rightToLeft ? () => pageManager?.prevPage() : () => pageManager?.nextPage()}
+    onclick={rightToLeft ? () => pageManager?.prevPage() : () => pageManager?.nextPage()}
     style:height={tapButtonHeight}
     style:top={tapButtonTop}
-  />
+  ></button>
 {/if}
 
 {#if showSpinner}
@@ -1694,8 +1716,8 @@
   role="button"
   class="writing-horizontal-tb fixed bottom-0 left-0 z-10 flex h-8 w-full items-center justify-between text-xs leading-none"
   style:color={$themeOption$?.tooltipTextFontColor}
-  on:click={() => (showFooter = !showFooter)}
-  on:keyup={dummyFn}
+  onclick={() => (showFooter = !showFooter)}
+  onkeyup={dummyFn}
 >
   <div class="flex h-full">
     {#if showTrackerIcon}
@@ -1717,7 +1739,8 @@
         class="flex h-full w-8 items-center justify-center text-sm sm:text-lg"
         class:text-red-500={externalStorageErrors > 1}
         class:animate-pulse={externalStorageErrors > 1 || isReplicating}
-        on:click|stopPropagation={() => {
+        onclick={(event) => {
+          event.stopPropagation();
           if ($statisticsEnabled$) {
             wasTrackerPaused = $isTrackerPaused$;
             isTrackerPaused$.next(true);
@@ -1729,7 +1752,7 @@
             }
           });
         }}
-        on:keyup={dummyFn}
+        onkeyup={dummyFn}
       >
         <Fa icon={faCloudBolt} />
       </div>
@@ -1753,7 +1776,9 @@
         !$showFooterChapterCharacterCounter$ &&
         !$showFooterChapterPercentage$}
       style:color={$themeOption$?.tooltipTextFontColor}
-      on:click|stopPropagation={({ target }) => {
+      onclick={(event) => {
+        event.stopPropagation();
+        const { target } = event;
         if (!$showCharacterCounter$ && !$showPercentage$) {
           return;
         }
@@ -1764,7 +1789,7 @@
           pulseElement(target.parentElement || target, 'add', 0.5, 500);
         }
       }}
-      on:keyup={dummyFn}
+      onkeyup={dummyFn}
     >
       <span class="mr-4" class:invisible={!footerChapterProgress}>{footerChapterProgress}</span>
       <span class:invisible={!$showCharacterCounter$ && !$showPercentage$}>{currentProgress}</span>
@@ -1777,9 +1802,9 @@
 {/if}
 
 <svelte:window
-  on:keydown={onKeydown}
-  on:beforeunload={handleUnload}
-  on:resize={() => {
+  onkeydown={onKeydown}
+  onbeforeunload={handleUnload}
+  onresize={() => {
     if ($statisticsEnabled$ && !$isTrackerPaused$) {
       pauseTracker();
 

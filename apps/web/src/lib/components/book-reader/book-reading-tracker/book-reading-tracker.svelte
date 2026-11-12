@@ -43,31 +43,45 @@
   } from '#lib/functions/statistic-util';
   import { clickOutside } from '#lib/functions/use-click-outside';
   import { filterNotNullAndNotUndefined } from '#lib/functions/utils';
-  import {
-    fromEvent,
-    interval,
-    merge,
-    NEVER,
-    Observable,
-    startWith,
-    switchMap,
-    tap,
-    throttleTime
-  } from 'rxjs';
-  import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte';
+  import { fromEvent, interval, merge, NEVER, startWith, switchMap, tap, throttleTime } from 'rxjs';
+  import { onDestroy, onMount, tick, untrack } from 'svelte';
+  import { SvelteSet } from 'svelte/reactivity';
   import { quintInOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
 
-  export let fontColor: string;
-  export let backgroundColor: string;
-  export let bookTitle: string;
-  export let wasTrackerPaused: boolean;
-  export let exploredCharCount: number;
-  export let bookCharCount: number;
-  export let sectionData: SectionWithProgress[];
-  export let frozenPosition: number;
-  export let autoScroller: AutoScroller | undefined;
-  export let blockDataUpdates: boolean;
+  interface Props {
+    onTrackerAvailable: () => void;
+    onStatisticsSaved: () => void;
+    onTrackerMenuClosed: () => void;
+    onFreezeCurrentLocation: () => void;
+    fontColor: string;
+    backgroundColor: string;
+    bookTitle: string;
+    wasTrackerPaused: boolean;
+    exploredCharCount: number;
+    bookCharCount: number;
+    sectionData: SectionWithProgress[];
+    frozenPosition: number;
+    autoScroller: AutoScroller | undefined;
+    blockDataUpdates: boolean;
+  }
+
+  let {
+    onTrackerAvailable,
+    onStatisticsSaved,
+    onTrackerMenuClosed,
+    onFreezeCurrentLocation,
+    fontColor,
+    backgroundColor,
+    bookTitle,
+    wasTrackerPaused = $bindable(),
+    exploredCharCount,
+    bookCharCount,
+    sectionData,
+    frozenPosition,
+    autoScroller,
+    blockDataUpdates
+  }: Props = $props();
 
   export function processStatistics(
     characterDiff: number,
@@ -181,10 +195,10 @@
     actionInProgress = true;
     hadError = false;
 
-    const toUpdate: string[] = JSON.parse(JSON.stringify([...statisticsToStore]));
-    const itemsToStore = toUpdate
-      .map((statisticToStore) => statistics.get(statisticToStore))
-      .filter(filterNotNullAndNotUndefined);
+    const toUpdate = [...statisticsToStore];
+    const itemsToStore = $state.snapshot(
+      toUpdate.map((dateKey) => statistics.get(dateKey)).filter(filterNotNullAndNotUndefined)
+    );
 
     statisticsToStore.clear();
 
@@ -204,10 +218,10 @@
         return oldItem;
       });
 
-      dispatch('statisticsSaved');
+      onStatisticsSaved();
     } catch (error: any) {
       hadError = true;
-      statisticsToStore = new Set([...statisticsToStore, ...toUpdate]);
+      for (const dateKey of toUpdate) statisticsToStore.add(dateKey);
       logger.error(`Error updating statistics: ${error.message}`);
     } finally {
       actionInProgress = false;
@@ -245,44 +259,38 @@
   }
 
   const yomitanPopupSelector = '.yomitan-popup,.yomitan-float';
-  let yomiPopover: HTMLElement | null;
-  let actionInProgress = false;
-  let hadError = false;
+  let yomiPopover = $state<HTMLElement | null>(null);
+  let actionInProgress = $state(false);
+  let hadError = $state(false);
   let pausedByAutoPause = false;
-  let visibilityState: DocumentVisibilityState;
-  let currentReadingGoalStart = '';
-  let currentReadingGoalEnd = '';
-  let remainingTimeInReadingGoalWindow = '';
-  let currentReadingGoal: ReadingGoal | undefined;
-  let currentTimeGoal = 0;
-  let currentCharacterGoal = 0;
+  let visibilityState = $state<DocumentVisibilityState>();
+  let currentReadingGoalStart = $state('');
+  let currentReadingGoalEnd = $state('');
+  let remainingTimeInReadingGoalWindow = $state('');
+  let currentReadingGoal: ReadingGoal | undefined = $state();
+  let currentTimeGoal = $state(0);
+  let currentCharacterGoal = $state(0);
   let statistics = new Map<string, BooksDbStatistic>();
-  let todayKey = getDateKey($startDayHoursForTracker$);
-  let sessionStatistics = getDefaultStatistic(bookTitle, todayKey);
-  let todaysStatistics = getDefaultStatistic(bookTitle, todayKey);
-  let allTimeStatistics = getDefaultStatistic(bookTitle, todayKey);
+  let todayKey = $state(untrack(() => getDateKey($startDayHoursForTracker$)));
+  let sessionStatistics = $state(untrack(() => getDefaultStatistic(bookTitle, todayKey)));
+  let todaysStatistics = $state(untrack(() => getDefaultStatistic(bookTitle, todayKey)));
+  let allTimeStatistics = $state(untrack(() => getDefaultStatistic(bookTitle, todayKey)));
   let bookCompletionStatistics:
     | Omit<BooksDbStatistic, 'title' | 'lastStatisticModified'>
-    | undefined;
-  let bookStartDate = todayKey;
-  let timeToFinishBook = 'N/A';
-  let lastExploredCharCount = exploredCharCount;
-  let previousLastExploredCharCount = 0;
-  let trackingHistory: TrackingHistory[] = [];
+    | undefined = $state();
+  let bookStartDate = $state(untrack(() => todayKey));
+  let timeToFinishBook = $state('N/A');
+  let lastExploredCharCount = $state(untrack(() => exploredCharCount));
+  let previousLastExploredCharCount = $state(0);
+  let trackingHistory: TrackingHistory[] = $state([]);
   let historyIndex = 0;
-  let autoScrollerStatistics: BooksDbStatistic | undefined;
-  let autoScrollerTimer$: Observable<''> | undefined;
-  let lastExploredCharCountScroller = exploredCharCount;
-  let statisticsToStore = new Set<string>();
+  let autoScrollerStatistics: BooksDbStatistic | undefined = $state();
+  let lastExploredCharCountScroller = $state(untrack(() => exploredCharCount));
+  const statisticsToStore = new SvelteSet<string>();
   let lastTrackerTick = 0;
   let lastTrackerFlushTime = 0;
   let trackerIdleTime = 0;
 
-  const dispatch = createEventDispatcher<{
-    trackerAvailable: void;
-    statisticsSaved: void;
-    trackerMenuClosed: void;
-  }>();
   const yomiObserver = new MutationObserver(handleYomiMutation);
   const dictionaryObserver = new MutationObserver(handleMutation);
 
@@ -323,60 +331,6 @@
     ),
     reduceToEmptyString()
   );
-
-  $: hasReadingGoal = !!($readingGoal$.goalStartDate && todayKey >= $readingGoal$.goalStartDate);
-
-  $: handleVisibilityChange(visibilityState);
-
-  $: updateReadingGoalWindowForPausedState($isTrackerMenuOpen$);
-
-  $: if (!$isTrackerPaused$) {
-    updateLastExploredCharCount();
-  }
-
-  $: if (autoScroller && !autoScrollerTimer$) {
-    autoScrollerTimer$ = autoScroller.wasAutoScrollerEnabled$.pipe(
-      tap((isEnabled) => {
-        if (isEnabled) {
-          todayKey = getDateKey($startDayHoursForTracker$);
-          autoScrollerStatistics = getDefaultStatistic(bookTitle, todayKey);
-          lastExploredCharCountScroller = exploredCharCount;
-        } else {
-          autoScrollerStatistics = undefined;
-        }
-      }),
-      switchMap((isEnabled) => (isEnabled ? interval(1000) : NEVER)),
-      tap(() => {
-        if (!autoScrollerStatistics) {
-          return;
-        }
-
-        const diff = exploredCharCount - lastExploredCharCountScroller;
-
-        lastExploredCharCountScroller = exploredCharCount;
-        autoScrollerStatistics = {
-          ...updateStatistic(autoScrollerStatistics, 1, diff, Date.now())
-        };
-      }),
-      reduceToEmptyString()
-    );
-  }
-
-  $: if ($trackerAutoPause$ !== TrackerAutoPause.OFF && !yomiPopover) {
-    yomiPopover = document.querySelector(yomitanPopupSelector);
-
-    if (!yomiPopover) {
-      yomiObserver.observe(document.body, { childList: true, subtree: false });
-    }
-  } else {
-    yomiObserver.disconnect();
-  }
-
-  $: if ($trackerAutoPause$ !== TrackerAutoPause.OFF && !$trackerPopupDetection$ && yomiPopover) {
-    dictionaryObserver.observe(yomiPopover, { attributes: true });
-  } else {
-    dictionaryObserver.disconnect();
-  }
 
   onMount(init);
 
@@ -450,7 +404,7 @@
     }
   }
 
-  function revertTrackerHistory({ detail: historyItem }: CustomEvent<TrackingHistory>) {
+  function revertTrackerHistory(historyItem: TrackingHistory) {
     const entry = statistics.get(historyItem.dateKey);
 
     if (!entry) {
@@ -547,7 +501,7 @@
       bookStartDate = setFirstBookReadResult[0] as string;
 
       if (setFirstBookReadResult[1]) {
-        dispatch('statisticsSaved');
+        onStatisticsSaved();
       }
 
       for (let index = 0, { length } = statisticsForTitle; index < length; index += 1) {
@@ -566,7 +520,7 @@
         }
       }
 
-      dispatch('trackerAvailable');
+      onTrackerAvailable();
     } catch ({ message }: any) {
       logger.error(`Error initializing timer: ${message}`);
     }
@@ -745,13 +699,74 @@
         )
       : 'N/A';
   }
+  let autoScrollerTimer$ = $derived(
+    autoScroller?.wasAutoScrollerEnabled$.pipe(
+      tap((isEnabled) => {
+        if (isEnabled) {
+          todayKey = getDateKey($startDayHoursForTracker$);
+          autoScrollerStatistics = getDefaultStatistic(bookTitle, todayKey);
+          lastExploredCharCountScroller = exploredCharCount;
+        } else {
+          autoScrollerStatistics = undefined;
+        }
+      }),
+      switchMap((isEnabled) => (isEnabled ? interval(1000) : NEVER)),
+      tap(() => {
+        if (!autoScrollerStatistics) {
+          return;
+        }
+
+        const diff = exploredCharCount - lastExploredCharCountScroller;
+
+        lastExploredCharCountScroller = exploredCharCount;
+        autoScrollerStatistics = {
+          ...updateStatistic(autoScrollerStatistics, 1, diff, Date.now())
+        };
+      }),
+      reduceToEmptyString()
+    )
+  );
+  let hasReadingGoal = $derived(
+    !!($readingGoal$.goalStartDate && todayKey >= $readingGoal$.goalStartDate)
+  );
+  $effect(() => {
+    const state = visibilityState;
+    if (state) untrack(() => handleVisibilityChange(state));
+  });
+  $effect(() => {
+    const menuOpen = $isTrackerMenuOpen$;
+    untrack(() => updateReadingGoalWindowForPausedState(menuOpen));
+  });
+  $effect(() => {
+    if (!$isTrackerPaused$) {
+      untrack(updateLastExploredCharCount);
+    }
+  });
+  $effect(() => {
+    if ($trackerAutoPause$ !== TrackerAutoPause.OFF && !yomiPopover) {
+      yomiPopover = document.querySelector(yomitanPopupSelector);
+
+      if (!yomiPopover) {
+        yomiObserver.observe(document.body, { childList: true, subtree: false });
+      }
+    } else {
+      yomiObserver.disconnect();
+    }
+  });
+  $effect(() => {
+    if ($trackerAutoPause$ !== TrackerAutoPause.OFF && !$trackerPopupDetection$ && yomiPopover) {
+      dictionaryObserver.observe(yomiPopover, { attributes: true });
+    } else {
+      dictionaryObserver.disconnect();
+    }
+  });
 </script>
 
 {$readingTracker$ ?? ''}
 {$updateTrackerIdleTime$ ?? ''}
 {$autoScrollerTimer$ ?? ''}
 
-<svelte:window on:blur={handleBlur} on:focus={handleFocus} />
+<svelte:window onblur={handleBlur} onfocus={handleFocus} />
 <svelte:document bind:visibilityState />
 
 {#if $isTrackerMenuOpen$}
@@ -763,7 +778,7 @@
     use:clickOutside={() => {
       if (!actionInProgress) {
         dialogManager.dialogs$.next([]);
-        dispatch('trackerMenuClosed');
+        onTrackerMenuClosed();
       }
     }}
   >
@@ -793,11 +808,11 @@
       {sectionData}
       canSaveStatistics={statisticsToStore.size > 0}
       bind:wasTrackerPaused
-      on:trackerMenuClosed
-      on:freezeCurrentLocation
-      on:updateCurrentLocation={updateLastExploredCharCount}
-      on:saveStatistics={() => flushUpdates()}
-      on:revertStatistic={revertTrackerHistory}
+      {onTrackerMenuClosed}
+      {onFreezeCurrentLocation}
+      onUpdateCurrentLocation={updateLastExploredCharCount}
+      onSaveStatistics={() => flushUpdates()}
+      onRevertStatistic={revertTrackerHistory}
     />
   </div>
 {/if}

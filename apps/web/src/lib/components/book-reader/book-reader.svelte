@@ -31,93 +31,103 @@
   import { enableReaderWakeLock$, enableTapEdgeToFlip$ } from '#lib/data/store';
   import { onDestroy } from 'svelte';
 
-  export let htmlContent: string;
-  export let rightToLeft: boolean;
-  export let language: string | undefined;
+  interface Props {
+    htmlContent: string;
+    rightToLeft: boolean;
+    language: string | undefined;
+    width: number;
+    height: number;
+    prioritizeReaderStyles: boolean;
+    enableTextJustification: boolean;
+    enableTextWrapPretty: boolean;
+    textIndentation: number;
+    textMarginMode: TextMarginMode;
+    textMarginValue: number;
+    fontColor: string;
+    backgroundColor: string;
+    fontFamilyGroupOne: string;
+    fontFamilyGroupTwo: string;
+    fontWeight: number | null;
+    fontSize: number;
+    lineHeight: number;
+    hideSpoilerImage: boolean;
+    secondDimensionMaxValue: number;
+    firstDimensionMargin: number;
+    autoPositionOnResize: boolean;
+    avoidPageBreak: boolean;
+    pageColumns: number;
+    autoBookmark: boolean;
+    autoBookmarkTime: number;
+    viewMode: ViewMode;
+    exploredCharCount: number;
+    bookCharCount: number;
+    multiplier: number;
+    bookmarkData: Promise<BooksDbBookmarkData | undefined>;
+    autoScroller: AutoScroller | undefined;
+    bookmarkManager: BookmarkManager | undefined;
+    pageManager: PageManager | undefined;
+    isBookmarkScreen: boolean;
+    customReadingPoint: number;
+    customReadingPointTop: number;
+    customReadingPointLeft: number;
+    customReadingPointScrollOffset: number;
+    customReadingPointRange: Range | undefined;
+    showCustomReadingPoint: boolean;
+    onBookmark: () => void;
+    onTrackerPause: () => void;
+  }
 
-  export let width: number;
+  let {
+    htmlContent,
+    rightToLeft,
+    language,
+    width,
+    height,
+    prioritizeReaderStyles,
+    enableTextJustification,
+    enableTextWrapPretty,
+    textIndentation,
+    textMarginMode,
+    textMarginValue,
+    fontColor,
+    backgroundColor,
+    fontFamilyGroupOne,
+    fontFamilyGroupTwo,
+    fontWeight,
+    fontSize,
+    lineHeight,
+    hideSpoilerImage,
+    secondDimensionMaxValue,
+    firstDimensionMargin,
+    autoPositionOnResize,
+    avoidPageBreak,
+    pageColumns,
+    autoBookmark,
+    autoBookmarkTime,
+    viewMode,
+    exploredCharCount = $bindable(),
+    bookCharCount = $bindable(),
+    multiplier,
+    bookmarkData = $bindable(),
+    autoScroller = $bindable(),
+    bookmarkManager = $bindable(),
+    pageManager = $bindable(),
+    isBookmarkScreen = $bindable(),
+    customReadingPoint = $bindable(),
+    customReadingPointTop = $bindable(),
+    customReadingPointLeft = $bindable(),
+    customReadingPointScrollOffset = $bindable(),
+    customReadingPointRange = $bindable(),
+    showCustomReadingPoint = $bindable(),
+    onBookmark,
+    onTrackerPause
+  }: Props = $props();
 
-  export let height: number;
-
-  export let prioritizeReaderStyles: boolean;
-
-  export let enableTextJustification: boolean;
-
-  export let enableTextWrapPretty: boolean;
-
-  export let textIndentation: number;
-
-  export let textMarginMode: TextMarginMode;
-
-  export let textMarginValue: number;
-
-  export let fontColor: string;
-
-  export let backgroundColor: string;
-
-  export let fontFamilyGroupOne: string;
-
-  export let fontFamilyGroupTwo: string;
-
-  export let fontWeight: number | null;
-
-  export let fontSize: number;
-
-  export let lineHeight: number;
-
-  export let hideSpoilerImage: boolean;
-
-  export let secondDimensionMaxValue: number;
-
-  export let firstDimensionMargin: number;
-
-  export let autoPositionOnResize: boolean;
-
-  export let avoidPageBreak: boolean;
-
-  export let pageColumns: number;
-
-  export let autoBookmark: boolean;
-
-  export let autoBookmarkTime: number;
-
-  export let viewMode: ViewMode;
-
-  export let exploredCharCount: number;
-
-  export let bookCharCount: number;
-
-  export let multiplier: number;
-
-  export let bookmarkData: Promise<BooksDbBookmarkData | undefined>;
-
-  export let autoScroller: AutoScroller | undefined;
-
-  export let bookmarkManager: BookmarkManager | undefined;
-
-  export let pageManager: PageManager | undefined;
-
-  export let isBookmarkScreen: boolean;
-
-  export let customReadingPoint: number;
-
-  export let customReadingPointTop: number;
-
-  export let customReadingPointLeft: number;
-
-  export let customReadingPointScrollOffset: number;
-
-  export let customReadingPointRange: Range | undefined;
-
-  export let showCustomReadingPoint: boolean;
-  export let onBookmark: () => void;
-  export let onTrackerPause: () => void;
-
-  let showBlurMessage = false;
+  let showBlurMessage = $state(false);
 
   let wakeLock: WakeLockSentinel | undefined;
 
-  let visibilityState: DocumentVisibilityState;
+  let visibilityState = $state<DocumentVisibilityState>();
 
   const mutationObserver: MutationObserver = new MutationObserver(handleMutation);
 
@@ -126,13 +136,6 @@
   const height$ = new Subject<number>();
 
   const containerEl$ = writableSubject<HTMLElement | null>(null);
-
-  $: heightModifer =
-    firstDimensionMargin && ViewMode.Paginated === viewMode ? firstDimensionMargin * 2 : 0;
-
-  $: if ($enableReaderWakeLock$ && visibilityState === 'visible') {
-    setTimeout(requestWakeLock, 500);
-  }
 
   onDestroy(() => {
     mutationObserver.disconnect();
@@ -195,10 +198,6 @@
     reduceToEmptyString()
   );
 
-  $: width$.next(width);
-
-  $: height$.next(height);
-
   function getAdjustedWidth(widthValue: number) {
     if (ViewMode.Paginated === viewMode && secondDimensionMaxValue) {
       return Math.min(secondDimensionMaxValue, widthValue);
@@ -244,6 +243,20 @@
 
     wakeLock = undefined;
   }
+  let heightModifer = $derived(
+    firstDimensionMargin && ViewMode.Paginated === viewMode ? firstDimensionMargin * 2 : 0
+  );
+  $effect(() => {
+    if (!$enableReaderWakeLock$ || visibilityState !== 'visible') return;
+    const timer = setTimeout(requestWakeLock, 500);
+    return () => clearTimeout(timer);
+  });
+  $effect(() => {
+    width$.next(width);
+  });
+  $effect(() => {
+    height$.next(height);
+  });
 </script>
 
 {#if showBlurMessage}

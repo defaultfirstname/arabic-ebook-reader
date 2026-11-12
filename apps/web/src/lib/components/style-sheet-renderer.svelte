@@ -1,15 +1,13 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
 
-  export let styleSheet: string;
-
-  let styleEl: HTMLStyleElement | undefined;
-
-  $: {
-    if (styleEl) {
-      updateSheet(styleEl, styleSheet);
-    }
+  interface Props {
+    styleSheet: string;
   }
+
+  let { styleSheet }: Props = $props();
+
+  let styleEl: HTMLStyleElement | undefined = $state();
 
   function updateSheet(el: HTMLStyleElement, sheet: string) {
     const styleNode = document.createTextNode(sheet);
@@ -28,6 +26,11 @@
   onDestroy(() => {
     if (styleEl) {
       document.head.removeChild(styleEl);
+    }
+  });
+  $effect(() => {
+    if (styleEl) {
+      updateSheet(styleEl, styleSheet);
     }
   });
 </script>

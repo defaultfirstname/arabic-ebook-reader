@@ -15,44 +15,37 @@
   import { onMount } from 'svelte';
   import Fa from 'svelte-fa';
 
-  export let sectionData: SectionWithProgress[] = [];
-  export let exploredCharCount = 0;
-  export let wasTrackerPaused: boolean;
+  interface Props {
+    sectionData?: SectionWithProgress[];
+    exploredCharCount?: number;
+    wasTrackerPaused: boolean;
+  }
 
-  let chapters: SectionWithProgress[] = [];
-  let currentChapter: SectionWithProgress;
-  let currentChapterIndex = -1;
-  let currentChapterCharacterProgress = '0/0';
-  let currentChapterProgress = '0.00';
+  let { sectionData = [], exploredCharCount = 0, wasTrackerPaused }: Props = $props();
 
-  $: prevChapterAvailable = currentChapterIndex > 0;
-  $: nextChapterAvailable = currentChapterIndex < chapters.length - 1;
-
-  $: if (sectionData) {
-    const [mainChapters, chapterIndex, referenceId] = getChapterData(sectionData);
-    const relevantSections = sectionData.filter(
+  let [chapters, currentChapterIndex, referenceId] = $derived.by(
+    (): ReturnType<typeof getChapterData> =>
+      sectionData.length ? getChapterData(sectionData) : [[], -1, '']
+  );
+  let currentChapter = $derived(chapters[currentChapterIndex]);
+  let currentChapterProgress = $derived.by(() => {
+    const sections = sectionData.filter(
       (section) => section.reference === referenceId || section.parentChapter === referenceId
     );
-
-    currentChapterProgress = getWeightedAverage(
-      relevantSections.map((section) => section.progress),
-      relevantSections.map((section) => section.charactersWeight)
+    return getWeightedAverage(
+      sections.map((section) => section.progress),
+      sections.map((section) => section.charactersWeight)
     ).toFixed(2);
-    chapters = mainChapters;
-    currentChapterIndex = chapterIndex;
-    currentChapter = mainChapters[currentChapterIndex];
-  }
-
-  $: if (currentChapter) {
-    scrollToChapterItem(document.getElementById(`for${currentChapter.reference}`));
-
+  });
+  let currentChapterCharacterProgress = $derived.by(() => {
+    if (!currentChapter) return '0/0';
     const endCharacter = currentChapter.characters as number;
-
-    currentChapterCharacterProgress = `${Math.min(
+    const progress = Math.min(
       Math.max(exploredCharCount - (currentChapter.startCharacter as number), 0),
       endCharacter
-    )} / ${endCharacter}`;
-  }
+    );
+    return `${progress} / ${endCharacter}`;
+  });
 
   onMount(() => {
     $skipKeyDownListener$ = true;
@@ -61,9 +54,6 @@
         component: '<div/>'
       }
     ]);
-    if (currentChapter) {
-      scrollToChapterItem(document.getElementById(`for${currentChapter.reference}`));
-    }
 
     return () => {
       $skipKeyDownListener$ = false;
@@ -120,6 +110,13 @@
       isTrackerPaused$.next(false);
     }
   }
+  let prevChapterAvailable = $derived(currentChapterIndex > 0);
+  let nextChapterAvailable = $derived(currentChapterIndex < chapters.length - 1);
+  $effect(() => {
+    if (currentChapter) {
+      scrollToChapterItem(document.getElementById(`for${currentChapter.reference}`));
+    }
+  });
 </script>
 
 <div class="flex justify-between p-4">
@@ -129,8 +126,8 @@
     role="button"
     title="Close Table of Contents"
     class="flex items-end md:items-center"
-    on:click={closeTocMenu}
-    on:keyup={dummyFn}
+    onclick={closeTocMenu}
+    onkeyup={dummyFn}
   >
     <Fa icon={faXmark} />
   </div>
@@ -147,8 +144,8 @@
         class:opacity-30={chapter.progress === 100 && chapter !== currentChapter}
         class:hover:opacity-100={chapter.progress === 100 && chapter !== currentChapter}
         class:hover:opacity-60={chapter.progress < 100 || chapter === currentChapter}
-        on:click={() => goToChapter(chapter.reference, true)}
-        on:keyup={dummyFn}
+        onclick={() => goToChapter(chapter.reference, true)}
+        onkeyup={dummyFn}
       >
         {chapter.label}
       </div>
@@ -164,8 +161,8 @@
     role="button"
     title={prevChapterAvailable ? 'Previous Chapter' : ''}
     class:opacity-30={!prevChapterAvailable}
-    on:click={() => changeChapter(prevChapterAvailable, -1)}
-    on:keyup={dummyFn}
+    onclick={() => changeChapter(prevChapterAvailable, -1)}
+    onkeyup={dummyFn}
   >
     <Fa icon={faChevronLeft} />
   </div>
@@ -174,8 +171,8 @@
     role="button"
     title={nextChapterAvailable ? 'Next Chapter' : ''}
     class:opacity-30={!nextChapterAvailable}
-    on:click={() => changeChapter(nextChapterAvailable, 1)}
-    on:keyup={dummyFn}
+    onclick={() => changeChapter(nextChapterAvailable, 1)}
+    onkeyup={dummyFn}
   >
     <Fa icon={faChevronRight} />
   </div>
