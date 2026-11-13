@@ -12,11 +12,9 @@
   import MessageDialog from '#lib/components/message-dialog.svelte';
   import { preFilteredTitlesForStatistics$ } from '#lib/components/statistics/statistics-types';
   import { pxScreen } from '#lib/css-classes';
-  import type { BooksDbBookmarkData } from '#lib/data/database/books-db/versions/books-db';
   import { dialogManager } from '#lib/data/dialog-manager';
   import { pagePath } from '#lib/data/env';
   import { logger } from '#lib/data/logger';
-  import { SortDirection, type SortOption } from '#lib/data/sort-types';
   import { ApiStorageHandler } from '#lib/data/storage/handler/api-handler';
   import { getStorageHandler } from '#lib/data/storage/storage-handler-factory';
   import { StorageKey } from '#lib/data/storage/storage-types';
@@ -56,6 +54,7 @@
   import { combineLatest, map, Observable, share, Subject, switchMap, takeUntil } from 'rxjs';
   import { onDestroy, tick } from 'svelte';
   import Fa from 'svelte-fa';
+  import { bookmarkToProgress, compareBookCards } from './book-card-rules';
 
   const booksAreLoading$ = database.listLoading$.pipe(map((isLoading) => isLoading));
 
@@ -66,7 +65,7 @@
   ]).pipe(
     map(([dataList, bookmarks]) => {
       const sortProp = $booklistSortOptions$[$storageSource$];
-      const isTitleSort = sortProp.property === 'title';
+      const compare = (a: BookCardProps, b: BookCardProps) => compareBookCards(a, b, sortProp);
 
       if ($storageSource$ === StorageKey.BROWSER) {
         const bookmarkMap = keyBy(bookmarks, 'dataId');
@@ -78,17 +77,11 @@
               ...d,
               ...bookmarkToProgress(bookmarkMap.get(d.id))
             }))
-            .sort((card1: BookCardProps, card2: BookCardProps) =>
-              sortBookCards(card1, card2, sortProp, isTitleSort)
-            )
+            .sort(compare)
         ];
       }
 
-      return [
-        ...dataList.sort((card1: BookCardProps, card2: BookCardProps) =>
-          sortBookCards(card1, card2, sortProp, isTitleSort)
-        )
-      ];
+      return [...dataList.sort(compare)];
     }),
     share()
   );
@@ -117,43 +110,6 @@
   });
 
   onDestroy(() => dialogManager.dialogs$.next([]));
-
-  function bookmarkToProgress(b: BooksDbBookmarkData | undefined) {
-    return b?.progress
-      ? {
-          progress: typeof b.progress === 'string' ? +b.progress.slice(0, -1) : b.progress,
-          lastBookmarkModified: b.lastBookmarkModified || 0
-        }
-      : { progress: 0, lastBookmarkModified: 0 };
-  }
-
-  function sortBookCards(
-    card1: BookCardProps,
-    card2: BookCardProps,
-    sortProp: SortOption,
-    isTitleSort: boolean
-  ) {
-    const card1Prop = card1[sortProp.property] || (isTitleSort ? '' : 0);
-    const card2Prop = card2[sortProp.property] || (isTitleSort ? '' : 0);
-
-    let sortDiff = 0;
-
-    if (sortProp.direction === SortDirection.ASC) {
-      sortDiff = isTitleSort
-        ? card1.title.localeCompare(card2.title, 'ar', { numeric: true })
-        : +card1Prop - +card2Prop;
-    } else {
-      sortDiff = isTitleSort
-        ? card2.title.localeCompare(card1.title, 'ar', { numeric: true })
-        : +card2Prop - +card1Prop;
-    }
-
-    if (!sortDiff) {
-      sortDiff = card1.title.localeCompare(card2.title, 'ar', { numeric: true });
-    }
-
-    return sortDiff;
-  }
 
   async function onBookClick(bookId: number) {
     if (!operationAllowed()) {
