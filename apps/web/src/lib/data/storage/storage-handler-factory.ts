@@ -5,6 +5,7 @@
  */
 
 import { InternalStorageSources, StorageKey } from '#lib/data/storage/storage-types';
+import { logger } from '#lib/data/logger';
 
 import { BackupStorageHandler } from '#lib/data/storage/handler/backup-handler';
 import type { BaseStorageHandler } from '#lib/data/storage/handler/base-handler';
@@ -20,6 +21,23 @@ let browserStorageHandler: BrowserStorageHandler;
 let gDriveStorageHandler: GDriveStorageHandler;
 let oneDriveStorageHandler: OneDriveStorageHandler;
 let fsStorageHandler: FilesystemStorageHandler;
+
+export function listLibraryBooks({
+  window,
+  source,
+  refreshedHandler
+}: {
+  window: Window;
+  source: StorageKey;
+  refreshedHandler?: BaseStorageHandler;
+}) {
+  return Promise.resolve(refreshedHandler || getStorageHandler(window, source, '')).then(
+    (handler) => {
+      logger.clearHistory();
+      return handler.getBookList();
+    }
+  );
+}
 
 export function getStorageHandler(
   window: Window,

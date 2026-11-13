@@ -15,7 +15,7 @@
   import { dialogManager } from '#lib/data/dialog-manager';
   import { pagePath } from '#lib/data/env';
   import { logger } from '#lib/data/logger';
-  import { ApiStorageHandler } from '#lib/data/storage/handler/api-handler';
+  import { openLibraryBook } from '#lib/data/storage/book-library';
   import { getStorageHandler } from '#lib/data/storage/storage-handler-factory';
   import { StorageKey } from '#lib/data/storage/storage-types';
   import { storageSource$ } from '#lib/data/storage/storage-view';
@@ -133,31 +133,18 @@
           throw new Error('Book title not found');
         }
 
-        const isForBrowser = $storageSource$ === StorageKey.BROWSER;
-        const handler = getStorageHandler(
+        const { id, isCloudBook } = await openLibraryBook({
           window,
-          $storageSource$,
-          '',
-          isForBrowser,
-          $cacheStorageData$,
-          $replicationSaveBehavior$,
-          $statisticsMergeMode$,
-          $readingGoalsMergeMode$
-        );
-
-        if (!cacheStorageData$) {
-          handler.clearData(false);
-        }
-
-        handler.startContext({
-          id: isForBrowser ? bookItem.id : 0,
-          title: bookItem.title,
-          imagePath: bookItem.imagePath
+          source: $storageSource$,
+          book: bookItem,
+          cacheStorageData: $cacheStorageData$,
+          saveBehavior: $replicationSaveBehavior$,
+          statisticsMergeMode: $statisticsMergeMode$,
+          readingGoalsMergeMode: $readingGoalsMergeMode$
         });
+        idToOpen = id;
 
-        idToOpen = await handler.prepareBookForReading();
-
-        if (!$hideExternalReadHint$ && handler instanceof ApiStorageHandler) {
+        if (!$hideExternalReadHint$ && isCloudBook) {
           const nextAction = await new Promise<string>((resolver) => {
             dialogManager.dialogs$.next([
               {
