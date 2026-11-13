@@ -1692,12 +1692,14 @@
 {#if $enableTapEdgeToFlip$ && isPaginated && !$skipKeyDownListener$}
   <button
     class="fixed left-0 z-10 w-5"
+    aria-label={rightToLeft ? 'Next page' : 'Previous page'}
     onclick={rightToLeft ? () => pageManager?.nextPage() : () => pageManager?.prevPage()}
     style:height={tapButtonHeight}
     style:top={tapButtonTop}
   ></button>
   <button
     class="fixed right-0 z-10 w-5"
+    aria-label={rightToLeft ? 'Previous page' : 'Next page'}
     onclick={rightToLeft ? () => pageManager?.prevPage() : () => pageManager?.nextPage()}
     style:height={tapButtonHeight}
     style:top={tapButtonTop}

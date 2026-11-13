@@ -5,13 +5,17 @@
  */
 
 import { expect, test } from '@playwright/test';
-import { TextReader, Uint8ArrayWriter, ZipWriter } from '@zip.js/zip.js';
+import { TextReader, Uint8ArrayReader, Uint8ArrayWriter, ZipWriter } from '@zip.js/zip.js';
 import { Buffer } from 'node:buffer';
 
 const title = 'Arabic EPUB Smoke Test';
 const htmlzTitle = 'Arabic HTMLZ Smoke Test';
 const firstChapter = 'الفصل الأول';
 const secondChapter = 'الفصل الثاني';
+const cover = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jR4sAAAAASUVORK5CYII=',
+  'base64'
+);
 
 function chapter(heading: string) {
   const paragraphs = '<p>هٰذَا نَصٌّ عَرَبِيٌّ لِلتَّجْرِبَةِ.</p>'.repeat(60);
@@ -33,6 +37,7 @@ async function createEpub() {
       </metadata>
       <manifest>
         <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
+        <item id="cover" href="cover.png" media-type="image/png" properties="cover-image"/>
         <item id="one" href="one.xhtml" media-type="application/xhtml+xml"/>
         <item id="two" href="two.xhtml" media-type="application/xhtml+xml"/>
       </manifest>
@@ -45,14 +50,18 @@ async function createEpub() {
       </ol></nav></body>
     </html>`,
     'one.xhtml': chapter(firstChapter),
-    'two.xhtml': chapter(secondChapter)
+    'two.xhtml': chapter(secondChapter),
+    'cover.png': new Uint8Array(cover)
   });
 }
 
-async function zipBook(entries: Record<string, string>) {
+async function zipBook(entries: Record<string, string | Uint8Array>) {
   const zip = new ZipWriter(new Uint8ArrayWriter(), { useWebWorkers: false, level: 0 });
   for (const [name, content] of Object.entries(entries)) {
-    await zip.add(name, new TextReader(content));
+    await zip.add(
+      name,
+      typeof content === 'string' ? new TextReader(content) : new Uint8ArrayReader(content)
+    );
   }
   return Buffer.from(await zip.close());
 }
@@ -105,7 +114,23 @@ for (const book of books) {
         mimeType: book.mimeType,
         buffer: await book.create()
       });
-      await page.getByRole('button', { name: book.title, exact: true }).click();
+      const card = page.getByRole('button', { name: book.title, exact: true });
+      await expect(card).toBeVisible();
+      if (book.format === 'epub') {
+        if (mode === 'continuous') {
+          await page.reload();
+          await page.setViewportSize({ width: 390, height: 740 });
+        }
+        const image = card.locator('img');
+        await expect
+          .poll(() => image.evaluate((node: HTMLImageElement) => node.naturalWidth))
+          .toBeGreaterThan(0);
+        await expect(image).toHaveCSS('filter', 'none');
+        await page.setViewportSize({ width: 960, height: 720 });
+      } else {
+        await expect(card.locator('img')).toHaveCount(0);
+      }
+      await card.click();
       const content = page.locator('.book-content');
       await expect(content.getByText(firstChapter, { exact: true })).toBeVisible();
 

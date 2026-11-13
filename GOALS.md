@@ -42,6 +42,15 @@ Allow **4–8 focused working days** for the full migration, including verificat
 
 Run the build and type checks for each pull request. Run the browser smoke test and verify the flows affected by that step before merging.
 
+## Refactoring after the migration
+
+- [ ] **Start with Book Manager.** Move its sort rules and progress calculations into plain TypeScript and reuse them where the same rules already exist. Keep Svelte responsible for rendering and user actions. Check ordering, selection, covers, and reopening a book.
+- [ ] **Simplify the shared reader route.** Separate bookmark and progress calculations from pagination, scrolling, and DOM events. Move one flow at a time and check the saved character position in both modes against the current smoke tests.
+- [ ] **Give storage callers a smaller API.** Start with Book Manager's list and open operations. Replace long positional arguments with named options as callers move. Keep IndexedDB, ZIP backups, and cloud-provider calls in their existing handlers. Verify reopening an existing library and restoring an older ZIP before touching sync code.
+- [ ] **Isolate hosting and browser dependencies as they come up.** Keep SvelteKit routing, service worker registration, and browser APIs at the edge of the app. Verify the static build on a second host before introducing deployment changes.
+
+Use one small pull request per step. Preserve the stored settings, bookmark offsets, and backup format. Run lint, both type checks, the production build, and the browser smoke tests before merging.
+
 ## Run the smoke tests locally
 
 From the repository root, install the workspace dependencies and Playwright's headless Chromium once:

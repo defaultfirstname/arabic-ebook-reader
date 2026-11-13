@@ -1,6 +1,5 @@
 <script lang="ts">
   import { faImage } from '@fortawesome/free-regular-svg-icons';
-  import { onDestroy } from 'svelte';
   import Fa from 'svelte-fa';
 
   interface Props {
@@ -12,62 +11,22 @@
 
   let { imagePath, title, progress, onclick }: Props = $props();
 
-  let objectUrl = '';
+  let objectUrl = $state('');
+  let failedSource = $state('');
+  let source = $derived(typeof imagePath === 'string' ? imagePath : objectUrl);
 
-  onDestroy(() => {
-    if (objectUrl) {
-      URL.revokeObjectURL(objectUrl);
-    }
-  });
-
-  function convertImagePath(value: string | Blob) {
-    if (objectUrl) {
-      URL.revokeObjectURL(objectUrl);
+  $effect(() => {
+    failedSource = '';
+    if (typeof imagePath === 'string') {
       objectUrl = '';
-    }
-    if (typeof value !== 'string') {
-      objectUrl = URL.createObjectURL(
-        value.type ? value : new Blob([value], { type: 'image/jpeg' })
-      );
-
-      return objectUrl;
+      return;
     }
 
-    return value;
-  }
-
-  function mapImagePathFactory() {
-    let prevValue: string | Blob | undefined;
-    let prevResponse: string | undefined;
-
-    const isEqual = (newValue: string | Blob) => {
-      if (!prevValue) return false;
-      if (prevValue instanceof Blob && newValue instanceof Blob) {
-        return prevValue.type === newValue.type && prevValue.size === newValue.size;
-      }
-      if (typeof prevValue !== 'object' || typeof newValue !== 'object') {
-        return prevValue === newValue;
-      }
-      return false;
-    };
-
-    return (value: string | Blob) => {
-      if (isEqual(value)) return prevResponse as string;
-
-      prevValue = value;
-      prevResponse = convertImagePath(value);
-
-      return prevResponse;
-    };
-  }
-
-  const mapImagePath = mapImagePathFactory();
-
-  let imgEl: HTMLImageElement | undefined = $state();
-  let imageLoading = $state(true);
-
-  let imageLoadComplete = $derived(imgEl?.complete && !imageLoading);
-  let alt = $derived(`${title}_cover`);
+    const blob = imagePath.type ? imagePath : new Blob([imagePath], { type: 'image/jpeg' });
+    const url = URL.createObjectURL(blob);
+    objectUrl = url;
+    return () => URL.revokeObjectURL(url);
+  });
 </script>
 
 <div
@@ -81,22 +40,18 @@
 >
   <div class="inline">
     <div class="h-full w-full text-5xl sm:text-7xl">
-      {#if !imageLoadComplete}
-        <Fa class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" icon={faImage} />
-      {/if}
-
-      {#if imagePath}
+      {#if source && source !== failedSource}
         <img
           decoding="async"
           loading="lazy"
           referrerpolicy="no-referrer"
-          class="book-cover relative h-full w-full object-cover transition delay-150 duration-700 ease-out"
-          class:blur={!imageLoadComplete}
-          src={mapImagePath(imagePath)}
-          {alt}
-          bind:this={imgEl}
-          onload={() => (imageLoading = false)}
+          class="book-cover relative h-full w-full object-cover"
+          src={source}
+          alt=""
+          onerror={(event) => (failedSource = event.currentTarget.getAttribute('src') ?? '')}
         />
+      {:else}
+        <Fa class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" icon={faImage} />
       {/if}
     </div>
 
