@@ -20,6 +20,10 @@ Use small, reviewable PRs. Preserve stored settings, book data, character offset
 
 Start PDF development once the main flows are documented, the baseline passes, and the format boundary and any PDF-blocking review findings are resolved. Treat the rest of the cleanup as a follow-up list so the refactor has a clear finish.
 
+Use the [contributor guide](CONTRIBUTING.md) to review the current reader and trace where fixed-page content needs its own storage and rendering paths.
+
+Local Nginx verification covered direct book links, offline resume, and legacy ZIP restore. The phone-emulation check timed out after swiping on Nginx while the same test passed in the Vite preview. Keep the deployed-site check and physical-phone navigation check open.
+
 ## Phase 2: Arabic PDF reading
 
 ### First release

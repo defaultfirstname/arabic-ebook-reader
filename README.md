@@ -6,6 +6,8 @@ An offline-capable reader for Modern Standard Arabic with right-to-left reading,
 
 See the [project roadmap](ROADMAP.md) for the refactor plan and proposed Arabic PDF support. The [Svelte migration record](GOALS.md) includes the upgrade checklist and instructions for running the browser smoke tests.
 
+The [contributor guide](CONTRIBUTING.md) follows a book from import to offline reopening and maps where PDF support fits.
+
 # Features
 
 - [x] Supports HTMLZ, Plain Text and EPUB files
