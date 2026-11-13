@@ -157,6 +157,7 @@
   import { getDateKey } from '#lib/functions/statistic-util';
   import { clickOutside } from '#lib/functions/use-click-outside';
   import { dummyFn, isMobile$ } from '#lib/functions/utils';
+  import { formatBookProgress } from './format-book-progress';
   import { formatChapterProgress } from './format-chapter-progress';
   import { onKeydownReader } from './on-keydown-reader';
   import { onDestroy, onMount, tick, untrack } from 'svelte';
@@ -1761,13 +1762,13 @@
     {/if}
   </div>
   {#if showFooter && bookCharCount}
-    {@const currentProgress = [
-      $showCharacterCounter$ ? `${exploredCharCount} / ${bookCharCount}` : '',
-      $showPercentage$ ? `${((exploredCharCount / bookCharCount) * 100).toFixed(2)}%` : '',
-      $showFooterChapterCharacterCounter$ || $showFooterChapterPercentage$ ? 'T' : ''
-    ]
-      .filter(Boolean)
-      .join(' ')}
+    {@const { copyText, displayText } = formatBookProgress({
+      exploredCharCount,
+      bookCharCount,
+      showCharacterCounter: $showCharacterCounter$,
+      showPercentage: $showPercentage$,
+      showTotalLabel: $showFooterChapterCharacterCounter$ || $showFooterChapterPercentage$
+    })}
     <div
       tabindex="0"
       role="button"
@@ -1785,7 +1786,7 @@
           return;
         }
 
-        copyCurrentProgress(currentProgress.replace(/ T$/, ''));
+        copyCurrentProgress(copyText);
 
         if (target instanceof HTMLElement) {
           pulseElement(target.parentElement || target, 'add', 0.5, 500);
@@ -1794,7 +1795,7 @@
       onkeyup={dummyFn}
     >
       <span class="mr-4" class:invisible={!footerChapterProgress}>{footerChapterProgress}</span>
-      <span class:invisible={!$showCharacterCounter$ && !$showPercentage$}>{currentProgress}</span>
+      <span class:invisible={!$showCharacterCounter$ && !$showPercentage$}>{displayText}</span>
     </div>
   {/if}
 </div>
