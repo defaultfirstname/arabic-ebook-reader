@@ -334,6 +334,36 @@ test('accepts a dropped PDF and reports an invalid PDF without saving it', async
 test.describe('touch navigation', () => {
   test.use({ viewport: { width: 390, height: 740 }, hasTouch: true, isMobile: true });
 
+  test('imports a phone picker PDF supplied by MIME type without a filename extension', async ({
+    page
+  }) => {
+    await page.addInitScript(() => {
+      Reflect.deleteProperty(Promise, 'withResolvers');
+      Reflect.deleteProperty(AbortSignal.prototype, 'throwIfAborted');
+    });
+    await page.goto('/manage');
+    const menu = page.getByRole('button', { name: 'Import File(s) menu', exact: true });
+    const importFiles = page.getByText('Import File(s)', { exact: true });
+    await expect(async () => {
+      if (!(await importFiles.isVisible())) await menu.tap();
+      await expect(importFiles).toBeVisible({ timeout: 500 });
+    }).toPass({ timeout: 5000 });
+    const fileChooser = page.waitForEvent('filechooser');
+    await importFiles.tap();
+    await (
+      await fileChooser
+    ).setFiles({
+      name: 'كتاب الهاتف',
+      mimeType: 'application/pdf',
+      buffer: spreadFixture()
+    });
+    const card = page.getByRole('button', { name: 'كتاب الهاتف PDF', exact: true });
+    await expect(card).toBeVisible();
+    await page.reload();
+    await card.tap();
+    await expect(page.getByLabel('Page 1', { exact: true })).toHaveAttribute('data-ready', 'true');
+  });
+
   test('swipes right to advance and left to return', async ({ page, context }) => {
     await page.goto('/pdf-preview');
     await page.getByLabel('Open PDF').setInputFiles({

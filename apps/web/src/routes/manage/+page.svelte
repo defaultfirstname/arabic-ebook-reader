@@ -280,8 +280,8 @@
     initializeReplicationProgressData();
 
     const allFiles = Array.from(fileList);
-    const files = allFiles.filter((file) => getBookImportFormat(file.name));
-    const pdfFiles = allFiles.filter((file) => isPdfFile(file.name));
+    const files = allFiles.filter((file) => !isPdfFile(file) && getBookImportFormat(file.name));
+    const pdfFiles = allFiles.filter(isPdfFile);
     const canImportPdf = $storageSource$ === StorageKey.BROWSER && !$fileCountData$;
     const errors: string[] = [];
     if (pdfFiles.length && !canImportPdf) {
@@ -335,12 +335,14 @@
         if (cancelSignal.aborted) break;
         let opened: Awaited<ReturnType<typeof loadPdf>> | undefined;
         try {
-          opened = await loadPdf(file, cancelSignal);
+          const data = await file.arrayBuffer();
+          // PDF.js transfers its buffer to the worker. Keep the original bytes for storage.
+          opened = await loadPdf(data.slice(0), cancelSignal);
           const pages = await readPdfDimensions(opened.document, cancelSignal);
           if (!pages.length) throw new Error('Empty PDF');
           await database.addPdfBook(
             {
-              title: file.name.slice(0, -4) || file.name,
+              title: file.name.replace(/\.pdf$/i, '') || file.name,
               pages,
               page: 1,
               layout: 'cover',
@@ -348,11 +350,12 @@
               lastBookOpen: 0,
               lastBookmarkModified: 0
             },
-            file,
+            data,
             cancelSignal
           );
         } catch (cause) {
           if (!cancelSignal.aborted) {
+            logger.warn('PDF import failed', cause);
             errors.push(
               `${file.name}: ${opened ? 'Could not import this PDF.' : pdfOpenError(cause)}`
             );

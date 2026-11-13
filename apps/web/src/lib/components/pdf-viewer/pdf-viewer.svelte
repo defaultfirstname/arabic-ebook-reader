@@ -5,7 +5,11 @@
   import { getPdfSpreads, type PdfLayout } from './pdf-spreads';
 
   interface Props {
-    saved?: { title: string; file: Blob; pages: PdfPageDimensions[] } & PdfReadingPosition;
+    saved?: {
+      title: string;
+      file: Blob | ArrayBuffer;
+      pages: PdfPageDimensions[];
+    } & PdfReadingPosition;
     libraryHref?: string;
     onPositionChange?: (position: PdfReadingPosition) => Promise<void>;
   }
@@ -35,7 +39,7 @@
   const scale = $derived(spreadWidth ? Math.min(width / spreadWidth, height / spreadHeight) : 0);
 
   async function openPdf(
-    file: Blob,
+    file: Blob | ArrayBuffer,
     title: string,
     initial?: { pages: PdfPageDimensions[] } & PdfReadingPosition
   ) {

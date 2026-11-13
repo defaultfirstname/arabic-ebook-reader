@@ -11,7 +11,7 @@ import type { PdfBook } from '#lib/data/storage/pdf-book';
 interface BooksDb extends BooksDbV6 {
   lastItem: { key: number; value: BookReference };
   pdfBook: { key: number; value: PdfBook };
-  pdfFile: { key: number; value: Blob };
+  pdfFile: { key: number; value: Blob | ArrayBuffer };
 }
 
 export type BooksDbBookData = BooksDb['data']['value'];

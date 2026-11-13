@@ -7,7 +7,7 @@
 
   const libraryHref = `${pagePath}/manage`;
   const id = $derived(Number(page.url.searchParams.get('id')));
-  let saved: { book: PdfBook; file: Blob } | undefined = $state.raw();
+  let saved: { book: PdfBook; file: Blob | ArrayBuffer } | undefined = $state.raw();
   let loading = $state(true);
   let error = $state('');
 

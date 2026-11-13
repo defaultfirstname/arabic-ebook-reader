@@ -6,6 +6,7 @@
 
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import type { PdfPageDimensions } from '#lib/data/storage/pdf-book';
+import { throwIfAborted } from '#lib/functions/replication/replication-error';
 
 const assetUrls = import.meta.glob<string>(
   '../../../../node_modules/pdfjs-dist/{cmaps/*.bcmap,standard_fonts/*.{pfb,ttf},wasm/{jbig2,openjpeg,qcms_bg}.wasm}',
@@ -29,15 +30,13 @@ class PdfBinaryDataFactory {
   }
 }
 
-export async function loadPdf(file: Blob, signal: AbortSignal) {
-  const [pdfjs, { default: workerUrl }, data] = await Promise.all([
-    import('pdfjs-dist'),
-    import('pdfjs-dist/build/pdf.worker.min.mjs?url'),
-    file.arrayBuffer()
+export async function loadPdf(file: Blob | ArrayBuffer, signal: AbortSignal) {
+  const [{ getDocument }, data] = await Promise.all([
+    import('./pdf-engine'),
+    file instanceof Blob ? file.arrayBuffer() : file
   ]);
-  signal.throwIfAborted();
-  pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
-  const task = pdfjs.getDocument({
+  throwIfAborted(signal);
+  const task = getDocument({
     data,
     disableWorkerRendering: true,
     useWorkerFetch: false,
@@ -61,7 +60,7 @@ export async function loadPdf(file: Blob, signal: AbortSignal) {
 export async function readPdfDimensions(document: PDFDocumentProxy, signal: AbortSignal) {
   const dimensions: PdfPageDimensions[] = [];
   for (let number = 1; number <= document.numPages; number += 1) {
-    signal.throwIfAborted();
+    throwIfAborted(signal);
     const page = await document.getPage(number);
     const { width, height } = page.getViewport({ scale: 1 });
     dimensions.push({ width, height });

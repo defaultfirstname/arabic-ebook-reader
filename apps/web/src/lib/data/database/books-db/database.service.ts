@@ -357,9 +357,9 @@ export class DatabaseService {
     this.lastItemChanged$.next();
   }
 
-  async addPdfBook(book: Omit<PdfBook, 'id'>, file: Blob, signal: AbortSignal) {
+  async addPdfBook(book: Omit<PdfBook, 'id'>, file: ArrayBuffer, signal: AbortSignal) {
     const db = await this.db;
-    signal.throwIfAborted();
+    throwIfAborted(signal);
     const tx = db.transaction(['pdfBook', 'pdfFile'], 'readwrite');
     const save = tx
       .objectStore('pdfBook')
