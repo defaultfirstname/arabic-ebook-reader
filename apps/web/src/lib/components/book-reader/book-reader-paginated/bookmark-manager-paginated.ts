@@ -8,6 +8,7 @@ import type { BehaviorSubject, Observable } from 'rxjs';
 
 import type { BookmarkManager } from '#lib/components/book-reader/types';
 import type { BooksDbBookmarkData } from '#lib/data/database/books-db/versions/books-db';
+import { createReaderBookmark } from '../create-reader-bookmark';
 import type { PageManagerPaginated } from './page-manager-paginated';
 import type { SectionCharacterStatsCalculator } from './section-character-stats-calculator';
 
@@ -55,14 +56,11 @@ export class BookmarkManagerPaginated implements BookmarkManager {
     customReadingPointRange: Range | undefined
   ): BooksDbBookmarkData {
     const exploredCharCount = this.calculator.calcExploredCharCount(customReadingPointRange);
-    const bookCharCount = this.calculator.charCount;
-
-    return {
+    return createReaderBookmark({
       dataId: bookId,
       exploredCharCount,
-      includesArabicCharacters: true,
-      progress: bookCharCount ? exploredCharCount / bookCharCount : 0,
-      lastBookmarkModified: new Date().getTime()
-    };
+      bookCharCount: this.calculator.charCount,
+      lastBookmarkModified: Date.now()
+    });
   }
 }

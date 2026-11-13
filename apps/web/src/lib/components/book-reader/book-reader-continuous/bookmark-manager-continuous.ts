@@ -4,8 +4,9 @@
  * All rights reserved.
  */
 
-import type { BookmarkManager } from '../types';
 import type { BooksDbBookmarkData } from '#lib/data/database/books-db/versions/books-db';
+import { createReaderBookmark } from '../create-reader-bookmark';
+import type { BookmarkManager } from '../types';
 import type { CharacterStatsCalculator } from './character-stats-calculator';
 
 export class BookmarkManagerContinuous implements BookmarkManager {
@@ -25,14 +26,16 @@ export class BookmarkManagerContinuous implements BookmarkManager {
   formatBookmarkData(bookId: number, customReadingPointScrollOffset = 0): BooksDbBookmarkData {
     const exploredCharCount = this.calculator.calcExploredCharCount(customReadingPointScrollOffset);
     const bookCharCount = this.calculator.charCount;
+    const scrollY = this.window.scrollY;
 
     return {
-      dataId: bookId,
-      exploredCharCount,
-      includesArabicCharacters: true,
-      progress: bookCharCount ? exploredCharCount / bookCharCount : 0,
-      scrollY: this.window.scrollY,
-      lastBookmarkModified: new Date().getTime()
+      ...createReaderBookmark({
+        dataId: bookId,
+        exploredCharCount,
+        bookCharCount,
+        lastBookmarkModified: Date.now()
+      }),
+      scrollY
     };
   }
 
