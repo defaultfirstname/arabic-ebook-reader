@@ -38,6 +38,10 @@
   import { cloneMutateSet } from '#lib/functions/clone-mutate-set';
   import { getDropEventFiles } from '#lib/functions/file-dom/get-drop-event-files';
   import { inputFile } from '#lib/functions/file-dom/input-file';
+  import {
+    bookImportAccept,
+    getBookImportFormat
+  } from '#lib/functions/file-loaders/book-import-format';
   import { formatPageTitle } from '#lib/functions/format-page-title';
   import { keyBy } from '#lib/functions/key-by';
   import { handleErrorDuringReplication } from '#lib/functions/replication/error-handler';
@@ -250,8 +254,7 @@
 
     initializeReplicationProgressData();
 
-    const supportedExtRegex = /\.(?:htmlz|epub|txt)$/;
-    const files = Array.from(fileList).filter((f) => supportedExtRegex.test(f.name));
+    const files = Array.from(fileList).filter((file) => getBookImportFormat(file.name));
     const errorTitle = 'Bookimport failed';
 
     if (!files.length) {
@@ -669,13 +672,7 @@
       </div>
     </div>
     <label class="fixed inset-0 z-0">
-      <input
-        type="file"
-        accept="application/epub+zip,.epub,.htmlz,plain/text,.txt"
-        multiple
-        hidden
-        use:inputFile={onFilesChange}
-      />
+      <input type="file" accept={bookImportAccept} multiple hidden use:inputFile={onFilesChange} />
     </label>
   {/if}
 </div>

@@ -2,6 +2,7 @@
   import { browser } from '$app/env';
   import type { BookCardProps } from '#lib/components/book-card/book-card-props';
   import { mergeEntries } from '#lib/components/merged-header-icon/merged-entries';
+  import { bookImportAccept } from '#lib/functions/file-loaders/book-import-format';
   import MergedHeaderIcon from '#lib/components/merged-header-icon/merged-header-icon.svelte';
   import Popover from '#lib/components/popover/popover.svelte';
   import {
@@ -198,7 +199,7 @@
   hidden
   multiple
   type="file"
-  accept="application/epub+zip,.epub,.htmlz,plain/text,.txt"
+  accept={bookImportAccept}
   use:inputFile={dispatchFilesChange}
   bind:this={fileImportElm}
 />
