@@ -1,13 +1,14 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { pagePath } from '#lib/data/env';
+  import { getBookHref } from '#lib/data/book-reference';
   import { database } from '#lib/data/store';
   import { formatPageTitle } from '#lib/functions/format-page-title';
   import { observe } from '#lib/functions/rxjs/use-observable';
-  import { map, tap } from 'rxjs';
+  import { map, take, tap } from 'rxjs';
 
   const autoNavigate$ = database.lastItem$.pipe(
-    map((lastItem) => (lastItem ? `${pagePath}/b?id=${lastItem.dataId}` : 'manage')),
+    take(1),
+    map((lastItem) => (lastItem ? getBookHref(lastItem) : 'manage')),
     tap(goto)
   );
 </script>

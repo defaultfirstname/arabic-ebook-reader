@@ -6,10 +6,11 @@
     imagePath: string | Blob;
     title: string;
     progress: number;
+    format?: 'pdf';
     onclick: () => void;
   }
 
-  let { imagePath, title, progress, onclick }: Props = $props();
+  let { imagePath, title, progress, format, onclick }: Props = $props();
 
   let objectUrl = $state('');
   let failedSource = $state('');
@@ -32,6 +33,7 @@
 <div
   tabindex="0"
   role="button"
+  aria-label={format === 'pdf' ? `${title} PDF` : undefined}
   class="aspect-w-2 aspect-h-3 relative"
   {onclick}
   onkeyup={(event) => {
@@ -60,6 +62,11 @@
         class="sm:h-21 h-16 bg-gray-800 bg-opacity-80 p-0.5 px-1.5 text-justify text-sm text-white sm:p-1.5 sm:text-base"
       >
         <span class="line-clamp-3">{title}</span>
+        {#if format === 'pdf'}
+          <span class="absolute right-2 top-2 rounded bg-gray-800 px-1.5 text-xs text-white"
+            >PDF</span
+          >
+        {/if}
       </div>
       <div class="h-2.5 bg-gray-400 bg-opacity-80">
         <div
