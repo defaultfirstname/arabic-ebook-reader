@@ -20,7 +20,7 @@ Use small, reviewable PRs. Preserve stored settings, book data, character offset
 
 Start PDF development once the main flows are documented, the baseline passes, and the format boundary and any PDF-blocking review findings are resolved. Treat the rest of the cleanup as a follow-up list so the refactor has a clear finish.
 
-Use the [contributor guide](CONTRIBUTING.md) to review the current reader and trace where fixed-page content needs its own storage and rendering paths.
+The [contributor guide](CONTRIBUTING.md#where-pdf-fits) records the format boundary from the architecture review. PDFs will share the browser library UI and use PDF-specific storage and page-based resume. The first prototype checks rendering and spread navigation before integrating the library.
 
 Local Nginx verification covered direct book links, offline resume, and legacy ZIP restore. The phone-emulation check timed out after swiping on Nginx while the same test passed in the Vite preview. Keep the deployed-site check and physical-phone navigation check open.
 
