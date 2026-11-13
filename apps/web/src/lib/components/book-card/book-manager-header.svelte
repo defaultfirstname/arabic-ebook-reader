@@ -1,8 +1,10 @@
 <script lang="ts">
   import { browser } from '$app/env';
-  import type { BookCardProps } from '#lib/components/book-card/book-card-props';
   import { mergeEntries } from '#lib/components/merged-header-icon/merged-entries';
-  import { bookImportAccept } from '#lib/functions/file-loaders/book-import-format';
+  import {
+    bookImportAccept,
+    localBookImportAccept
+  } from '#lib/functions/file-loaders/book-import-format';
   import MergedHeaderIcon from '#lib/components/merged-header-icon/merged-header-icon.svelte';
   import Popover from '#lib/components/popover/popover.svelte';
   import {
@@ -13,7 +15,7 @@
     pxScreen,
     translateXHeaderFa
   } from '#lib/css-classes';
-  import { SortDirection } from '#lib/data/sort-types';
+  import { SortDirection, type SortOption } from '#lib/data/sort-types';
   import { FilesystemStorageHandler } from '#lib/data/storage/handler/filesystem-handler';
   import { getStorageHandler } from '#lib/data/storage/storage-handler-factory';
   import { StorageKey } from '#lib/data/storage/storage-types';
@@ -64,6 +66,7 @@
     hasBookOpened: boolean;
     selectMode: boolean;
     selectedCount: number;
+    hasEligibleSelection: boolean;
     hasBooks: boolean;
     cancelTooltip: string;
     replicationProgress: number;
@@ -85,6 +88,7 @@
     hasBookOpened,
     selectMode = $bindable(),
     selectedCount,
+    hasEligibleSelection,
     hasBooks,
     cancelTooltip,
     replicationProgress,
@@ -181,10 +185,7 @@
         ...$booklistSortOptions$,
         ...{
           [$storageSource$]: {
-            property: clickedProperty as Exclude<
-              keyof BookCardProps,
-              'imagePath' | 'isPlaceholder'
-            >,
+            property: clickedProperty as SortOption['property'],
             direction: newDirection
           }
         }
@@ -199,7 +200,7 @@
   hidden
   multiple
   type="file"
-  accept={bookImportAccept}
+  accept={$storageSource$ === StorageKey.BROWSER ? localBookImportAccept : bookImportAccept}
   use:inputFile={dispatchFilesChange}
   bind:this={fileImportElm}
 />
@@ -492,43 +493,45 @@
         {/if}
 
         {#if selectedCount > 0}
-          <div
-            tabindex="0"
-            role="button"
-            title="Open Export Menu"
-            class="transform-gpu {baseIconClasses}"
-            in:scale={inAnimationParams}
-            out:scale={outAnimationParams}
-            onclick={() => onReplicateData()}
-            onkeyup={dummyFn}
-          >
-            <Fa icon={faCloudArrowUp} />
-          </div>
-          {#if $storageSource$ === StorageKey.BROWSER}
+          {#if hasEligibleSelection}
             <div
               tabindex="0"
               role="button"
-              title="Go to Statistics"
+              title="Open Export Menu"
               class="transform-gpu {baseIconClasses}"
               in:scale={inAnimationParams}
               out:scale={outAnimationParams}
-              onclick={() => onSelectionToStatistics()}
+              onclick={() => onReplicateData()}
               onkeyup={dummyFn}
             >
-              <Fa icon={faChartLine} />
+              <Fa icon={faCloudArrowUp} />
             </div>
-            <div
-              tabindex="0"
-              role="button"
-              title="Delete Statistics for selected Books"
-              class="transform-gpu {baseIconClasses}"
-              in:scale={inAnimationParams}
-              out:scale={outAnimationParams}
-              onclick={() => onDeleteStatistics()}
-              onkeyup={dummyFn}
-            >
-              <Fa icon={faCalendarXmark} />
-            </div>
+            {#if $storageSource$ === StorageKey.BROWSER}
+              <div
+                tabindex="0"
+                role="button"
+                title="Go to Statistics"
+                class="transform-gpu {baseIconClasses}"
+                in:scale={inAnimationParams}
+                out:scale={outAnimationParams}
+                onclick={() => onSelectionToStatistics()}
+                onkeyup={dummyFn}
+              >
+                <Fa icon={faChartLine} />
+              </div>
+              <div
+                tabindex="0"
+                role="button"
+                title="Delete Statistics for selected Books"
+                class="transform-gpu {baseIconClasses}"
+                in:scale={inAnimationParams}
+                out:scale={outAnimationParams}
+                onclick={() => onDeleteStatistics()}
+                onkeyup={dummyFn}
+              >
+                <Fa icon={faCalendarXmark} />
+              </div>
+            {/if}
           {/if}
           <div
             tabindex="0"

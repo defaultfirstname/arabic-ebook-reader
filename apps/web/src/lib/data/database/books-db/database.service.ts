@@ -14,6 +14,7 @@ import type {
   BooksDbSubtitleData
 } from '#lib/data/database/books-db/versions/books-db';
 import { Observable, Subject, from } from 'rxjs';
+import type { PdfBook, PdfReadingPosition } from '#lib/data/storage/pdf-book';
 import { StorageDataType, StorageKey } from '#lib/data/storage/storage-types';
 import {
   advanceDateDays,
@@ -122,6 +123,16 @@ export class DatabaseService {
   );
 
   lastItemChanged$ = new Subject<void>();
+  private pdfBooksChanged$ = new Subject<void>();
+
+  pdfBooks$ = iffBrowser(() =>
+    this.pdfBooksChanged$.pipe(
+      startWith(undefined),
+      switchMap(() => this.db$),
+      switchMap((db) => db.getAll('pdfBook')),
+      shareReplay({ refCount: true, bufferSize: 1 })
+    )
+  );
 
   lastItem$ = this.lastItemChanged$.pipe(
     startWith(0),
@@ -269,9 +280,7 @@ export class DatabaseService {
     keepLocalStatistics: boolean
   ) {
     const db = await this.db;
-    const lastItemObj = await db.get('lastItem', LAST_ITEM_KEY);
     const bookmarkIdData = await db.getAllKeys('bookmark');
-    const lastItem = lastItemObj?.dataId;
     const bookmarkIds = new Set(bookmarkIdData);
     const deleted: number[] = [];
     const limiter = pLimit(1);
@@ -292,7 +301,7 @@ export class DatabaseService {
                 db,
                 id,
                 idsToTitles.get(id),
-                { lastItem, bookmarkIds },
+                bookmarkIds,
                 !keepLocalStatistics
               )
             );
@@ -348,11 +357,64 @@ export class DatabaseService {
     this.lastItemChanged$.next();
   }
 
+  async addPdfBook(book: Omit<PdfBook, 'id'>, file: Blob, signal: AbortSignal) {
+    const db = await this.db;
+    signal.throwIfAborted();
+    const tx = db.transaction(['pdfBook', 'pdfFile'], 'readwrite');
+    const save = tx
+      .objectStore('pdfBook')
+      .add(book as PdfBook)
+      .then((id) => tx.objectStore('pdfFile').add(file, id));
+    await Promise.all([save, tx.done]);
+    this.pdfBooksChanged$.next();
+  }
+
+  async openPdfBook(id: number) {
+    const db = await this.db;
+    const tx = db.transaction(['pdfBook', 'pdfFile', 'lastItem'], 'readwrite');
+    const books = tx.objectStore('pdfBook');
+    const [book, file] = await Promise.all([books.get(id), tx.objectStore('pdfFile').get(id)]);
+    if (!book || !file) return undefined;
+
+    book.lastBookOpen = Date.now();
+    await books.put(book);
+    await tx.objectStore('lastItem').put({ dataId: id, format: 'pdf' }, LAST_ITEM_KEY);
+    await tx.done;
+    this.pdfBooksChanged$.next();
+    this.lastItemChanged$.next();
+    return { book, file };
+  }
+
+  async savePdfPosition(id: number, position: PdfReadingPosition) {
+    const db = await this.db;
+    const tx = db.transaction('pdfBook', 'readwrite');
+    const book = await tx.store.get(id);
+    if (!book) return;
+
+    await tx.store.put({ ...book, ...position, lastBookmarkModified: Date.now() });
+    await tx.done;
+    this.pdfBooksChanged$.next();
+  }
+
+  async deletePdfBook(id: number) {
+    const db = await this.db;
+    const tx = db.transaction(['pdfBook', 'pdfFile', 'lastItem'], 'readwrite');
+    const lastItems = tx.objectStore('lastItem');
+    const lastItem = await lastItems.get(LAST_ITEM_KEY);
+    const clearLastItem = lastItem?.format === 'pdf' && lastItem.dataId === id;
+    if (clearLastItem) await lastItems.delete(LAST_ITEM_KEY);
+    await tx.objectStore('pdfFile').delete(id);
+    await tx.objectStore('pdfBook').delete(id);
+    await tx.done;
+    this.pdfBooksChanged$.next();
+    if (clearLastItem) this.lastItemChanged$.next();
+  }
+
   private async deleteSingleData(
     db: IDBPDatabase<BooksDb>,
     dataId: number,
     title: string | undefined,
-    cachedData: { bookmarkIds: Set<number>; lastItem: number | undefined },
+    bookmarkIds: Set<number>,
     shouldDeleteStatistics: boolean
   ) {
     const storeNames: (
@@ -364,15 +426,10 @@ export class DatabaseService {
       | 'audioBook'
       | 'subtitle'
       | 'handle'
-    )[] = ['data', 'audioBook', 'subtitle', 'handle'];
-    const shouldDeleteLastItem = cachedData.lastItem === dataId;
-    const shouldDeleteBookmark = cachedData.bookmarkIds.has(dataId);
+    )[] = ['data', 'audioBook', 'subtitle', 'handle', 'lastItem'];
+    const shouldDeleteBookmark = bookmarkIds.has(dataId);
 
     let bookTitle = title;
-
-    if (shouldDeleteLastItem) {
-      storeNames.push('lastItem');
-    }
 
     if (shouldDeleteBookmark) {
       storeNames.push('bookmark');
@@ -390,9 +447,10 @@ export class DatabaseService {
         bookTitle = (await tx.objectStore('data').get(dataId))?.title;
       }
 
-      if (shouldDeleteLastItem) {
-        await tx.objectStore('lastItem').delete(LAST_ITEM_KEY);
-      }
+      const lastItems = tx.objectStore('lastItem');
+      const lastItem = await lastItems.get(LAST_ITEM_KEY);
+      const shouldDeleteLastItem = lastItem?.dataId === dataId && lastItem.format !== 'pdf';
+      if (shouldDeleteLastItem) await lastItems.delete(LAST_ITEM_KEY);
 
       if (shouldDeleteBookmark) {
         await tx.objectStore('bookmark').delete(dataId);

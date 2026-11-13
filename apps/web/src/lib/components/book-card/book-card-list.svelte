@@ -3,29 +3,30 @@
   import BookCard from '#lib/components/book-card/book-card.svelte';
   import type { BookCardProps } from '#lib/components/book-card/book-card-props';
   import Popover from '#lib/components/popover/popover.svelte';
+  import { getBookKey } from '#lib/data/book-reference';
   import { dummyFn } from '#lib/functions/utils';
   import Fa from 'svelte-fa';
 
   interface Props {
-    onBookClick: (detail: { id: number }) => void;
-    onRemoveBookClick: (detail: { id: number }) => void;
+    onBookClick: (card: BookCardProps) => void;
+    onRemoveBookClick: (card: BookCardProps) => void;
     bookCards?: BookCardProps[];
-    currentBookId: number | undefined;
-    selectedBookIds: ReadonlySet<number>;
+    currentBookKey: string | undefined;
+    selectedBookKeys: ReadonlySet<string>;
   }
 
   let {
     onBookClick,
     onRemoveBookClick,
     bookCards = [],
-    currentBookId,
-    selectedBookIds
+    currentBookKey,
+    selectedBookKeys
   }: Props = $props();
 
-  let hoveringBookId: number | undefined = $state();
+  let hoveringBookKey: string | undefined = $state();
 
-  function onBookCardClick(id: number) {
-    onBookClick({ id });
+  function cardKey(card: BookCardProps) {
+    return getBookKey({ dataId: card.id, format: card.format });
   }
 
   function getCardDateInfo(dateTime: number) {
@@ -34,35 +35,36 @@
 </script>
 
 <div class="grid grid-cols-3 justify-between gap-5 pb-4 md:grid-cols-4 lg:grid-cols-5">
-  {#each bookCards as bookCard (bookCard.id)}
+  {#each bookCards as bookCard (cardKey(bookCard))}
+    {@const key = cardKey(bookCard)}
     <div
       role="banner"
       class="relative"
       class:opacity-60={bookCard.isPlaceholder}
-      onmouseenter={() => (hoveringBookId = bookCard.id)}
-      onmouseleave={() => (hoveringBookId = undefined)}
+      onmouseenter={() => (hoveringBookKey = key)}
+      onmouseleave={() => (hoveringBookKey = undefined)}
     >
       <div
         class="mdc-elevation--z1 hover:mdc-elevation--z8 mdc-elevation-transition relative overflow-hidden"
-        class:rounded-tl-xl={bookCard.id === currentBookId}
-        class:mdc-elevation--z4={selectedBookIds.has(bookCard.id) || bookCard.id === currentBookId}
+        class:rounded-tl-xl={key === currentBookKey}
+        class:mdc-elevation--z4={selectedBookKeys.has(key) || key === currentBookKey}
       >
-        <BookCard {...bookCard} onclick={() => onBookCardClick(bookCard.id)} />
+        <BookCard {...bookCard} onclick={() => onBookClick(bookCard)} />
 
-        {#if selectedBookIds.has(bookCard.id)}
+        {#if selectedBookKeys.has(key)}
           <div
             tabindex="0"
             role="button"
             title="Book selected"
             class="absolute inset-0 bg-gray-700 bg-opacity-20"
-            onclick={() => onBookCardClick(bookCard.id)}
+            onclick={() => onBookClick(bookCard)}
             onkeyup={dummyFn}
           >
             <Fa class="absolute left-2 top-2 flex text-xl text-white" icon={faCheckCircle} />
           </div>
         {/if}
       </div>
-      {#if selectedBookIds.has(bookCard.id)}
+      {#if selectedBookKeys.has(key)}
         <div class="absolute top-10 left-2" title="Click to open details">
           <Popover placement="right" fallbackPlacements={['bottom']} yOffset={5}>
             {#snippet icon()}
@@ -73,8 +75,8 @@
             {/snippet}
             {#snippet content()}
               <div class="p-4">
-                <div>Characters:</div>
-                <div class="w-40">{bookCard.characters || 'No Data'}</div>
+                <div>{bookCard.format === 'pdf' ? 'Pages' : 'Characters'}:</div>
+                <div class="w-40">{bookCard.pageCount ?? (bookCard.characters || 'No Data')}</div>
                 <div class="mt-4">Last Read:</div>
                 <div class="w-40">{getCardDateInfo(bookCard.lastBookOpen)}</div>
                 <div class="mt-4">Bookmarked:</div>
@@ -86,12 +88,13 @@
           </Popover>
         </div>
       {/if}
-      {#if bookCard.id === hoveringBookId}
+      {#if key === hoveringBookKey}
         <div
           tabindex="0"
           role="button"
           class="mdc-elevation--z2 hover:mdc-elevation--z8 mdc-elevation-transition absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-400"
-          onclick={() => onRemoveBookClick({ id: bookCard.id })}
+          title="Delete book"
+          onclick={() => onRemoveBookClick(bookCard)}
           onkeyup={dummyFn}
         >
           <svg role="img" class="w-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 504 504">
