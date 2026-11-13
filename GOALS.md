@@ -1,12 +1,12 @@
 # Svelte migration goals
 
-Upgrade the Arabic Ebook Reader in small pull requests. Each step should leave a working reader and a clear point to roll back to.
+This records the Svelte migration targets and verification. See the [project roadmap](ROADMAP.md) for the post-migration refactor and the proposed Arabic PDF reader.
 
 ## Versions
 
-Targets checked on November 11, 2026. Recheck patch versions and package compatibility when starting each upgrade.
+The starting versions and targets below were recorded on November 11, 2026.
 
-| Technology         | Current                                  | Target                                                 | What it does                                                                                                                                              |
+| Technology         | Starting version                         | Migration target                                       | What it does                                                                                                                                              |
 | ------------------ | ---------------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Svelte             | 4.2.20 in the app, 5.0.5 in root tooling | 5.57.3 across the workspace                            | Renders components and updates the interface when state changes. [Release](https://github.com/sveltejs/svelte/releases/tag/svelte@5.57.3)                 |
 | SvelteKit          | 2.70.3                                   | Latest 2.x patch during the Svelte upgrade, then 3.2.0 | Handles routes, static site generation, and service worker integration. [Release](https://github.com/sveltejs/kit/releases/tag/%40sveltejs%2Fkit%403.2.0) |
@@ -44,12 +44,7 @@ Run the build and type checks for each pull request. Run the browser smoke test 
 
 ## Refactoring after the migration
 
-- [ ] **Start with Book Manager.** Move its sort rules and progress calculations into plain TypeScript and reuse them where the same rules already exist. Keep Svelte responsible for rendering and user actions. Check ordering, selection, covers, and reopening a book.
-- [ ] **Simplify the shared reader route.** Separate bookmark and progress calculations from pagination, scrolling, and DOM events. Move one flow at a time and check the saved character position in both modes against the current smoke tests.
-- [ ] **Give storage callers a smaller API.** Start with Book Manager's list and open operations. Replace long positional arguments with named options as callers move. Keep IndexedDB, ZIP backups, and cloud-provider calls in their existing handlers. Verify reopening an existing library and restoring an older ZIP before touching sync code.
-- [ ] **Isolate hosting and browser dependencies as they come up.** Keep SvelteKit routing, service worker registration, and browser APIs at the edge of the app. Verify the static build on a second host before introducing deployment changes.
-
-Use one small pull request per step. Preserve the stored settings, bookmark offsets, and backup format. Run lint, both type checks, the production build, and the browser smoke tests before merging.
+The [refactor milestones](ROADMAP.md#phase-1-refactor-and-review) continue from this migration, starting with Book Manager. They define what to verify before starting PDF development.
 
 ## Run the smoke tests locally
 
