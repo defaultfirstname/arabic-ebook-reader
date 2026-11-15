@@ -3,6 +3,7 @@
   import type { PdfPageDimensions, PdfReadingPosition } from '#lib/data/storage/pdf-book';
   import { loadPdf, pdfOpenError, readPdfDimensions } from './pdf-document';
   import { getPdfSpreads, type PdfLayout } from './pdf-spreads';
+  import { tick } from 'svelte';
 
   interface Props {
     saved?: {
@@ -27,6 +28,10 @@
   let saveError = $state(false);
   let width = $state(0);
   let height = $state(0);
+  const zoomLevels = [1, 1.25, 1.5, 2, 2.5, 3, 4];
+  let zoomIndex = $state(0);
+  let viewportElement: HTMLDivElement | undefined = $state();
+  let spreadElement: HTMLDivElement | undefined = $state();
   let loadId = 0;
   let loadController: AbortController | undefined;
 
@@ -36,7 +41,9 @@
   const viewports = $derived(visiblePages.map((page) => dimensions[page.pageNumber - 1]));
   const spreadWidth = $derived(viewports.reduce((total, viewport) => total + viewport.width, 0));
   const spreadHeight = $derived(Math.max(...viewports.map((viewport) => viewport.height)));
-  const scale = $derived(spreadWidth ? Math.min(width / spreadWidth, height / spreadHeight) : 0);
+  const fitScale = $derived(spreadWidth ? Math.min(width / spreadWidth, height / spreadHeight) : 0);
+  const zoom = $derived(zoomLevels[zoomIndex]);
+  const scale = $derived(fitScale * zoom);
 
   async function openPdf(
     file: Blob | ArrayBuffer,
@@ -49,6 +56,7 @@
     document = undefined;
     dimensions = [];
     pageNumber = initial?.page ?? 1;
+    zoomIndex = 0;
     if (initial) layout = initial.layout;
     filename = title;
     error = '';
@@ -104,6 +112,27 @@
     void onPositionChange?.({ page: pageNumber, layout }).catch(() => (saveError = true));
   }
 
+  async function setZoom(index: number) {
+    const viewport = viewportElement;
+    const spread = spreadElement;
+    if (!viewport || !spread || index === zoomIndex) return;
+
+    const bounds = viewport.getBoundingClientRect();
+    const before = spread.getBoundingClientRect();
+    const anchorX = (bounds.left + viewport.clientWidth / 2 - before.left) / before.width;
+    const anchorY = (bounds.top + viewport.clientHeight / 2 - before.top) / before.height;
+
+    renderError = false;
+    zoomIndex = index;
+    await tick();
+    if (viewportElement !== viewport || spreadElement !== spread || zoomIndex !== index) return;
+    const after = spread.getBoundingClientRect();
+    viewport.scrollBy(
+      after.left + after.width * anchorX - bounds.left - viewport.clientWidth / 2,
+      after.top + after.height * anchorY - bounds.top - viewport.clientHeight / 2
+    );
+  }
+
   function drawPage(
     canvas: HTMLCanvasElement,
     { page, displayScale }: { page: PDFPageProxy; displayScale: number }
@@ -111,8 +140,8 @@
     const viewport = page.getViewport({ scale: displayScale });
     const density = Math.min(
       window.devicePixelRatio || 1,
-      2,
-      4096 / Math.max(viewport.width, viewport.height)
+      8192 / Math.max(viewport.width, viewport.height),
+      Math.sqrt(16_000_000 / (viewport.width * viewport.height))
     );
     canvas.width = Math.max(1, Math.round(viewport.width * density));
     canvas.height = Math.max(1, Math.round(viewport.height * density));
@@ -146,6 +175,7 @@
     if (spreadIndex < 0 || !next) return;
     renderError = false;
     pageNumber = next[0];
+    viewportElement?.scrollTo({ top: 0 });
     savePosition();
   }
 
@@ -170,7 +200,7 @@
   let touchStart: { x: number; y: number } | undefined;
 
   function onPointerDown(event: PointerEvent) {
-    if (event.pointerType !== 'touch' || !event.isPrimary) return;
+    if (zoom !== 1 || event.pointerType !== 'touch' || !event.isPrimary) return;
     touchStart = { x: event.clientX, y: event.clientY };
   }
 
@@ -227,6 +257,21 @@
             <option value="paired">Spread starts at page 1</option>
           </select>
         </label>
+        <div class="zoom-controls" role="group" aria-label="PDF zoom">
+          <button
+            aria-label="Zoom out"
+            disabled={zoomIndex === 0}
+            onclick={() => setZoom(zoomIndex - 1)}>−</button
+          >
+          <button aria-label="Fit to window" disabled={zoomIndex === 0} onclick={() => setZoom(0)}>
+            {zoomIndex === 0 ? 'Fit' : `${Math.round(zoom * 100)}% of fit`}
+          </button>
+          <button
+            aria-label="Zoom in"
+            disabled={zoomIndex === zoomLevels.length - 1}
+            onclick={() => setZoom(zoomIndex + 1)}>+</button
+          >
+        </div>
         <nav aria-label="Page navigation" dir="rtl">
           <button disabled={spreadIndex <= 0} onclick={() => turn(-1)}>Previous</button>
           <output dir="ltr" aria-live="polite">
@@ -244,6 +289,7 @@
   <section
     aria-label="PDF pages"
     class="stage"
+    class:zoomed={zoom > 1}
     bind:clientWidth={width}
     bind:clientHeight={height}
     onpointerdown={onPointerDown}
@@ -257,17 +303,21 @@
     {:else if !dimensions.length && !saved}
       <p>Choose a PDF from your device to preview its pages.</p>
     {:else if scale > 0}
-      <div class="spread" dir="rtl">
-        {#each visiblePages as page, index (page.pageNumber)}
-          {#key scale}
-            <canvas
-              aria-label={`Page ${page.pageNumber}`}
-              style:width={`${viewports[index].width * scale}px`}
-              style:height={`${viewports[index].height * scale}px`}
-              use:drawPage={{ page, displayScale: scale }}
-            ></canvas>
-          {/key}
-        {/each}
+      <div class="viewport" bind:this={viewportElement}>
+        <div class="surface">
+          <div class="spread" dir="rtl" bind:this={spreadElement}>
+            {#each visiblePages as page, index (page.pageNumber)}
+              {#key scale}
+                <canvas
+                  aria-label={`Page ${page.pageNumber}`}
+                  style:width={`${viewports[index].width * scale}px`}
+                  style:height={`${viewports[index].height * scale}px`}
+                  use:drawPage={{ page, displayScale: scale }}
+                ></canvas>
+              {/key}
+            {/each}
+          </div>
+        </div>
       </div>
     {/if}
     {#if renderError}
@@ -303,6 +353,11 @@
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 0.65rem;
+  }
+
+  .zoom-controls {
+    display: flex;
+    gap: 0.35rem;
   }
 
   h1 {
@@ -357,12 +412,36 @@
     place-items: center;
     margin: clamp(0.35rem, 2vw, 1rem);
     touch-action: pan-y pinch-zoom;
+    min-width: 0;
+  }
+
+  .stage.zoomed {
+    touch-action: pan-x pan-y pinch-zoom;
+  }
+
+  .viewport {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    touch-action: inherit;
+  }
+
+  .zoomed .viewport {
+    overflow: auto;
+  }
+
+  .surface {
+    display: flex;
+    width: max-content;
+    min-width: 100%;
+    min-height: 100%;
   }
 
   .spread {
     display: flex;
     align-items: flex-start;
     box-shadow: 0 0.5rem 2rem #081318;
+    margin: auto;
   }
 
   canvas {

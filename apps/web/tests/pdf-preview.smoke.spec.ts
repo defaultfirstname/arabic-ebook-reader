@@ -99,6 +99,23 @@ test('renders RTL spreads with matching inner edges and keeps a wide scan whole 
   expect(await edgePixel(right, 'left')).toEqual([0, 128, 0, 255]);
   expect(await edgePixel(left, 'right')).toEqual([0, 128, 0, 255]);
 
+  const bitmapWidth = await right.evaluate((canvas: HTMLCanvasElement) => canvas.width);
+  await page.getByRole('button', { name: 'Zoom in', exact: true }).click();
+  await expect(right).toHaveAttribute('data-ready', 'true');
+  await expect(left).toHaveAttribute('data-ready', 'true');
+  const zoomedRight = (await right.boundingBox())!;
+  const zoomedLeft = (await left.boundingBox())!;
+  expect(zoomedRight.width / rightBox.width).toBeCloseTo(1.25, 2);
+  expect(await right.evaluate((canvas: HTMLCanvasElement) => canvas.width)).toBeGreaterThan(
+    bitmapWidth
+  );
+  expect(zoomedRight.x).toBeCloseTo(zoomedLeft.x + zoomedLeft.width, 1);
+  expect(await edgePixel(right, 'left')).toEqual([0, 128, 0, 255]);
+  expect(await edgePixel(left, 'right')).toEqual([0, 128, 0, 255]);
+  await page.getByRole('button', { name: 'Fit to window', exact: true }).click();
+  await expect(right).toHaveAttribute('data-ready', 'true');
+  expect((await right.boundingBox())!.width).toBeCloseTo(rightBox.width, 1);
+
   await page.keyboard.press('ArrowLeft');
   await expect(wide).toHaveAttribute('data-ready', 'true');
   await expect(page.locator('canvas')).toHaveCount(1);
