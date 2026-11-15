@@ -9,6 +9,7 @@
     statisticsActionInProgress$
   } from '#lib/components/statistics/statistics-types';
   import { pxScreen } from '#lib/css-classes';
+  import { getBookHref } from '#lib/data/book-reference';
   import {
     database,
     lastStartDayOfWeek$,
@@ -29,8 +30,8 @@
   import { quintInOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
 
-  const currentBookId$ = database.lastItem$.pipe(
-    map((item) => item?.dataId),
+  const currentBookHref$ = database.lastItem$.pipe(
+    map((item) => (item ? getBookHref(item) : undefined)),
     share()
   );
 
@@ -126,7 +127,7 @@
   });
 </script>
 
-<StatisticsHeader currentBookId={$currentBookId$} bind:showStatisticsSettings />
+<StatisticsHeader currentBookHref={$currentBookHref$} bind:showStatisticsSettings />
 
 <div class="{pxScreen} flex flex-col pt-16 h-full xl:pt-14">
   <StatisticsContent />

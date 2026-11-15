@@ -17,7 +17,7 @@ export async function getDropEventFiles(ev: DragEvent) {
     .filter((i): i is FileSystemEntry => !!i);
 
   if (!items.length) {
-    return [];
+    return Array.from(ev.dataTransfer.files);
   }
 
   const nestedFiles = await Promise.all(items.map((i) => getEntryFiles(i)));

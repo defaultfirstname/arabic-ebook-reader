@@ -13,6 +13,11 @@ const bookImportFormats = {
 type BookImportFormat = keyof typeof bookImportFormats;
 
 export const bookImportAccept = Object.values(bookImportFormats).flat().join(',');
+export const localBookImportAccept = `${bookImportAccept},application/pdf,.pdf`;
+
+export function isPdfFile(file: Pick<File, 'name' | 'type'>) {
+  return /\.pdf$/i.test(file.name) || file.type.toLowerCase() === 'application/pdf';
+}
 
 export function getBookImportFormat(filename: string): BookImportFormat | undefined {
   const extension = /\.([^.]+)$/.exec(filename)?.[1];

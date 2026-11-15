@@ -11,6 +11,7 @@ The [contributor guide](CONTRIBUTING.md) follows a book from import to offline r
 # Features
 
 - [x] Supports HTMLZ, Plain Text and EPUB files
+- [x] Local PDF reading with Arabic right-to-left page turns, facing pages, and offline resume
 - [x] Themes, custom fonts, font size, line height, and image blur
 - [x] Horizontal right-to-left reading with paginated and continuous modes
 - [x] Seven bundled fonts for offline Arabic reading, including Noto Naskh Arabic, Amiri, Scheherazade New, Noto Sans Arabic, Cairo, Readex Pro, and IBM Plex Sans Arabic
@@ -29,6 +30,8 @@ The [contributor guide](CONTRIBUTING.md) follows a book from import to offline r
 The first time you enter the page (or have no files loaded yet) you will need to select the books you want to read from your device.
 You can load files by clicking/tapping on the dropzone or respective Icons.
 Alternatively, you can also drag & drop files or folders on the manager if your device supports it.
+
+To keep a PDF in your library, select **Browser DB** in Book Manager and import the file. Open its **PDF** card and choose single pages, a standalone cover, or a spread starting on page 1. The reader saves your page and layout on this device. Existing ZIP exports and cloud sync cover the reflowable ebook formats.
 
 In case you are facing issues for epub files like this (non closing anchor tags):
 

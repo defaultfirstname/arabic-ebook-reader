@@ -18,17 +18,16 @@
     type StatisticsDataSource
   } from '#lib/components/statistics/statistics-types';
   import { baseHeaderClasses, baseIconClasses, pxScreen } from '#lib/css-classes';
-  import { pagePath } from '#lib/data/env';
   import { lastStatisticsTab$ } from '#lib/data/store';
   import { dummyFn } from '#lib/functions/utils';
   import Fa from 'svelte-fa';
 
   interface Props {
-    currentBookId: number | undefined;
+    currentBookHref: string | undefined;
     showStatisticsSettings: boolean;
   }
 
-  let { currentBookId, showStatisticsSettings = $bindable() }: Props = $props();
+  let { currentBookHref, showStatisticsSettings = $bindable() }: Props = $props();
 
   const copyStatisticsDataItems: StatisticsDataSource[] = [
     { key: 'readingTime', label: 'Reading Time' },
@@ -123,14 +122,14 @@
       >
         <Fa icon={faSliders} />
       </div>
-      {#if currentBookId}
+      {#if currentBookHref}
         <svg
           tabindex="0"
           role="button"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           class={baseIconClasses}
-          onclick={() => goto(`${pagePath}/b?id=${currentBookId}`)}
+          onclick={() => goto(currentBookHref)}
           onkeyup={dummyFn}
         >
           <path

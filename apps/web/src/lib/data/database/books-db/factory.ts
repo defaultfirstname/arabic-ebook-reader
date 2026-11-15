@@ -4,13 +4,16 @@
  * All rights reserved.
  */
 
-import type BooksDb from './versions/books-db';
+import { booksSchemaVersion, type default as BooksDb } from './versions/books-db';
 import { openDB } from 'idb';
 import upgradeBooksDbFromV2 from './versions/v2/upgrade';
 
 export function createBooksDb(name = 'books') {
-  return openDB<BooksDb>(name, 6, {
+  return openDB<BooksDb>(name, booksSchemaVersion, {
     async upgrade(oldDb, oldVersion, newVersion, transaction) {
+      oldDb.createObjectStore('pdfBook', { keyPath: 'id', autoIncrement: true });
+      oldDb.createObjectStore('pdfFile');
+
       switch (oldVersion) {
         case 0: {
           const dataStore = oldDb.createObjectStore('data', {
@@ -56,14 +59,14 @@ export function createBooksDb(name = 'books') {
         }
         case 2: {
           await upgradeBooksDbFromV2(oldDb, oldVersion, newVersion, transaction);
-          break;
         }
+        // Falls through to add stores introduced after v3.
         case 3: {
           oldDb.createObjectStore('storageSource', {
             keyPath: 'name'
           });
-          break;
         }
+        // Falls through to add stores introduced after v4.
         case 4: {
           const statisticsStore = oldDb.createObjectStore('statistic', {
             keyPath: ['title', 'dateKey']
@@ -81,9 +84,8 @@ export function createBooksDb(name = 'books') {
           oldDb.createObjectStore('lastModified', {
             keyPath: ['title', 'dataType']
           });
-
-          break;
         }
+        // Falls through to add stores introduced after v5.
         case 5: {
           oldDb.createObjectStore('audioBook', { keyPath: 'title' });
 

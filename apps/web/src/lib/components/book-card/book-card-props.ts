@@ -6,6 +6,8 @@
 
 export interface BookCardProps {
   id: number;
+  format?: 'pdf';
+  pageCount?: number;
   imagePath: string | Blob;
   title: string;
   characters: number;
