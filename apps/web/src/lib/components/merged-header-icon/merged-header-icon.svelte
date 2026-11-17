@@ -84,12 +84,12 @@
         </button>
       {/snippet}
       {#snippet content()}
-        <div class="w-40 bg-gray-700 md:w-32">
+        <div class="w-40 bg-app-surface md:w-32">
           {#each actionItems as actionItem (actionItem.label)}
             <div
               tabindex="0"
               role="button"
-              class="px-4 py-2 text-sm hover:bg-white hover:text-gray-700"
+              class="px-4 py-2 text-sm hover:bg-app-hover hover:text-app-text"
               title={actionItem.title}
               onclick={() => handleActionMenuItem(actionItem.label)}
               onkeyup={dummyFn}

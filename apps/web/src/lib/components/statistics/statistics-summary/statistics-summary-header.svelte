@@ -39,7 +39,7 @@
   }: Props = $props();
 
   const tableHeaderClasses =
-    'flex items-center py-2.5 px-0 text-sm w-full bg-transparent border-0 md:border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200 peer lg:text-base';
+    'flex items-center py-2.5 px-0 text-sm w-full bg-transparent border-0 md:border-b-2 border-app-border appearance-none focus:ring-0 focus:border-app-focus peer lg:text-base';
 
   let summaryHeaderPopover = $state<ReturnType<typeof Popover>>();
 
@@ -70,7 +70,7 @@
         <div class="flex flex-col overflow-auto w-46 p-2">
           {#each options as option (option.key)}
             <button
-              class="flex flex-1 my-2 hover:opacity-50 hover:bg-slate-300 hover:text-black"
+              class="flex flex-1 my-2 hover:bg-app-hover hover:text-app-text"
               onclick={(event) => {
                 event.stopPropagation();
                 selectedOption = option;

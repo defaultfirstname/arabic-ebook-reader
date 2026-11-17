@@ -382,7 +382,7 @@
           <span class="ml-2">
             Make sure to understand the
             <a
-              class="text-red-500"
+              class="text-app-danger"
               href="https://github.com/ttu-ttu/ebook-reader?tab=readme-ov-file#security-considerations"
               target="_blank"
             >
@@ -393,7 +393,7 @@
         </div>
       {/if}
       {#if error}
-        <div class="text-red-500">Error: {error}</div>
+        <div class="text-app-danger">Error: {error}</div>
       {/if}
     </div>
   {/snippet}

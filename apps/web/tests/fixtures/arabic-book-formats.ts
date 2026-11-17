@@ -22,7 +22,7 @@ export function chapter(heading: string) {
   </html>`;
 }
 
-export async function createEpub(title = epubTitle) {
+export async function createEpub(title = epubTitle, stylesheet = '') {
   return zipBook({
     mimetype: 'application/epub+zip',
     'META-INF/container.xml': `<container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" version="1.0">
@@ -34,6 +34,7 @@ export async function createEpub(title = epubTitle) {
         <dc:title>${title}</dc:title><dc:language>ar</dc:language>
       </metadata>
       <manifest>
+        ${stylesheet ? '<item id="style" href="style.css" media-type="text/css"/>' : ''}
         <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
         <item id="cover" href="cover.png" media-type="image/png" properties="cover-image"/>
         <item id="one" href="one.xhtml" media-type="application/xhtml+xml"/>
@@ -41,6 +42,7 @@ export async function createEpub(title = epubTitle) {
       </manifest>
       <spine page-progression-direction="rtl"><itemref idref="one"/><itemref idref="two"/></spine>
     </package>`,
+    ...(stylesheet ? { 'style.css': stylesheet } : {}),
     'nav.xhtml': `<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
       <body><nav epub:type="toc" id="toc"><ol>
         <li><a href="one.xhtml">${firstChapter}</a></li>

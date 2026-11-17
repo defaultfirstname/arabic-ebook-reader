@@ -229,7 +229,7 @@
     tabindex="0"
     role="button"
     title="Close Tracker Menu"
-    class="flex items-center hover:text-red-500 md:items-center"
+    class="flex items-center hover:text-app-danger md:items-center"
     onclick={() => onTrackerMenuClosed()}
     onkeyup={dummyFn}
   >
@@ -303,7 +303,7 @@
               <div
                 tabindex="0"
                 role="button"
-                class="ml-4 hover:text-red-500"
+                class="ml-4 hover:text-app-danger"
                 title={action.title}
                 onclick={() => executeAction(action.event)}
                 onkeyup={dummyFn}
@@ -410,21 +410,21 @@
             {#each trackingHistoryItems as trackingHistoryItem (trackingHistoryItem.id)}
               <div>{trackingHistoryItem.dateTimeKey}</div>
               <div
-                class:text-green-500={trackingHistoryItem.timeDiff > 0}
-                class:text-red-500={trackingHistoryItem.timeDiff < 0}
+                class:text-app-success={trackingHistoryItem.timeDiff > 0}
+                class:text-app-danger={trackingHistoryItem.timeDiff < 0}
               >
                 {trackingHistoryItem.timeDiff}
               </div>
               <div
-                class:text-green-500={trackingHistoryItem.characterDiff > 0}
-                class:text-red-500={trackingHistoryItem.characterDiff < 0}
+                class:text-app-success={trackingHistoryItem.characterDiff > 0}
+                class:text-app-danger={trackingHistoryItem.characterDiff < 0}
               >
                 {trackingHistoryItem.characterDiff}
               </div>
               <div class="flex">
                 <button
                   title="Revert Item"
-                  class="hover:text-red-500"
+                  class="hover:text-app-danger"
                   onclick={() => onRevertStatistic(trackingHistoryItem)}
                 >
                   <Fa icon={faTrash} />
@@ -432,7 +432,7 @@
                 <div
                   title="Item saved to Database"
                   class="ml-4 cursor-not-allowed"
-                  class:text-green-500={trackingHistoryItem.saved}
+                  class:text-app-success={trackingHistoryItem.saved}
                 >
                   <Fa icon={faFloppyDisk} />
                 </div>

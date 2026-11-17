@@ -77,22 +77,22 @@
     <Fa icon={faXmark} />
   </button>
   <div class="flex flex-1 justify-end">
-    <button class="mr-2 sm:mr-4 hover:text-red-500" onclick={() => exportStatisticsData(false)}>
+    <button class="mr-2 sm:mr-4 hover:text-app-danger" onclick={() => exportStatisticsData(false)}>
       Export Selection
     </button>
-    <button class="mr-2 sm:mr-4 hover:text-red-500" onclick={() => deleteStatisticsData(false)}>
+    <button class="mr-2 sm:mr-4 hover:text-app-danger" onclick={() => deleteStatisticsData(false)}>
       Delete Selection
     </button>
-    <button class="mr-2 sm:mr-4 hover:text-red-500" onclick={() => exportStatisticsData()}>
+    <button class="mr-2 sm:mr-4 hover:text-app-danger" onclick={() => exportStatisticsData()}>
       Export All
     </button>
-    <button class="hover:text-red-500" onclick={() => deleteStatisticsData()}>Delete All</button>
+    <button class="hover:text-app-danger" onclick={() => deleteStatisticsData()}>Delete All</button>
   </div>
 </div>
 <div class="flex-1 p-4 overflow-auto">
   <div class="flex flex-col mb-6">
     <label for="datesTemplate">Template</label>
-    <select id="datesTemplate" class="text-black" bind:value={$lastStatisticsRangeTemplate$}>
+    <select id="datesTemplate" class="text-app-text" bind:value={$lastStatisticsRangeTemplate$}>
       {#each statisticsRangeTemplates as statisticsRangeTemplate (statisticsRangeTemplate)}
         <option value={statisticsRangeTemplate}>
           {statisticsRangeTemplate}
@@ -102,7 +102,7 @@
   </div>
   <div class="flex flex-col mb-4 sm:hidden">
     <label for="weekDay">Start of Week</label>
-    <select id="weekDay" class="text-black" bind:value={$lastStartDayOfWeek$}>
+    <select id="weekDay" class="text-app-text" bind:value={$lastStartDayOfWeek$}>
       {#each weekDays as weekDay (weekDay.day)}
         <option value={weekDay.index}>
           {weekDay.day}
@@ -116,7 +116,7 @@
       <input
         id="fromDate"
         type="date"
-        class="text-black"
+        class="text-app-text"
         bind:value={selectedStatisticsStartDate}
         onchange={() =>
           onStatisticsDateChange({
@@ -150,7 +150,7 @@
       <input
         id="toDate"
         type="date"
-        class="text-black"
+        class="text-app-text"
         bind:value={selectedStatisticsEndDate}
         onchange={() =>
           onStatisticsDateChange({
@@ -161,7 +161,7 @@
     </div>
     <div class="flex-col hidden sm:flex">
       <label for="weekDay">Start of Week</label>
-      <select id="weekDay" class="text-black" bind:value={$lastStartDayOfWeek$}>
+      <select id="weekDay" class="text-app-text" bind:value={$lastStartDayOfWeek$}>
         {#each weekDays as weekDay (weekDay.day)}
           <option value={weekDay.index}>
             {weekDay.day}
@@ -171,7 +171,7 @@
     </div>
   </div>
   <button
-    class="text-left mt-3 hover:text-red-500"
+    class="text-left mt-3 hover:text-app-danger"
     onclick={() => setStatisticsDatesToAllTime$.next()}
   >
     Set to All Time for selected Book Titles
@@ -187,7 +187,7 @@
         {/snippet}
         <label for="timeDataSource">Time Data Source</label>
       </Popover>
-      <select id="timeDataSource" class="text-black" bind:value={$lastReadingTimeDataSource$}>
+      <select id="timeDataSource" class="text-app-text" bind:value={$lastReadingTimeDataSource$}>
         {#each readingTimeDataSources as readingTimeDataSource (readingTimeDataSource.key)}
           <option value={readingTimeDataSource.key}>
             {readingTimeDataSource.label}
@@ -205,7 +205,7 @@
         {/snippet}
         <label for="charactersSource">Characters Data Source</label>
       </Popover>
-      <select id="charactersSource" class="text-black" bind:value={$lastCharactersDataSource$}>
+      <select id="charactersSource" class="text-app-text" bind:value={$lastCharactersDataSource$}>
         {#each charactersDataSources as charactersDataSource (charactersDataSource.key)}
           <option value={charactersDataSource.key}>
             {charactersDataSource.label}
@@ -223,7 +223,7 @@
         {/snippet}
         <label for="speedSource">Speed Data Source</label>
       </Popover>
-      <select id="speedSource" class="text-black" bind:value={$lastReadingSpeedDataSource$}>
+      <select id="speedSource" class="text-app-text" bind:value={$lastReadingSpeedDataSource$}>
         {#each readingSpeedDataSources as readingSpeedDataSource (readingSpeedDataSource.key)}
           <option value={readingSpeedDataSource.key}>
             {readingSpeedDataSource.label}
@@ -244,7 +244,7 @@
     </Popover>
     <select
       id="primaryAggregration"
-      class="text-black"
+      class="text-app-text"
       bind:value={$lastPrimaryReadingDataAggregationMode$}
     >
       {#each statisticsDataAggregrationModes as statisticsDataAggregrationMode (statisticsDataAggregrationMode)}

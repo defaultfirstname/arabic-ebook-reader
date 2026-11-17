@@ -56,9 +56,17 @@ import type { TextMarginMode } from './text-margin-mode';
 import type { ThemeOption } from './theme-option';
 import { ViewMode } from './view-mode';
 import { writableSetLocalStorageSubject } from './internal/writable-set-local-storage-subject';
+import { writableStorageSubject } from './internal/writable-storage-subject';
 import { writableStringLocalStorageSubject } from './internal/writable-string-local-storage-subject';
+import { localStorage } from './window/local-storage';
 
-export const theme$ = writableStringLocalStorageSubject()('theme', 'light-theme');
+type AppAppearance = 'dark' | 'light';
+export const appAppearance$ = writableStorageSubject<AppAppearance>(
+  localStorage,
+  (value) => (value === 'light' ? 'light' : 'dark'),
+  (value) => value
+)('appAppearance', 'dark');
+export const theme$ = writableStringLocalStorageSubject()('theme', '');
 export const customThemes$ = writableObjectLocalStorageSubject<Record<string, ThemeOption>>()(
   'customThemes',
   {}

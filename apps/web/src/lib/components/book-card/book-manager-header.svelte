@@ -360,16 +360,15 @@
                 </div>
               {/snippet}
               {#snippet content()}
-                <div class="w-28 bg-gray-700">
+                <div class="w-28 bg-app-surface">
                   {#each storageSourceMenuItems as sourceMenuItem (sourceMenuItem.key)}
                     <div
                       tabindex="0"
                       role="button"
-                      class="cursor-pointer px-4 py-2 text-sm hover:bg-white hover:text-gray-700"
-                      class:hover:bg-white={!sourceMenuItem.requiresConnectivity || $isOnline$}
-                      class:hover:text-gray-700={!sourceMenuItem.requiresConnectivity || $isOnline$}
+                      class="cursor-pointer px-4 py-2 text-sm"
+                      class:hover:bg-app-hover={!sourceMenuItem.requiresConnectivity || $isOnline$}
                       class:cursor-not-allowed={sourceMenuItem.requiresConnectivity && !$isOnline$}
-                      class:text-gray-500={sourceMenuItem.requiresConnectivity && !$isOnline$}
+                      class:text-app-muted={sourceMenuItem.requiresConnectivity && !$isOnline$}
                       onclick={async () => {
                         if (sourceMenuItem.requiresConnectivity && !$isOnline$) {
                           return;
@@ -415,7 +414,7 @@
                 </div>
               {/snippet}
               {#snippet content()}
-                <div class="w-44 bg-gray-700">
+                <div class="w-44 bg-app-surface">
                   {#each sortMenuItems as sortMenuItem (sortMenuItem.property)}
                     {@const isCurrentSort =
                       $booklistSortOptions$[$storageSource$].property === sortMenuItem.property}
@@ -423,18 +422,18 @@
                       isCurrentSort &&
                       $booklistSortOptions$[$storageSource$].direction === SortDirection.ASC}
                     <div
-                      class="grid cursor-default grid-cols-[auto_auto_auto] text-sm hover:bg-white hover:text-gray-700"
-                      class:bg-white={isCurrentSort}
-                      class:text-gray-700={isCurrentSort}
-                      class:hover:opacity-70={isCurrentSort}
+                      class="grid cursor-default grid-cols-[auto_auto_auto] text-sm"
+                      class:hover:bg-app-hover={!isCurrentSort}
+                      class:bg-app-selected={isCurrentSort}
+                      class:text-app-selected-text={isCurrentSort}
                     >
                       <div
                         tabindex="0"
                         role="button"
                         class="self-center justify-self-start"
-                        class:text-red-500={isCurrentSortAsc}
-                        class:hover:text-gray-700={isCurrentSortAsc}
-                        class:hover:text-red-500={!isCurrentSortAsc}
+                        class:text-app-accent={isCurrentSortAsc}
+                        class:hover:text-app-text={isCurrentSortAsc}
+                        class:hover:text-app-accent={!isCurrentSortAsc}
                         onclick={() => {
                           changeSortOptions(sortMenuItem.property, SortDirection.ASC);
                         }}
@@ -448,10 +447,10 @@
                       <div
                         tabindex="0"
                         role="button"
-                        class="justify-self-end hover:text-red-500"
-                        class:text-red-500={isCurrentSort && !isCurrentSortAsc}
-                        class:hover:text-gray-700={isCurrentSort && !isCurrentSortAsc}
-                        class:hover:text-red-500={!isCurrentSort || isCurrentSortAsc}
+                        class="justify-self-end hover:text-app-accent"
+                        class:text-app-accent={isCurrentSort && !isCurrentSortAsc}
+                        class:hover:text-app-text={isCurrentSort && !isCurrentSortAsc}
+                        class:hover:text-app-accent={!isCurrentSort || isCurrentSortAsc}
                         onclick={() => {
                           changeSortOptions(sortMenuItem.property, SortDirection.DESC);
                         }}

@@ -5,19 +5,96 @@
 @tailwind utilities;
 
 :root {
-  --font-color: rgba(0, 0, 0, 0.87);
-  --background-color: #eceff1;
-  scrollbar-color: #c1c1c1 #c1c1c100;
+  color-scheme: light;
+  --font-color: #17212b;
+  --background-color: #eef1f5;
+  --surface-color: #fff;
+  --muted-color: #475569;
+  --border-color: #718096;
+  --divider-color: #cad3de;
+  --hover-color: #e4eaf2;
+  --selection-color: #c8def8;
+  --selection-text-color: #102844;
+  --accent-color: #23578f;
+  --on-accent-color: #fff;
+  --focus-color: #245e9b;
+  --danger-color: #a32238;
+  --success-color: #166544;
+  --warning-color: #8a470b;
+  --page-shadow: rgb(0 0 0 / 25%);
+  scrollbar-color: var(--border-color) transparent;
+}
+
+:root:not([data-app-appearance='light']) {
+  color-scheme: dark;
+  --font-color: #edf2f8;
+  --background-color: #151b23;
+  --surface-color: #202a36;
+  --muted-color: #b5c3d4;
+  --border-color: #8799af;
+  --divider-color: #48566a;
+  --hover-color: #2d3c50;
+  --selection-color: #3d5675;
+  --selection-text-color: #f5f8ff;
+  --accent-color: #9dcaff;
+  --on-accent-color: #142438;
+  --focus-color: #a8d0ff;
+  --danger-color: #ffacb8;
+  --success-color: #91deb9;
+  --warning-color: #ffd096;
+  --page-shadow: rgb(0 0 0 / 55%);
 }
 
 .book-cover {
   overflow-clip-margin: unset;
 }
 
+// Publisher colors frequently assume dark ink on white paper.
+:root:not([data-app-appearance='light'])
+  body[data-reading-follows-app]
+  .book-content
+  :not(svg, svg *, img, picture, picture *, video, canvas) {
+  color: var(--font-color) !important;
+  background-color: transparent !important;
+}
+
 @layer base {
   body {
     color: var(--font-color);
     background-color: var(--background-color);
+  }
+
+  ::selection {
+    color: var(--selection-text-color);
+    background-color: var(--selection-color);
+  }
+
+  :focus-visible:not([tabindex='-1']) {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 2px;
+  }
+
+  select,
+  textarea,
+  input:not([type='file']):not([type='range']):not([type='color']):not([type='checkbox']):not(
+      [type='radio']
+    ) {
+    color: var(--font-color);
+    background-color: var(--surface-color);
+    border-color: var(--border-color);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--muted-color);
+  }
+
+  input[type='checkbox'],
+  input[type='radio'] {
+    appearance: auto;
+    accent-color: var(--accent-color);
+    --tw-ring-color: var(--focus-color);
+    --tw-ring-offset-color: var(--surface-color);
   }
 }
 

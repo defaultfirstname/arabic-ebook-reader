@@ -68,10 +68,14 @@ test('renders RTL spreads with matching inner edges and keeps a wide scan whole 
   page,
   context
 }) => {
+  await page.goto('/settings');
+  await page.getByRole('combobox', { name: 'App appearance' }).selectOption('light');
   await page.goto('/pdf-preview');
   await page.evaluate(() => navigator.serviceWorker.ready.then(() => undefined));
   await page.reload();
   await context.setOffline(true);
+  await expect(page.locator('html')).toHaveCSS('color-scheme', 'light');
+  await expect(page.getByRole('heading', { name: 'PDF Viewer' })).toBeVisible();
   await page.getByLabel('Open PDF').setInputFiles({
     name: 'spread-check.pdf',
     mimeType: 'application/pdf',
@@ -153,6 +157,8 @@ test('imports mixed books, saves PDF layout and page, and reopens offline', asyn
   const text = page.getByRole('button', { name: 'كتاب', exact: true });
   await expect(text).toBeVisible();
   await pdf.click();
+  await expect(page.locator('html')).toHaveCSS('color-scheme', 'dark');
+  await expect(page.getByRole('heading', { name: 'PDF Viewer' })).toBeVisible();
   await expect(page.getByLabel('Page 1', { exact: true })).toHaveAttribute('data-ready', 'true');
   await expect(page.locator('canvas')).toHaveCount(1);
   const url = page.url();

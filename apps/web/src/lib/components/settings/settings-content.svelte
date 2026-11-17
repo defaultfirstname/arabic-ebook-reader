@@ -14,7 +14,7 @@
   import SettingsSection from '#lib/components/settings/settings-section.svelte';
   import SettingsStorageSourceList from '#lib/components/settings/settings-storage-source-list.svelte';
   import SettingsUserFontDialog from '#lib/components/settings/settings-user-font-dialog.svelte';
-  import { inputClasses } from '#lib/css-classes';
+  import { inputClasses, selectClasses as baseSelectClasses } from '#lib/css-classes';
   import { BlurMode } from '#lib/data/blur-mode';
   import { dialogManager } from '#lib/data/dialog-manager';
   import { arabicReaderFonts, LocalFont } from '#lib/data/fonts';
@@ -25,6 +25,7 @@
   import { defaultStorageSources } from '#lib/data/storage/storage-types';
   import { isStorageSourceAvailable } from '#lib/data/storage/storage-view';
   import {
+    appAppearance$,
     customThemes$,
     database,
     fontFamilyGroupOne$,
@@ -174,8 +175,7 @@
     adjustStatisticsAfterIdleTime = $bindable()
   }: Props = $props();
 
-  const selectClasses =
-    'w-full rounded-md border-gray-400 bg-background-color text-sm focus:border-blue-500 focus:ring-blue-500';
+  const selectClasses = `w-full ${baseSelectClasses}`;
   const builtInThemes = [...availableThemes.keys()].map((id) => ({
     id,
     name: id.replace(/-theme$/, '').replace(/^./, (letter) => letter.toUpperCase())
@@ -203,7 +203,7 @@
   function deleteSelectedTheme() {
     const themes = { ...$customThemes$ };
     delete themes[selectedTheme];
-    selectedTheme = 'light-theme';
+    selectedTheme = '';
     $customThemes$ = themes;
   }
 
@@ -327,8 +327,15 @@
 <div class="space-y-6">
   {#if activeSettings === 'Reader'}
     <SettingsSection title="Appearance">
+      <SettingsItemGroup inputId="app-appearance" title="App appearance">
+        <select id="app-appearance" class={selectClasses} bind:value={$appAppearance$}>
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
+        </select>
+      </SettingsItemGroup>
       <SettingsItemGroup inputId="setting-theme" title="Theme">
         <select id="setting-theme" class={selectClasses} bind:value={selectedTheme}>
+          <option value="">Follow app</option>
           {#each themeChoices as theme (theme.id)}
             <option value={theme.id}>{theme.name}</option>
           {/each}

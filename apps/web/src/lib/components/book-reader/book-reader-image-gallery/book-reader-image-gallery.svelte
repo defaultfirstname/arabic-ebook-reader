@@ -178,7 +178,7 @@
   </div>
   <div
     tabindex="-1"
-    class="invisible tap-highlight-transparent bg-black/[.85] lg:visible lg:flex lg:flex-1 lg:flex-col"
+    class="invisible tap-highlight-transparent bg-background-color lg:visible lg:flex lg:flex-1 lg:flex-col"
     bind:this={imageContainer}
   >
     {#if selectedImage}
@@ -186,7 +186,7 @@
       <div class="flex flex-1">
         <button
           title="Previous Image"
-          class="mx-4 text-5xl hover:text-red-500"
+          class="mx-4 text-5xl hover:text-app-accent"
           class:invisible={!selectedImageIndex}
           onclick={previousImage}
         >
@@ -207,14 +207,14 @@
         </div>
         <button
           title="Next Image"
-          class="mx-4 text-5xl hover:text-red-500"
+          class="mx-4 text-5xl hover:text-app-accent"
           class:invisible={selectedImageIndex === $readerImageGalleryPictures$.length - 1}
           onclick={nextImage}
         >
           <Fa icon={faChevronRight} />
         </button>
       </div>
-      <div class="pb-2 text-center text-white">
+      <div class="pb-2 text-center">
         {selectedImageIndex + 1} / {$readerImageGalleryPictures$.length}
       </div>
     {/if}
@@ -232,8 +232,8 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: #dcddde;
-    background-color: rgba(0, 0, 0, 0.6);
+    color: var(--font-color);
+    background-color: var(--surface-color);
     display: inline-block;
     padding: 12px 8px;
     border-radius: 20px;

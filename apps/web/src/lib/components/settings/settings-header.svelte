@@ -36,8 +36,8 @@
           type="button"
           aria-pressed={activeSettings === settingItem.label}
           class="flex grow flex-col items-center justify-center text-xs"
-          class:bg-gray-900={activeSettings === settingItem.label}
-          class:hover:bg-gray-900={activeSettings !== settingItem.label}
+          class:bg-app-selected={activeSettings === settingItem.label}
+          class:hover:bg-app-hover={activeSettings !== settingItem.label}
           onclick={() => {
             if (activeSettings === settingItem.label) return;
             activeSettings = settingItem.label;

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import PdfViewer from '#lib/components/pdf-viewer/pdf-viewer.svelte';
+  import { buttonClasses, headerSurfaceClasses } from '#lib/css-classes';
   import { pagePath } from '#lib/data/env';
   import { database } from '#lib/data/store';
   import type { PdfBook } from '#lib/data/storage/pdf-book';
@@ -50,12 +51,15 @@
     />
   {/key}
 {:else}
-  <main class="space-y-4 p-6">
-    <a href={libraryHref} class="underline">Book Manager</a>
+  <header class="flex items-center justify-between px-4 py-2 {headerSurfaceClasses}">
+    <h1 class="font-semibold">PDF Viewer</h1>
+    <a href={libraryHref} class={buttonClasses}>Book Manager</a>
+  </header>
+  <main class="p-6">
     {#if loading}
       <p role="status">Opening PDF…</p>
     {:else}
-      <p role="alert">{error}</p>
+      <p class="text-app-danger" role="alert">{error}</p>
     {/if}
   </main>
 {/if}

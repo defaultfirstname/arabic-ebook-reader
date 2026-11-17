@@ -41,11 +41,21 @@ Import and reopen local PDFs offline. Offer a single-page view and a facing-page
 
 Use a small, shareable fixture with a cover, numbered pages, and a picture that joins across the center. Check both starting pairs, right/left placement, forward and backward turns, and a lone final page. Also test a wide scan, an Arabic PDF with selectable text, and a representative large scanned book. Reopen offline, verify resume after a reload and a view change, and check layout and memory on a phone. Confirm the existing three formats still pass their smoke tests.
 
+On a physical phone, PDF import worked in Firefox and Kiwi. After restarting the app in airplane mode on both PC and phone, a 135 MB PDF reopened at the saved page with the correct spread. Zoom looked good, page turns worked correctly, and the EPUB theme was preserved. These checks verify the first local PDF release on both devices. Verification of the deployed build and its direct book links remains open.
+
 ### Follow-up features
 
 Arabic text selection, Yomitan, and PDF backup and sync are follow-up work. Text selection depends on a usable PDF text layer. An image-only scan needs OCR for lookup. PDF backup and sync require explicit handling of the original file and page-based position.
 
 Use the numbered test fixture to verify the layout. If a shareable example of the broken spread is available, use it to confirm the expected right and left sides and see whether unusual page sequences need an additional control.
+
+## Phase 3: Consistent appearance and a maintenance review
+
+1. Apply shared light and dark palettes to Book Manager, Settings, Statistics, sign-in, and their controls and dialogs. Use the existing component and styling tools.
+2. Apply the shared style to the text reader, PDF Viewer, and PDF preview. Enable a device-local Dark default and a Light option. Text books can follow the app or use a saved reading theme. PDF pages retain their original colors. Verify both themes on PC and a physical phone in the local app, including offline reopening and Arabic reading in both formats.
+3. Review the [maintainability report](MAINTAINABILITY.md) before starting cleanup PRs. It traces both book formats, identifies reusable rules and browser dependencies, and ranks cleanup proposals by evidence, benefit, and regression risk.
+
+Both themes were reviewed in desktop Chromium against the local production preview. The smoke suite covers touch gestures with phone emulation. The appearance changes are still pending a check on a physical phone.
 
 ## Planning estimates
 

@@ -1094,14 +1094,14 @@
   {heatmapLabel}
   <button
     title="Return to current Year"
-    class="mx-4 hover:text-red-500"
+    class="mx-4 hover:text-app-danger"
     onclick={() => changeHeatmapYear(today.getFullYear() - heatmapYear)}
   >
     <Fa icon={faRepeat} />
   </button>
   <button
     title="Switch (Streak) Data between 'All Time' and 'Current Year'"
-    class="text-lg hover:text-red-500"
+    class="text-lg hover:text-app-danger"
     onclick={() =>
       (heatmapAggregration =
         heatmapAggregration === HeatmapDataAggregration.ALL_TIME
@@ -1114,7 +1114,7 @@
 <div class="flex justify-between">
   <button
     title="Move Backwards"
-    class="hover:text-red-500"
+    class="hover:text-app-danger"
     onclick={() => {
       if (!heatmapElement || heatmapElement.scrollLeft === 0) {
         changeHeatmapYear(-1);
@@ -1176,10 +1176,10 @@
         role="cell"
         class="justify-self-center fadeIn"
         class:cursor-pointer={heatmapDay.isCurrentYear}
-        class:bg-slate-300={heatmapDay.isCurrentYear}
-        class:bg-slate-200={!heatmapDay.isCurrentYear}
-        class:border-amber-500={isSelected}
-        class:border-red-500={isToday}
+        class:bg-app-selected={heatmapDay.isCurrentYear}
+        class:bg-app-divider={!heatmapDay.isCurrentYear}
+        class:border-app-warning={isSelected}
+        class:border-app-danger={isToday}
         class:highlight={selectedStreakDates.has(heatmapDay.dateString)}
         style:animation-delay={`${3 * heatmapDay.heatmapColumn}ms`}
         style:height={`${dayElementSize}px`}
@@ -1231,7 +1231,7 @@
   </div>
   <button
     title="Move Forwards"
-    class="hover:text-red-500"
+    class="hover:text-app-danger"
     onclick={() => {
       if (!heatmapElement) return;
 

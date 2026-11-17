@@ -372,7 +372,7 @@
   }
 </script>
 
-<section class="border-t border-gray-500/25 pt-4">
+<section class="border-t border-app-divider pt-4">
   <div class="flex flex-grow">
     <h2 class="mb-3 w-full text-lg font-semibold">Reading goals</h2>
     {#if isInEditMode}
@@ -432,7 +432,7 @@
       </button>
     {/if}
   </div>
-  <hr class="border border-black" />
+  <hr class="border border-app-divider" />
   <div class="grid grid-cols-1 gap-4 justify-between items-end mt-4 md:grid-cols-4">
     <div class="flex flex-col">
       Time Goal (Min)

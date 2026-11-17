@@ -3,7 +3,6 @@
     auditTime,
     debounceTime,
     EMPTY,
-    filter,
     fromEvent,
     map,
     merge,
@@ -135,7 +134,7 @@
     StorageKey
   } from '#lib/data/storage/storage-types';
   import { storageSource$ } from '#lib/data/storage/storage-view';
-  import { availableThemes } from '#lib/data/theme-option';
+  import { resolveReadingTheme } from '#lib/data/theme-option';
   import { ViewMode } from '#lib/data/view-mode';
   import loadBookData from '#lib/functions/book-data-loader/load-book-data';
   import { getArabicBookMetrics } from '#lib/functions/book-data-loader/get-arabic-book-metrics';
@@ -148,7 +147,6 @@
   import { replicateData } from '#lib/functions/replication/replicator';
   import { reduceToEmptyString } from '#lib/functions/rxjs/reduce-to-empty-string';
   import { takeWhenBrowser } from '#lib/functions/rxjs/take-when-browser';
-  import { tapDom } from '#lib/functions/rxjs/tap-dom';
   import { multiClickHandler } from '#lib/functions/multi-click-handler';
   import {
     executeReplicate$,
@@ -162,6 +160,7 @@
   import { onKeydownReader } from './on-keydown-reader';
   import { onDestroy, onMount, tick, untrack } from 'svelte';
   import Fa from 'svelte-fa';
+  import { tap as tapGesture } from 'svelte-gestures';
   import {
     clearRange,
     getParagraphToPoint,
@@ -172,6 +171,7 @@
 
   let showSpinner = $state(true);
   let showHeader = $state(false);
+  let showControlsButton: HTMLButtonElement | undefined = $state();
   let isBookmarkScreen = $state(false);
   let showFooter = $state(true);
   let exploredCharCount = $state(0);
@@ -357,16 +357,7 @@
     takeWhenBrowser()
   );
 
-  const themeOption$ = theme$.pipe(
-    map(
-      (theme) =>
-        availableThemes.get(theme) || $customThemes$[theme] || availableThemes.get('light-theme')
-    ),
-    filter((o): o is NonNullable<typeof o> => !!o),
-    takeWhenBrowser()
-  );
-
-  const backgroundColor$ = themeOption$.pipe(map((o) => o.backgroundColor));
+  const readingTheme = $derived(resolveReadingTheme($theme$, $customThemes$));
 
   const collectReaderImageGallerySpoilerToggles$ = toggleImageGalleryPictureSpoiler$.pipe(
     tap((readerImageGalleryPicture) => {
@@ -398,16 +389,15 @@
     reduceToEmptyString()
   );
 
-  const backgroundStyleName = 'background-color';
-  const setBackgroundColor$ = backgroundColor$.pipe(
-    tapDom(
-      () => document.body,
-      (backgroundColor, body) => body.style.setProperty(backgroundStyleName, backgroundColor),
-      (body) => body.style.removeProperty(backgroundStyleName)
-    ),
-    reduceToEmptyString(),
-    takeWhenBrowser()
-  );
+  $effect(() => {
+    if (!$bookData$ || !$rawBookData$) return;
+    document.body.style.backgroundColor = readingTheme.backgroundColor;
+    document.body.toggleAttribute('data-reading-follows-app', !$theme$);
+    return () => {
+      document.body.style.removeProperty('background-color');
+      document.body.removeAttribute('data-reading-follows-app');
+    };
+  });
 
   // Chapter updates can arrive before the header or tracker menu reads them.
   let sectionData = $state.raw<SectionWithProgress[]>([]);
@@ -1494,13 +1484,21 @@
 <button
   aria-label="Show reader controls"
   class="fixed inset-x-0 top-0 z-10 h-8 w-full"
+  bind:this={showControlsButton}
+  use:tapGesture={{ timeframe: 500, touchAction: 'manipulation' }}
+  ontap={(event) => {
+    // A browser can suppress the synthetic click immediately after a page swipe.
+    if (event.detail.pointerType === 'touch') showHeader = true;
+  }}
   onclick={() => (showHeader = true)}
 ></button>
 {#if showHeader}
   <div
     class="elevation-4 writing-horizontal-tb fixed inset-x-0 top-0 z-10 w-full"
     transition:fly|local={{ y: -300, easing: quintInOut }}
-    use:clickOutside={() => (showHeader = false)}
+    use:clickOutside={(event) => {
+      if (event.target !== showControlsButton) showHeader = false;
+    }}
   >
     <BookReaderHeader
       hasChapterData={sectionData.length > 0}
@@ -1571,8 +1569,8 @@
 {#if $bookData$ && $rawBookData$}
   {#if $statisticsEnabled$}
     <BookReadingTracker
-      fontColor={$themeOption$.fontColor}
-      backgroundColor={$backgroundColor$}
+      fontColor="var(--font-color)"
+      backgroundColor="var(--surface-color)"
       bookTitle={$rawBookData$.title}
       {sectionData}
       {frozenPosition}
@@ -1610,8 +1608,8 @@
     prioritizeReaderStyles={$prioritizeReaderStyles$}
     enableTextJustification={$enableTextJustification$}
     enableTextWrapPretty={$enableTextWrapPretty$}
-    fontColor={$themeOption$?.fontColor}
-    backgroundColor={$backgroundColor$}
+    fontColor={readingTheme.fontColor}
+    backgroundColor={readingTheme.backgroundColor}
     fontFamilyGroupOne={$fontFamilyGroupOne$}
     fontFamilyGroupTwo={$fontFamilyGroupTwo$}
     fontWeight={$fontWeight$}
@@ -1646,7 +1644,6 @@
     onBookmark={bookmarkPage}
     onTrackerPause={() => pauseTracker(true)}
   />
-  {$setBackgroundColor$ ?? ''}
   {$textSelector$ ?? ''}
   {$replicator$ ?? ''}
   {$autoStartTracker$ ?? ''}
@@ -1656,9 +1653,7 @@
 
 {#if $tocIsOpen$ && sectionData.length}
   <div
-    class="writing-horizontal-tb fixed top-0 left-0 z-[60] flex h-full w-full max-w-xl flex-col justify-between"
-    style:color={$themeOption$?.fontColor}
-    style:background-color={$backgroundColor$}
+    class="writing-horizontal-tb fixed top-0 left-0 z-[60] flex h-full w-full max-w-xl flex-col justify-between bg-app-surface text-app-text"
     in:fly|local={{ x: -100, duration: 100, easing: quintInOut }}
     use:clickOutside={() => {
       if ($statisticsEnabled$ && !wasTrackerPaused) {
@@ -1673,8 +1668,8 @@
 
 {#if showReaderImageGallery}
   <BookReaderImageGallery
-    fontColor={$themeOption$.fontColor}
-    backgroundColor={$backgroundColor$}
+    fontColor="var(--font-color)"
+    backgroundColor="var(--surface-color)"
     onClose={() => (showReaderImageGallery = false)}
   />
 {/if}
@@ -1718,7 +1713,7 @@
   tabindex="0"
   role="button"
   class="writing-horizontal-tb fixed bottom-0 left-0 z-10 flex h-8 w-full items-center justify-between text-xs leading-none"
-  style:color={$themeOption$?.tooltipTextFontColor}
+  style:color={readingTheme.tooltipTextFontColor}
   onclick={() => (showFooter = !showFooter)}
   onkeyup={dummyFn}
 >
@@ -1728,7 +1723,7 @@
         role="button"
         title="Click to open Tracker Menu or Double Click to toggle Tracker"
         class="flex h-full w-8 items-center justify-center text-sm sm:text-lg"
-        class:text-red-500={$isTrackerPaused$}
+        class:text-app-danger={$isTrackerPaused$}
         class:animate-pulse={frozenPosition > -1}
         use:multiClickHandler={[trackerSingleClickHandler, trackerDblClickHandler]}
       >
@@ -1740,7 +1735,7 @@
         tabindex="0"
         role="button"
         class="flex h-full w-8 items-center justify-center text-sm sm:text-lg"
-        class:text-red-500={externalStorageErrors > 1}
+        class:text-app-danger={externalStorageErrors > 1}
         class:animate-pulse={externalStorageErrors > 1 || isReplicating}
         onclick={(event) => {
           event.stopPropagation();
@@ -1778,7 +1773,7 @@
         !$showPercentage$ &&
         !$showFooterChapterCharacterCounter$ &&
         !$showFooterChapterPercentage$}
-      style:color={$themeOption$?.tooltipTextFontColor}
+      style:color={readingTheme.tooltipTextFontColor}
       onclick={(event) => {
         event.stopPropagation();
         const { target } = event;

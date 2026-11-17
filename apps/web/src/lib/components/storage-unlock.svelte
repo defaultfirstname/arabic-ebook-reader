@@ -88,7 +88,7 @@
           }}
         />
       {/if}
-      <div class="text-red-500">{error}</div>
+      <div class="text-app-danger">{error}</div>
     </div>
   {/snippet}
   {#snippet footer()}

@@ -2,6 +2,15 @@
 <html class="writing-horizontal-tb h-full w-full" lang="en">
   <head>
     <meta charset="utf-8" />
+    <script>
+      try {
+        if (localStorage.getItem('appAppearance') === 'light') {
+          document.documentElement.dataset.appAppearance = 'light';
+        }
+      } catch {
+        // Keep the default when browser storage is unavailable.
+      }
+    </script>
     <meta
       content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1"
       name="viewport"

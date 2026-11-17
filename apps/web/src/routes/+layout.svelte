@@ -4,7 +4,7 @@
   import { basePath, clearConsoleOnReload } from '#lib/data/env';
   import { dialogManager } from '#lib/data/dialog-manager';
   import { LocalFont, userFontsCacheName, type UserFont } from '#lib/data/fonts';
-  import { fontFamilyGroupOne$, isOnline$, userFonts$ } from '#lib/data/store';
+  import { appAppearance$, fontFamilyGroupOne$, isOnline$, userFonts$ } from '#lib/data/store';
   import { dummyFn, isMobile, isMobile$ } from '#lib/functions/utils';
   import { MetaTags } from 'svelte-meta-tags';
   import { onMount, type Snippet } from 'svelte';
@@ -76,6 +76,9 @@
   onMount(() => isMobile$.next(isMobile(window)));
   $effect(() => {
     addUserFonts($userFonts$);
+  });
+  $effect(() => {
+    document.documentElement.dataset.appAppearance = $appAppearance$;
   });
 </script>
 

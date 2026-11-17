@@ -425,7 +425,7 @@
         {@const otherRowInEdit = rowInEdit && !currentRowInEdit}
         <div class="col-span-2 md:col-span-1">
           <button
-            class="hover:text-red-500"
+            class="hover:text-app-danger"
             class:cursor-not-allowed={otherRowInEdit}
             title={otherRowInEdit ? '' : `${rowInEdit ? 'Cancel Edit' : 'Delete Row'}`}
             disabled={otherRowInEdit}
@@ -441,7 +441,7 @@
           </button>
           {#if isNoneAggregation}
             <button
-              class="ml-2 hover:text-red-500"
+              class="ml-2 hover:text-app-danger"
               class:cursor-not-allowed={otherRowInEdit}
               title={otherRowInEdit ? '' : `${rowInEdit ? 'Save Changes' : 'Edit Row'}`}
               disabled={otherRowInEdit}
@@ -650,9 +650,9 @@
       >
         {#each statisticsSummaryPages as statisticsSummaryPage, pageIndex (statisticsSummaryPage)}
           <button
-            class="hover:opacity-50 hover:bg-slate-300 hover:text-black"
-            class:bg-slate-300={statisticsSummaryPage === currentStatisticsSummaryPage}
-            class:text-black={statisticsSummaryPage === currentStatisticsSummaryPage}
+            class="hover:bg-app-hover hover:text-app-text"
+            class:bg-app-selected={statisticsSummaryPage === currentStatisticsSummaryPage}
+            class:text-app-selected-text={statisticsSummaryPage === currentStatisticsSummaryPage}
             bind:this={statisticsSummaryPageRefs[pageIndex + 1]}
             onclick={({ target }) => {
               setRowInEditMode();

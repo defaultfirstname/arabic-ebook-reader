@@ -770,7 +770,7 @@
       onRemoveBookClick={(card) => removeBooks([card])}
     />
   {:else}
-    <div class="flex justify-center pt-44 text-gray-400 text-opacity-40">
+    <div class="flex justify-center pt-44 text-app-muted">
       <div class="flex w-3/6 justify-center xl:w-3/12">
         <Fa icon={faUpload} style="width: 100%; height: auto" />
       </div>

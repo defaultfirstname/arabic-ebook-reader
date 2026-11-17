@@ -7,10 +7,11 @@
     title: string;
     progress: number;
     format?: 'pdf';
+    isPlaceholder: boolean;
     onclick: () => void;
   }
 
-  let { imagePath, title, progress, format, onclick }: Props = $props();
+  let { imagePath, title, progress, format, isPlaceholder, onclick }: Props = $props();
 
   let objectUrl = $state('');
   let failedSource = $state('');
@@ -34,14 +35,14 @@
   tabindex="0"
   role="button"
   aria-label={format === 'pdf' ? `${title} PDF` : undefined}
-  class="aspect-w-2 aspect-h-3 relative"
+  class="aspect-w-2 aspect-h-3 relative bg-app-surface focus-visible:-outline-offset-2"
   {onclick}
   onkeyup={(event) => {
     if (event.key === 'Enter' || event.key === ' ') onclick();
   }}
 >
   <div class="inline">
-    <div class="h-full w-full text-5xl sm:text-7xl">
+    <div class="h-full w-full text-5xl sm:text-7xl" class:opacity-60={isPlaceholder}>
       {#if source && source !== failedSource}
         <img
           decoding="async"
@@ -59,20 +60,17 @@
 
     <div class="absolute inset-x-0 bottom-0">
       <div
-        class="sm:h-21 h-16 bg-gray-800 bg-opacity-80 p-0.5 px-1.5 text-justify text-sm text-white sm:p-1.5 sm:text-base"
+        class="sm:h-21 flex h-16 items-start gap-1 bg-app-surface px-1.5 py-0.5 text-sm text-app-text sm:p-1.5 sm:text-base"
       >
-        <span class="line-clamp-3">{title}</span>
+        <span class="line-clamp-3 min-w-0 flex-1 text-start" dir="auto">{title}</span>
         {#if format === 'pdf'}
-          <span class="absolute right-2 top-2 rounded bg-gray-800 px-1.5 text-xs text-white"
+          <span class="shrink-0 rounded bg-app-selected px-1 text-xs text-app-selected-text"
             >PDF</span
           >
         {/if}
       </div>
-      <div class="h-2.5 bg-gray-400 bg-opacity-80">
-        <div
-          class="h-full rounded bg-gradient-to-b from-red-600 to-red-900"
-          style:width="{progress * 100}%"
-        ></div>
+      <div class="h-2.5 bg-app-divider">
+        <div class="h-full rounded bg-app-accent" style:width="{progress * 100}%"></div>
       </div>
     </div>
   </div>

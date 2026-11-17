@@ -23,7 +23,7 @@
 </script>
 
 <div
-  class="min-w-0 border-gray-500/25"
+  class="min-w-0 border-app-divider"
   class:border-b={checked !== undefined}
   class:pb-2={checked === undefined}
 >
@@ -52,7 +52,7 @@
         <input type="checkbox" role="switch" class="peer sr-only" aria-label={title} bind:checked />
         <span
           aria-hidden="true"
-          class="h-5 w-9 rounded-full bg-gray-500 p-0.5 transition-colors after:block after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-transform peer-checked:bg-green-700 peer-checked:after:translate-x-4 peer-focus-visible:ring-2 peer-focus-visible:ring-blue-500 peer-focus-visible:ring-offset-2"
+          class="h-5 w-9 rounded-full bg-app-muted p-0.5 transition-colors after:block after:h-4 after:w-4 after:rounded-full after:bg-app-surface after:transition-transform peer-checked:bg-app-accent peer-checked:after:translate-x-4 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-app-focus"
         ></span>
       </label>
     {/if}

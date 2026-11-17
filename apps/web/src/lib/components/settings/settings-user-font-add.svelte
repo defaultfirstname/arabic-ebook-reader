@@ -112,7 +112,9 @@
       }
     }}
   />
-  <div class:invisible={currentError === 'no error'} class="my-2 text-red-500">{currentError}</div>
+  <div class:invisible={currentError === 'no error'} class="my-2 text-app-danger">
+    {currentError}
+  </div>
   <div class="flex items-center just justify-between">
     <label class={`${inputClasses} w-40 text-center py-2 hover:opacity-25 mr-2`}>
       <input
@@ -128,7 +130,7 @@
       tabindex="0"
       role="button"
       title={canSave ? 'Save' : 'Select a File and Font name to save'}
-      class:text-gray-500={!canSave}
+      class:text-app-muted={!canSave}
       class:cursor-not-allowed={!canSave}
       onclick={() => {
         if (canSave) {

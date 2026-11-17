@@ -53,10 +53,10 @@
             </div>
           {/snippet}
           {#snippet content()}
-            <div class="flex flex-col justify-center w-36 bg-gray-700">
+            <div class="flex flex-col justify-center w-36 bg-app-surface">
               {#each copyStatisticsDataItems as copyStatisticsDataItem (copyStatisticsDataItem.key)}
                 <button
-                  class="p-2 hover:bg-white hover:text-gray-700"
+                  class="p-2 hover:bg-app-hover hover:text-app-text"
                   onclick={() => {
                     copyStatisticsData$.next(copyStatisticsDataItem.key);
                     copyStatisticsDataPopover?.toggleOpen();
@@ -76,7 +76,7 @@
           ? 'You are already on the Summary Tab'
           : 'Switch to Summary Tab'}
         class={baseIconClasses}
-        class:bg-gray-900={$lastStatisticsTab$ === StatisticsTab.SUMMARY}
+        class:bg-app-selected={$lastStatisticsTab$ === StatisticsTab.SUMMARY}
         onclick={() => ($lastStatisticsTab$ = StatisticsTab.SUMMARY)}
         onkeyup={dummyFn}
       >
@@ -89,7 +89,7 @@
           ? 'You are already on the Heatmap Tab'
           : 'Switch to Heatmap Tab'}
         class={baseIconClasses}
-        class:bg-gray-900={$lastStatisticsTab$ === StatisticsTab.OVERVIEW}
+        class:bg-app-selected={$lastStatisticsTab$ === StatisticsTab.OVERVIEW}
         onclick={() => ($lastStatisticsTab$ = StatisticsTab.OVERVIEW)}
         onkeyup={dummyFn}
       >

@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { PDFDocumentProxy, PDFPageProxy, RenderTask } from 'pdfjs-dist';
   import type { PdfPageDimensions, PdfReadingPosition } from '#lib/data/storage/pdf-book';
+  import { buttonClasses, headerSurfaceClasses, selectClasses } from '#lib/css-classes';
   import { loadPdf, pdfOpenError, readPdfDimensions } from './pdf-document';
   import { getPdfSpreads, type PdfLayout } from './pdf-spreads';
   import { tick } from 'svelte';
@@ -220,13 +221,20 @@
 <svelte:window onkeydown={onKeydown} />
 
 <main class="viewer">
-  <header>
+  <header class={headerSurfaceClasses}>
     <div class="heading">
-      <h1>{saved?.title ?? 'PDF spread preview'}</h1>
+      <div class="min-w-0 flex-1">
+        <h1 class="font-semibold">PDF Viewer</h1>
+        {#if saved || filename}
+          <p class="truncate text-sm text-app-muted" title={saved?.title ?? filename}>
+            {saved?.title ?? filename}
+          </p>
+        {/if}
+      </div>
       {#if libraryHref}
-        <a class="open" href={libraryHref}>Book Manager</a>
+        <a class={buttonClasses} href={libraryHref}>Book Manager</a>
       {:else}
-        <label class="open">
+        <label class="open {buttonClasses}">
           Open PDF
           <input
             type="file"
@@ -242,9 +250,10 @@
     </div>
     {#if dimensions.length}
       <div class="controls">
-        <label>
-          Page layout
+        <label class="flex flex-wrap items-center gap-2 text-sm">
+          <span>Page layout</span>
           <select
+            class={selectClasses}
             value={layout}
             onchange={(event) => {
               layout = event.currentTarget.value as PdfLayout;
@@ -259,30 +268,43 @@
         </label>
         <div class="zoom-controls" role="group" aria-label="PDF zoom">
           <button
+            class={buttonClasses}
             aria-label="Zoom out"
             disabled={zoomIndex === 0}
             onclick={() => setZoom(zoomIndex - 1)}>−</button
           >
-          <button aria-label="Fit to window" disabled={zoomIndex === 0} onclick={() => setZoom(0)}>
+          <button
+            class={buttonClasses}
+            aria-label="Fit to window"
+            disabled={zoomIndex === 0}
+            onclick={() => setZoom(0)}
+          >
             {zoomIndex === 0 ? 'Fit' : `${Math.round(zoom * 100)}% of fit`}
           </button>
           <button
+            class={buttonClasses}
             aria-label="Zoom in"
             disabled={zoomIndex === zoomLevels.length - 1}
             onclick={() => setZoom(zoomIndex + 1)}>+</button
           >
         </div>
         <nav aria-label="Page navigation" dir="rtl">
-          <button disabled={spreadIndex <= 0} onclick={() => turn(-1)}>Previous</button>
+          <button class={buttonClasses} disabled={spreadIndex <= 0} onclick={() => turn(-1)}
+            >Previous</button
+          >
           <output dir="ltr" aria-live="polite">
             {spreads[spreadIndex]?.join('–')} / {dimensions.length}
           </output>
-          <button disabled={spreadIndex >= spreads.length - 1} onclick={() => turn(1)}>Next</button>
+          <button
+            class={buttonClasses}
+            disabled={spreadIndex >= spreads.length - 1}
+            onclick={() => turn(1)}>Next</button
+          >
         </nav>
       </div>
     {/if}
     {#if saveError}
-      <p role="alert">Could not save your reading position.</p>
+      <p class="text-app-danger" role="alert">Could not save your reading position.</p>
     {/if}
   </header>
 
@@ -299,7 +321,7 @@
     {#if loading}
       <p role="status">Opening {filename}…</p>
     {:else if error}
-      <p role="alert">{error}</p>
+      <p class="text-app-danger" role="alert">{error}</p>
     {:else if !dimensions.length && !saved}
       <p>Choose a PDF from your device to preview its pages.</p>
     {:else if scale > 0}
@@ -321,7 +343,9 @@
       </div>
     {/if}
     {#if renderError}
-      <p class="render-error" role="alert">Could not render this page.</p>
+      <p class="render-error rounded bg-app-surface p-2 text-app-danger" role="alert">
+        Could not render this page.
+      </p>
     {/if}
   </section>
 </main>
@@ -332,17 +356,12 @@
     display: grid;
     grid-template-rows: auto minmax(18rem, 1fr);
     height: 100dvh;
-    background: #15252b;
-    color: #ecf4f1;
-    font-family: 'Instrument Sans', system-ui, sans-serif;
   }
 
   header {
     display: grid;
     gap: 0.75rem;
-    padding: 0.85rem clamp(0.75rem, 4vw, 3rem);
-    background: #21373c;
-    border-bottom: 1px solid #45605f;
+    padding: 0.5rem clamp(0.75rem, 4vw, 3rem);
   }
 
   .heading,
@@ -357,30 +376,12 @@
 
   .zoom-controls {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.35rem;
-  }
-
-  h1 {
-    font-size: clamp(1.15rem, 3vw, 1.55rem);
-    font-weight: 650;
-  }
-
-  .open,
-  select,
-  button {
-    padding: 0.5rem 0.75rem;
-    border: 1px solid #64827e;
-    border-radius: 0.35rem;
-    background: #172b30;
-    color: inherit;
   }
 
   .open {
     position: relative;
-    cursor: pointer;
-    background: #e1ebd7;
-    color: #203530;
-    font-weight: 650;
   }
 
   .open input {
@@ -392,12 +393,8 @@
   }
 
   .open:focus-within {
-    outline: 2px solid white;
+    outline: 2px solid var(--focus-color);
     outline-offset: 2px;
-  }
-
-  button:disabled {
-    opacity: 0.45;
   }
 
   output {
@@ -440,7 +437,7 @@
   .spread {
     display: flex;
     align-items: flex-start;
-    box-shadow: 0 0.5rem 2rem #081318;
+    box-shadow: 0 0.5rem 2rem var(--page-shadow);
     margin: auto;
   }
 
@@ -453,7 +450,5 @@
   .render-error {
     position: absolute;
     bottom: 0.5rem;
-    padding: 0.5rem;
-    background: #622d2d;
   }
 </style>

@@ -211,7 +211,7 @@
   }
 </script>
 
-<section class="border-t border-gray-500/25 pt-4">
+<section class="border-t border-app-divider pt-4">
   <div class="flex">
     <div class="flex grow">
       <h2 class="mb-3 text-lg font-semibold">
@@ -248,7 +248,7 @@
       <Ripple />
     </button>
   </div>
-  <hr class="border border-black" />
+  <hr class="border border-app-divider" />
   <div class="mt-6">
     {#if !listLoading && storageSources}
       <div class="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">

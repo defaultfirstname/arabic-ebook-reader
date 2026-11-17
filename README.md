@@ -8,6 +8,8 @@ See the [project roadmap](ROADMAP.md) for the refactor plan and proposed Arabic 
 
 The [contributor guide](CONTRIBUTING.md) follows a book from import to offline reopening and maps where PDF support fits.
 
+The app starts in Dark. Choose Light under **Settings → Reader → App appearance**. EPUB, TXT, and HTMLZ can follow that setting or use their own reading theme. The PDF Viewer uses the app appearance for its controls and displays PDF pages in their original colors.
+
 # Features
 
 - [x] Supports HTMLZ, Plain Text and EPUB files

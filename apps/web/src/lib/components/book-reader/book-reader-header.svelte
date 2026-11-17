@@ -91,7 +91,7 @@
   }
 </script>
 
-<div class="flex justify-between bg-gray-700 px-4 md:px-8 {baseHeaderClasses}">
+<div class="flex justify-between px-4 md:px-8 {baseHeaderClasses}">
   <div class="flex transform-gpu {nTranslateXHeaderFa}">
     {#if hasChapterData}
       <div
@@ -162,12 +162,12 @@
             </div>
           {/snippet}
           {#snippet content()}
-            <div class="w-40 bg-gray-700 md:w-32">
+            <div class="w-40 md:w-32">
               {#each customReadingPointMenuItems as actionItem (actionItem.label)}
                 <div
                   tabindex="0"
                   role="button"
-                  class="px-4 py-2 text-sm hover:bg-white hover:text-gray-700"
+                  class="px-4 py-2 text-sm hover:bg-app-hover"
                   onclick={() => runCustomReadingPointAction(actionItem.action)}
                   onkeyup={dummyFn}
                 >

@@ -51,7 +51,7 @@
           }
         }}
       />
-      <div class="text-red-500 mt-4">{error}</div>
+      <div class="text-app-danger mt-4">{error}</div>
     </div>
   {/snippet}
   {#snippet footer()}

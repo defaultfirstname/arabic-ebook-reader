@@ -156,3 +156,20 @@ export const availableThemes = new Map(
     themeObjValueToStringValue(value)
   ])
 );
+
+const followAppTheme: ThemeOption = {
+  fontColor: 'var(--font-color)',
+  backgroundColor: 'var(--surface-color)',
+  selectionFontColor: 'var(--selection-text-color)',
+  selectionBackgroundColor: 'var(--selection-color)',
+  tooltipTextFontColor: 'var(--muted-color)'
+};
+
+export function resolveReadingTheme(theme: string, customThemes: Record<string, ThemeOption>) {
+  if (!theme) return followAppTheme;
+  return (
+    availableThemes.get(theme) ??
+    (Object.hasOwn(customThemes, theme) ? customThemes[theme] : undefined) ??
+    availableThemes.get('light-theme')!
+  );
+}
