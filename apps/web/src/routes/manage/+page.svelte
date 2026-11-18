@@ -535,8 +535,8 @@
       {
         component: LogReportDialog,
         props: {
-          title: 'Bug Report',
-          message: 'Please include the attached file for your report'
+          title: 'Report an issue',
+          message: 'Describe what happened, what you expected, and how to reproduce it.'
         }
       }
     ]);

@@ -4,6 +4,8 @@
 
 An offline-capable reader for Modern Standard Arabic with right-to-left reading, an offline Arabic font, and support for dictionary extensions such as Yomitan. It is based on the original [ッツ Ebook Reader](https://github.com/ttu-ttu/ebook-reader).
 
+Iliktruni is distributed under the [BSD 3-Clause License](LICENSE). The production build includes the app and third-party notices, linked from Settings.
+
 The app starts in Dark. Choose Light under **Settings → Reader → App appearance**. EPUB, TXT, and HTMLZ can follow that setting or use their own reading theme. The PDF Viewer uses the app appearance for its controls and displays PDF pages in their original colors.
 
 # Features
@@ -141,7 +143,7 @@ You may find the following controls in the manager:
 | ![Icon](assets/readme/control-gdrive-source.svg)               | Indicates that data from the configured default GDrive source is displayed     |
 | ![Icon](assets/readme/control-odrive-source.svg)               | Indicates that data from the configured default OneDrive source is displayed   |
 | ![Icon](assets/readme/control-fs-source.svg)                   | Indicates that data from the configured default filesystem source is displayed |
-| ![Icon](assets/readme/control-log.svg)                         | Allows you to download data for a bug report                                   |
+| ![Icon](assets/readme/control-log.svg)                         | Opens the issue-report dialog with an optional JSON download                   |
 | ![Icon](assets/readme/control-settings.svg)                    | Navigates you to the settings                                                  |
 | ![Icon](assets/readme/control-manager.svg)                     | Opens the action menu                                                          |
 | ![Icon](assets/readme/control-export.svg)                      | Opens the export menu for the selected books                                   |
@@ -418,7 +420,7 @@ You may find following additional controls for storage source settings:
 | ![Icon](assets/readme/control-export.svg)         | Toggles the storage source as sync target for the auto import/export option<br>You can only configure one sync target across all storage sources<br/>Grayed out if the storage source is not the current sync target<br/>Can be temporarily overwritten when opening a book from an external source |
 | ![Icon](assets/readme/control-source-default.svg) | Toggles the storage source as default source for this type and allows to display data on the manager page from it<br>You can only enable one default source per storage type at the same time<br/> Grayed out if the storage source is not the current data source default for this type            |
 
-If you develop locally or self host the reader you need to provide credentials for the the default connections by adding an .env.local in the apps\web folder. Following environment variables can be used:
+If you develop locally or self-host the reader, you can configure the default connections with public client IDs in `apps/web/.env.local`. Vite includes `VITE_*` values used by the app in the browser bundle. Keep confidential credentials out of these variables.
 
 <details>
     <summary>Environment Variables</summary>
@@ -430,13 +432,11 @@ If you develop locally or self host the reader you need to provide credentials f
 - VITE_GDRIVE_REVOKE_ENDPOINT - Google endpoint to revoke a refresh token
 - VITE_GDRIVE_SCOPE - Scope to request for the google source
 - VITE_GDRIVE_CLIENT_ID - Client id for the google source
-- VITE_GDRIVE_CLIENT_SECRET - Client secret for the google source
 - VITE_ONEDRIVE_AUTH_ENDPOINT - OneDrive endpoint to which the user is redirected for the oauth authentication
 - VITE_ONEDRIVE_TOKEN_ENDPOINT - OneDrive endpoint to which the token for the oauth code flow is send
 - VITE_ONEDRIVE_DISCOVERY - OneDrive discovery endpoint (currently not used)
 - VITE_ONEDRIVE_SCOPE - Scope to request for the OneDrive source
 - VITE_ONEDRIVE_CLIENT_ID - Client id for the OneDrive source
-- VITE_ONEDRIVE_CLIENT_SECRET - Client secret for the OneDrive source
 </details>
 <br/>
 <details>
@@ -450,13 +450,11 @@ VITE_GDRIVE_REFRESH_ENDPOINT="https://oauth2.googleapis.com/token"
 VITE_GDRIVE_REVOKE_ENDPOINT="https://oauth2.googleapis.com/revoke"
 VITE_GDRIVE_SCOPE="https://www.googleapis.com/auth/drive.file"
 VITE_GDRIVE_CLIENT_ID="1234567890"
-VITE_GDRIVE_CLIENT_SECRET="0987654321"
 VITE_ONEDRIVE_AUTH_ENDPOINT="https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize"
 VITE_ONEDRIVE_TOKEN_ENDPOINT="https://login.microsoftonline.com/consumers/oauth2/v2.0/token"
 VITE_ONEDRIVE_DISCOVERY="https://login.microsoftonline.com/consumers/v2.0/.well-known/openid-configuration"
 VITE_ONEDRIVE_SCOPE="files.readwrite"
 VITE_ONEDRIVE_CLIENT_ID="abcdefg"
-VITE_ONEDRIVE_CLIENT_SECRET1="gfedcba"
 ```
 
 </details>

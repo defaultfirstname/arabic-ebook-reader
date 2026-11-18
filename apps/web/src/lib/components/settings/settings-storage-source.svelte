@@ -5,7 +5,7 @@
   import Ripple from '#lib/components/ripple.svelte';
   import { buttonClasses } from '#lib/css-classes';
   import type { BooksDbStorageSource } from '#lib/data/database/books-db/versions/books-db';
-  import { gDriveRevokeEndpoint } from '#lib/data/env';
+  import { gDriveRevokeEndpoint, projectRepositoryUrl } from '#lib/data/env';
   import { BaseStorageHandler } from '#lib/data/storage/handler/base-handler';
   import { getStorageHandler } from '#lib/data/storage/storage-handler-factory';
   import { StorageOAuthManager, storageOAuthTokens } from '#lib/data/storage/storage-oauth-manager';
@@ -383,8 +383,9 @@
             Make sure to understand the
             <a
               class="text-app-danger"
-              href="https://github.com/ttu-ttu/ebook-reader?tab=readme-ov-file#security-considerations"
+              href={`${projectRepositoryUrl}#security-considerations`}
               target="_blank"
+              rel="noreferrer"
             >
               Implications
             </a>

@@ -5,10 +5,6 @@ const config = {
   content: ['./src/**/*.{html,js,svelte,ts}'],
   theme: {
     extend: {
-      fontFamily: {
-        sans: ['Noto Sans JP', 'sans-serif'],
-        serif: ['Noto Serif JP', 'serif']
-      },
       colors: {
         'background-color': 'var(--background-color)',
         'app-text': 'var(--font-color)',

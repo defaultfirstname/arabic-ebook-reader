@@ -4,6 +4,7 @@
  * All rights reserved.
  */
 
+export const projectRepositoryUrl = 'https://github.com/defaultfirstname/arabic-ebook-reader';
 export const basePath = import.meta.env.VITE_BASE_PATH;
 export const pagePath = import.meta.env.VITE_PAGE_PATH || '';
 export const clearConsoleOnReload = !!import.meta.env.VITE_CLEAR_ON_RELOAD || false;

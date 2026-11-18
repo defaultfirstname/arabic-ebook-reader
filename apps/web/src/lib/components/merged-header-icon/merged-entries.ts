@@ -42,7 +42,7 @@ export const mergeEntries = {
     icon: faImages,
     title: 'Open Image Gallery'
   },
-  BUG_REPORT: { routeId: '', label: 'Bug Report', icon: faBug, title: 'Report an Issue' },
+  BUG_REPORT: { routeId: '', label: 'Report an issue', icon: faBug, title: 'Report an Issue' },
   FOLDER_IMPORT: {
     routeId: '',
     label: 'Import Folder(s)',

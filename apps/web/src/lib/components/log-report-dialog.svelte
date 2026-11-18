@@ -2,6 +2,7 @@
   import DialogTemplate from '#lib/components/dialog-template.svelte';
   import Ripple from '#lib/components/ripple.svelte';
   import { buttonClasses } from '#lib/css-classes';
+  import { projectRepositoryUrl } from '#lib/data/env';
   import { logger } from '#lib/data/logger';
   import { StorageSourceDefault } from '#lib/data/storage/storage-types';
   import {
@@ -179,15 +180,18 @@
   {/snippet}
   {#snippet content()}
     <p>{message}</p>
+    <p class="mt-3 text-sm text-app-muted">
+      Review the downloaded report before sharing it publicly.
+    </p>
   {/snippet}
   {#snippet footer()}
     <a
       class={buttonClasses}
-      href="https://github.com/ttu-ttu/ebook-reader"
+      href={`${projectRepositoryUrl}/issues`}
       target="_blank"
       rel="noreferrer"
     >
-      Open Repository
+      Open GitHub Issues
       <Ripple />
     </a>
     <a class={buttonClasses} href={downloadableLog} download="log.json">

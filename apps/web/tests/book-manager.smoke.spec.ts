@@ -6,6 +6,29 @@
 
 import { expect, test } from '@playwright/test';
 import { Buffer } from 'node:buffer';
+import { readFile } from 'node:fs/promises';
+
+test('links to Iliktruni Issues and downloads the existing JSON report', async ({ page }) => {
+  await page.goto('/manage');
+  await page.getByTitle('Report an Issue', { exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Report an issue', exact: true })).toBeVisible();
+  await expect(page.getByText('Describe what happened', { exact: false })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Open GitHub Issues' })).toHaveAttribute(
+    'href',
+    'https://github.com/defaultfirstname/arabic-ebook-reader/issues'
+  );
+  const downloadEvent = page.waitForEvent('download');
+  await page.getByRole('link', { name: 'Download Report' }).click();
+  const download = await downloadEvent;
+  expect(download.suggestedFilename()).toBe('log.json');
+  const report = JSON.parse(await readFile(await download.path(), 'utf8'));
+  expect(report).toMatchObject({
+    userAgent: expect.any(String),
+    viewport: expect.objectContaining({ width: expect.any(Number) }),
+    settings: expect.objectContaining({ viewMode: expect.any(String) }),
+    log: expect.any(Array)
+  });
+});
 
 test('sorts Arabic book cards, keeps bookmark progress, and selects the reordered card', async ({
   page

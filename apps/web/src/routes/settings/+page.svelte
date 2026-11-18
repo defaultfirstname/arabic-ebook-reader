@@ -205,5 +205,11 @@
       bind:adjustStatisticsAfterIdleTime={$adjustStatisticsAfterIdleTime$}
     />
   </div>
+  <footer class="mx-auto mt-8 flex max-w-5xl flex-wrap gap-x-4 gap-y-2 text-sm text-app-muted">
+    <a class="underline" href={`${pagePath}/LICENSE.txt`} rel="external">App license</a>
+    <a class="underline" href={`${pagePath}/third-party-licenses.txt`} rel="external"
+      >Third-party licenses</a
+    >
+  </footer>
 </main>
 {$setPersistentStorage$ ?? ''}
