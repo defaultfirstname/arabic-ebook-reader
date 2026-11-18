@@ -52,7 +52,7 @@
     isPdfFile,
     localBookImportAccept
   } from '#lib/functions/file-loaders/book-import-format';
-  import { formatPageTitle } from '#lib/functions/format-page-title';
+  import { appName, appTagline, formatPageTitle } from '#lib/functions/format-page-title';
   import { keyBy } from '#lib/functions/key-by';
   import { handleErrorDuringReplication } from '#lib/functions/replication/error-handler';
   import { importBackup, importData, replicateData } from '#lib/functions/replication/replicator';
@@ -757,6 +757,10 @@
     getDropEventFiles(event).then(onFilesChange);
   }}
 >
+  <header class="mb-4">
+    <h1 class="text-xl font-semibold">{appName}</h1>
+    <p class="text-sm text-app-muted">{appTagline}</p>
+  </header>
   {#if !$bookCards$ || $booksAreLoading$}
     Loading...
   {:else if $bookCards$.length}

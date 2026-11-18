@@ -80,7 +80,7 @@ test('reads an Arabic book and resumes from a saved bookmark', async ({ page, co
 
 test('scrolls and resumes an Arabic book in continuous mode', async ({ page, context }) => {
   await page.goto('/settings');
-  await expect(page).toHaveTitle('Settings | Arabic Ebook Reader');
+  await expect(page).toHaveTitle('Settings | Iliktruni');
   const viewMode = page.getByRole('combobox', { name: 'View mode', exact: true });
   await viewMode.selectOption('continuous');
   const autoBookmark = page.getByRole('switch', { name: 'Save reading position automatically' });

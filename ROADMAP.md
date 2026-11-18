@@ -1,4 +1,4 @@
-# Arabic Ebook Reader roadmap
+# Iliktruni roadmap
 
 First make the existing reader easier to understand, maintain, and extend. Then add Arabic PDF reading with correct right-to-left page turns and facing pages. The [Svelte migration record](GOALS.md) tracks the previous upgrade and its remaining deployment and device checks.
 

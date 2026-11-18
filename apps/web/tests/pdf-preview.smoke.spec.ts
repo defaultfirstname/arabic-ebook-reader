@@ -76,6 +76,7 @@ test('renders RTL spreads with matching inner edges and keeps a wide scan whole 
   await context.setOffline(true);
   await expect(page.locator('html')).toHaveCSS('color-scheme', 'light');
   await expect(page.getByRole('heading', { name: 'PDF Viewer' })).toBeVisible();
+  await expect(page).toHaveTitle('PDF Viewer | Iliktruni');
   await page.getByLabel('Open PDF').setInputFiles({
     name: 'spread-check.pdf',
     mimeType: 'application/pdf',
@@ -203,8 +204,10 @@ test('imports mixed books, saves PDF layout and page, and reopens offline', asyn
   await page.getByRole('checkbox', { name: 'Book Data', exact: true }).check();
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Start', exact: true }).click();
+  const exportedBackup = await download;
+  expect(exportedBackup.suggestedFilename()).toMatch(/^iliktruni-export-.*\.zip$/);
   const archive = new ZipReader(
-    new BlobReader(new Blob([await readFile((await (await download).path())!)]))
+    new BlobReader(new Blob([await readFile((await exportedBackup.path())!)]))
   );
   const entries = await archive.getEntries();
   expect(entries.filter((entry) => entry.filename.includes('/bookdata_'))).toHaveLength(1);

@@ -13,6 +13,10 @@ test('sorts Arabic book cards, keeps bookmark progress, and selects the reordere
   const titles = ['كتاب 2', 'كتاب 3', 'كتاب 10'];
   const paragraph = 'هذا نص عربي للتجربة. نقرأ الكتاب وننتقل إلى الصفحة التالية.';
   await page.goto('/manage');
+  await expect(page).toHaveTitle('Book Manager | Iliktruni');
+  await expect(page.getByRole('heading', { name: 'Iliktruni' })).toBeVisible();
+  const manifest = await page.request.get('/manifest.webmanifest');
+  expect(await manifest.json()).toMatchObject({ name: 'Iliktruni', short_name: 'Iliktruni' });
   const fileChooser = page.waitForEvent('filechooser');
   await page.getByRole('button', { name: 'Import Files', exact: true }).click();
   await (

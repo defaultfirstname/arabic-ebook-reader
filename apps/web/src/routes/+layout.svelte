@@ -86,10 +86,11 @@
 
 <MetaTags
   title={appName}
-  description="Offline-capable Arabic ebook reader with right-to-left reading and Yomitan support"
+  description="Read Arabic EPUBs and PDFs offline with right-to-left navigation."
   canonical={basePath ? `${basePath}${path !== '/' ? path : ''}` : undefined}
   openGraph={{
     type: 'website',
+    siteName: appName,
     images: basePath
       ? [
           {

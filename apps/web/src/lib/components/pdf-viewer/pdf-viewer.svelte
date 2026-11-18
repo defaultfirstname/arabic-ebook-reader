@@ -2,6 +2,7 @@
   import type { PDFDocumentProxy, PDFPageProxy, RenderTask } from 'pdfjs-dist';
   import type { PdfPageDimensions, PdfReadingPosition } from '#lib/data/storage/pdf-book';
   import { buttonClasses, headerSurfaceClasses, selectClasses } from '#lib/css-classes';
+  import { formatPageTitle } from '#lib/functions/format-page-title';
   import { loadPdf, pdfOpenError, readPdfDimensions } from './pdf-document';
   import { getPdfSpreads, type PdfLayout } from './pdf-spreads';
   import { tick } from 'svelte';
@@ -215,7 +216,7 @@
 </script>
 
 <svelte:head>
-  <title>{saved?.title ?? 'PDF spread preview'} | Arabic Ebook Reader</title>
+  <title>{formatPageTitle(saved?.title ?? 'PDF Viewer')}</title>
 </svelte:head>
 
 <svelte:window onkeydown={onKeydown} />

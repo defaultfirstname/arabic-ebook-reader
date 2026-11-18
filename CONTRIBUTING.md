@@ -1,6 +1,13 @@
-# Working on Arabic Ebook Reader
+# Working on Iliktruni
 
 Start with the [roadmap](ROADMAP.md) for planned work and the [migration record](GOALS.md#run-the-smoke-tests-locally) for browser test setup.
+
+## Preview and publish changes
+
+1. Work on a branch. Run `pnpm dev` for quick feedback while editing.
+2. Before opening a pull request, run `pnpm eslint .`, `pnpm --filter web check`, `pnpm --filter web check:types`, `pnpm build`, and `pnpm --filter web test:smoke`. To inspect the production build locally, run `pnpm --filter web preview` and open the URL it prints.
+3. Push the branch and open a pull request. GitHub CI reruns the checks. With branch previews enabled in Cloudflare Pages, open the preview link and verify direct book links and offline reopening on HTTPS before merging. Use test books because each hostname has its own browser library.
+4. Merge into `main` after the checks and preview pass. The Git-connected Pages project publishes the production build from `main`.
 
 ## Follow a book through the app
 

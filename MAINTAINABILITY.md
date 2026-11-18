@@ -1,4 +1,4 @@
-# Arabic Ebook Reader maintainability review
+# Iliktruni maintainability review
 
 ## Follow a book through the app
 

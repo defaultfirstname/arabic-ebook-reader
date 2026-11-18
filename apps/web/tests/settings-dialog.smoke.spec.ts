@@ -10,7 +10,7 @@ test('saves and dismisses the custom-theme dialog without a browser error', asyn
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/settings');
-  await expect(page).toHaveTitle('Settings | Arabic Ebook Reader');
+  await expect(page).toHaveTitle('Settings | Iliktruni');
 
   const name = page.getByPlaceholder('Theme Name');
   const theme = page.getByRole('combobox', { name: 'Theme', exact: true });
