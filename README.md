@@ -4,10 +4,6 @@
 
 An offline-capable reader for Modern Standard Arabic with right-to-left reading, an offline Arabic font, and support for dictionary extensions such as Yomitan. It is based on the original [ッツ Ebook Reader](https://github.com/ttu-ttu/ebook-reader).
 
-See the [project roadmap](ROADMAP.md) for the refactor plan and proposed Arabic PDF support. The [Svelte migration record](GOALS.md) includes the upgrade checklist and instructions for running the browser smoke tests.
-
-The [contributor guide](CONTRIBUTING.md) follows a book from import to offline reopening and maps where PDF support fits.
-
 The app starts in Dark. Choose Light under **Settings → Reader → App appearance**. EPUB, TXT, and HTMLZ can follow that setting or use their own reading theme. The PDF Viewer uses the app appearance for its controls and displays PDF pages in their original colors.
 
 # Features
@@ -525,6 +521,23 @@ Exceptions are the configurations of storage sources which may need to be added 
 
 For more Information and Details check out this [Documentation](https://web.dev/storage-for-the-web/#how-much)
 
+# Develop locally
+
+Install [Node.js 24](https://nodejs.org/) and [pnpm 12.14.0](https://pnpm.io/installation). From the repository root, install the dependencies and start the dev server.
+
+```sh
+pnpm install --frozen-lockfile
+pnpm dev
+```
+
+Open the local address printed in the terminal. To run the browser smoke tests, install Playwright's headless Chromium once, build the app, and run the suite. Playwright starts and stops its own production preview.
+
+```sh
+pnpm --filter web exec playwright install --only-shell chromium
+pnpm build
+pnpm --filter web test:smoke
+```
+
 # Self Host
 
 If for some reason you want to host the reader by yourself, you can use the following approach.
@@ -558,9 +571,8 @@ docker-compose up
 2. Run the commands below
 
 ```sh
-cd apps/web
 pnpm install --frozen-lockfile
-pnpm svelte-kit sync
+pnpm --filter web exec svelte-kit sync
 pnpm build
 ```
 
