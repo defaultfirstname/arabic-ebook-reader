@@ -492,7 +492,7 @@
         {/if}
 
         {#if selectedCount > 0}
-          {#if hasEligibleSelection}
+          {#if selectedCount > 0}
             <div
               tabindex="0"
               role="button"
@@ -505,7 +505,7 @@
             >
               <Fa icon={faCloudArrowUp} />
             </div>
-            {#if $storageSource$ === StorageKey.BROWSER}
+            {#if hasEligibleSelection && $storageSource$ === StorageKey.BROWSER}
               <div
                 tabindex="0"
                 role="button"

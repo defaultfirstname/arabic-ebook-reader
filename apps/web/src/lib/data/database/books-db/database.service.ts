@@ -357,15 +357,61 @@ export class DatabaseService {
     this.lastItemChanged$.next();
   }
 
-  async addPdfBook(book: Omit<PdfBook, 'id'>, file: ArrayBuffer, signal: AbortSignal) {
+  async addPdfBook(book: Omit<PdfBook, 'id'>, file: Blob | ArrayBuffer, signal: AbortSignal) {
     const db = await this.db;
     throwIfAborted(signal);
     const tx = db.transaction(['pdfBook', 'pdfFile'], 'readwrite');
     const save = tx
       .objectStore('pdfBook')
-      .add(book as PdfBook)
+      .add({ ...book, backupId: book.backupId || crypto.randomUUID() } as PdfBook)
       .then((id) => tx.objectStore('pdfFile').add(file, id));
     await Promise.all([save, tx.done]);
+    this.pdfBooksChanged$.next();
+  }
+
+  async getPdfBookForBackup(id: number) {
+    const db = await this.db;
+    const tx = db.transaction(['pdfBook', 'pdfFile'], 'readwrite');
+    const book = await tx.objectStore('pdfBook').get(id);
+    const file = await tx.objectStore('pdfFile').get(id);
+    if (!book || !file) throw new Error('The PDF is no longer in your library.');
+    if (!book.backupId) {
+      book.backupId = crypto.randomUUID();
+      await tx.objectStore('pdfBook').put(book);
+    }
+    await tx.done;
+    return {
+      book,
+      file: file instanceof Blob ? file : new Blob([file], { type: 'application/pdf' })
+    };
+  }
+
+  async restorePdfBook(
+    book: Omit<PdfBook, 'id'>,
+    file: Blob,
+    saveBehavior: ReplicationSaveBehavior,
+    signal: AbortSignal
+  ) {
+    const db = await this.db;
+    throwIfAborted(signal);
+    const tx = db.transaction(['pdfBook', 'pdfFile'], 'readwrite');
+    const books = tx.objectStore('pdfBook');
+    const existing = (await books.getAll()).find((entry) => entry.backupId === book.backupId);
+    const overwrite = saveBehavior === ReplicationSaveBehavior.Overwrite;
+    const replaceFile = !existing || overwrite || book.lastBookModified > existing.lastBookModified;
+    const restored = { ...(replaceFile ? book : existing) } as PdfBook;
+    if (existing) {
+      restored.id = existing.id;
+      if (!overwrite) restored.lastBookOpen = Math.max(book.lastBookOpen, existing.lastBookOpen);
+      const position =
+        overwrite || book.lastBookmarkModified > existing.lastBookmarkModified ? book : existing;
+      restored.page = Math.min(position.page, restored.pages.length);
+      restored.layout = position.layout;
+      restored.lastBookmarkModified = position.lastBookmarkModified;
+    }
+    const id = await books.put(restored);
+    if (replaceFile) await tx.objectStore('pdfFile').put(file, id);
+    await tx.done;
     this.pdfBooksChanged$.next();
   }
 

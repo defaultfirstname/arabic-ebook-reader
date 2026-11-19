@@ -13,6 +13,11 @@ import type {
   BooksDbSubtitleData
 } from '#lib/data/database/books-db/versions/books-db';
 import type { MergeMode } from '#lib/data/merge-mode';
+import type { DatabaseService } from '#lib/data/database/books-db/database.service';
+import type { PdfBook } from '#lib/data/storage/pdf-book';
+import { pdfBackupRoot, readPdfBackupMetadata } from '#lib/data/storage/pdf-backup';
+import { throwIfAborted } from '#lib/functions/replication/replication-error';
+import { replicationProgress$ } from '#lib/functions/replication/replication-progress';
 import { readingGoalSortFunction } from '#lib/data/reading-goal';
 import { BaseStorageHandler, FilePrefix } from '#lib/data/storage/handler/base-handler';
 import { ReplicationSaveBehavior } from '#lib/functions/replication/replication-options';
@@ -102,6 +107,9 @@ export class BackupStorageHandler extends BaseStorageHandler {
 
     for (let index = 0, { length } = this.importEntries; index < length; index += 1) {
       const entry = this.importEntries[index];
+      if (entry.directory) continue;
+      if (entry.filename.startsWith(`${pdfBackupRoot}/`) && entry.filename.split('/').length > 2)
+        continue;
       const nameParts = entry.filename.split('/');
       const sanitizedTitle = nameParts[0];
       const title = BaseStorageHandler.desanitizeFilename(sanitizedTitle);
@@ -120,6 +128,79 @@ export class BackupStorageHandler extends BaseStorageHandler {
     }
 
     return [...titles.values()];
+  }
+
+  hasPdfBooks() {
+    return this.importEntries.some(
+      (entry) =>
+        entry.filename.startsWith(`${pdfBackupRoot}/`) && entry.filename.split('/').length > 2
+    );
+  }
+
+  async savePdfBook(book: PdfBook, file: Blob, signal?: AbortSignal) {
+    this.cancelSignal = signal;
+    const path = `${pdfBackupRoot}/${book.backupId}`;
+    const { id: _id, ...metadata } = book;
+    this.exportZipWriter = await this.addDataToZip(
+      `${path}/metadata.json`,
+      JSON.stringify({ version: 1, book: metadata }),
+      this.exportZipWriter,
+      0
+    );
+    this.exportZipWriter = await this.addDataToZip(
+      `${path}/document.pdf`,
+      file,
+      this.exportZipWriter,
+      0
+    );
+  }
+
+  async restorePdfBooks(storage: Pick<DatabaseService, 'restorePdfBook'>, signal: AbortSignal) {
+    this.cancelSignal = signal;
+    const paths = [
+      ...new Set(
+        this.importEntries
+          .filter(
+            (entry) =>
+              entry.filename.startsWith(`${pdfBackupRoot}/`) && entry.filename.split('/').length > 2
+          )
+          .map((entry) => entry.filename.split('/').slice(0, 2).join('/'))
+      )
+    ];
+    replicationProgress$.next({ progressBase: 1, maxProgress: paths.length });
+    for (const path of paths) {
+      throwIfAborted(signal);
+      const metadata = this.importEntries.find(
+        (entry) => entry.filename === `${path}/metadata.json`
+      );
+      const pdf = this.importEntries.find((entry) => entry.filename === `${path}/document.pdf`);
+      if (!metadata || !pdf)
+        throw new Error('Incomplete PDF backup: original file or metadata is missing.');
+      const book = readPdfBackupMetadata(
+        await this.extractAsJSON(metadata, 'Unable to read PDF metadata', 0)
+      );
+      if (path !== `${pdfBackupRoot}/${book.backupId}`)
+        throw new Error('PDF backup identity does not match its folder.');
+      const file = await this.readFromZip(
+        new BlobWriter('application/pdf'),
+        'Unable to read PDF file',
+        pdf,
+        0
+      );
+      if (!(await file.slice(0, 1024).text()).includes('%PDF-'))
+        throw new Error(`Invalid PDF file in backup: ${book.title}`);
+      await storage.restorePdfBook(book, file, this.saveBehavior, signal);
+      replicationProgress$.next({ progressToAdd: 1 });
+    }
+  }
+
+  async closeBackupZip() {
+    try {
+      await this.importReader?.close();
+    } finally {
+      this.importReader = undefined;
+      this.importEntries = [];
+    }
   }
 
   async getFilenameForRecentCheck(fileIdentifier: string) {

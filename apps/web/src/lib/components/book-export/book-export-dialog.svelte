@@ -4,7 +4,7 @@
   import DialogTemplate from '#lib/components/dialog-template.svelte';
   import Ripple from '#lib/components/ripple.svelte';
   import { buttonClasses } from '#lib/css-classes';
-  import { StorageKey } from '#lib/data/storage/storage-types';
+  import { StorageDataType, StorageKey } from '#lib/data/storage/storage-types';
   import {
     getStorageIconData,
     isStorageSourceAvailable,
@@ -19,7 +19,17 @@
   } from '#lib/data/store';
   import { executeReplicate$ } from '#lib/functions/replication/replication-progress';
 
-  let { onClose }: { onClose: () => void } = $props();
+  let {
+    onClose,
+    hasPdfBooks = false,
+    hasTextBooks = true
+  }: { onClose: () => void; hasPdfBooks?: boolean; hasTextBooks?: boolean } = $props();
+  const canExport = $derived(
+    $lastExportedTypes$.length > 0 &&
+      (hasTextBooks ||
+        ($lastExportedTarget$ === StorageKey.BACKUP &&
+          $lastExportedTypes$.includes(StorageDataType.DATA)))
+  );
 
   let icons = $derived(
     [
@@ -61,6 +71,12 @@
       bind:target={$lastExportedTarget$}
       bind:dataToReplicate={$lastExportedTypes$}
     />
+    {#if hasPdfBooks}
+      <p class="mt-4">
+        PDFs are included only in Zip File exports with Book Data selected, including their saved
+        page and layout. PDF cloud sync is not supported.
+      </p>
+    {/if}
   {/snippet}
   {#snippet footer()}
     <div class="flex grow justify-between">
@@ -70,8 +86,8 @@
       </button>
       <button
         class={buttonClasses}
-        class:cursor-not-allowed={!$lastExportedTypes$.length}
-        disabled={!$lastExportedTypes$.length}
+        class:cursor-not-allowed={!canExport}
+        disabled={!canExport}
         onclick={replicateData}
       >
         Start

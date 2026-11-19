@@ -31,7 +31,7 @@ The first time you enter the page (or have no files loaded yet) you will need to
 You can load files by clicking/tapping on the dropzone or respective Icons.
 Alternatively, you can also drag & drop files or folders on the manager if your device supports it.
 
-To keep a PDF in your library, select **Browser DB** in Book Manager and import the file. Open its **PDF** card and choose single pages, a standalone cover, or a spread starting on page 1. The reader saves your page and layout on this device. Existing ZIP exports and cloud sync cover the reflowable ebook formats.
+To keep a PDF in your library, select **Browser DB** in Book Manager and import the file. Open its **PDF** card and choose single pages, a standalone cover, or a spread starting on page 1. The reader saves your page and layout on this device. To back up PDFs, select their cards (or select all books), export to **Zip File**, and include **Book Data**. The ZIP contains the original PDFs and their saved page/layout alongside other selected books. Restore it with **Import Backup** while **Browser DB** is selected. Repeated restores recognize the same PDF independently of its title. The **When to overwrite data** setting applies to PDFs too: **Newer data only** preserves newer local files and reading positions; **Overwrite** restores the backup's copy. PDF cloud sync is not supported.
 
 In case you are facing issues for epub files like this (non closing anchor tags):
 

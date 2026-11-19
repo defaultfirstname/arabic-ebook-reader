@@ -132,21 +132,32 @@ export async function importBackup(
   file: File,
   cancelSignal: AbortSignal
 ) {
-  return replicateData(
-    sourceHandler,
-    targetHandler,
-    true,
-    await sourceHandler.setBackupZip(file),
-    [
-      StorageDataType.DATA,
-      StorageDataType.PROGRESS,
-      StorageDataType.STATISTICS,
-      StorageDataType.READING_GOALS,
-      StorageDataType.AUDIOBOOK,
-      StorageDataType.SUBTITLE
-    ],
-    cancelSignal
-  );
+  try {
+    const contexts = await sourceHandler.setBackupZip(file);
+    if (sourceHandler.hasPdfBooks() && targetHandler.storageType !== StorageKey.BROWSER) {
+      throw new Error('This backup includes PDFs. Choose Browser DB before restoring it.');
+    }
+    const error = await replicateData(
+      sourceHandler,
+      targetHandler,
+      true,
+      contexts,
+      [
+        StorageDataType.DATA,
+        StorageDataType.PROGRESS,
+        StorageDataType.STATISTICS,
+        StorageDataType.READING_GOALS,
+        StorageDataType.AUDIOBOOK,
+        StorageDataType.SUBTITLE
+      ],
+      cancelSignal
+    );
+    if (!error && sourceHandler.hasPdfBooks())
+      await sourceHandler.restorePdfBooks(database, cancelSignal);
+    return error;
+  } finally {
+    await sourceHandler.closeBackupZip();
+  }
 }
 
 export async function replicateData(
@@ -155,7 +166,8 @@ export async function replicateData(
   refreshDataList: boolean,
   contexts: ReplicationContext[],
   dataToReplicate: StorageDataType[],
-  cancelSignal?: AbortSignal
+  cancelSignal?: AbortSignal,
+  pdfIds: number[] = []
 ) {
   const bookOperationsLength = dataToReplicate.filter(
     (entry) => entry !== StorageDataType.READING_GOALS
@@ -165,7 +177,9 @@ export async function replicateData(
   const progressBaseForBookOperations = bookOperationsLength ? bookOperationsLength * 4 + 2 : 0;
   const progressBaseForOtherOperations = otherOperationsLength * 4;
   const maxProgress =
-    progressBaseForBookOperations * contexts.length + progressBaseForOtherOperations;
+    progressBaseForBookOperations * contexts.length +
+    progressBaseForOtherOperations +
+    pdfIds.length;
   const processBookData = dataToReplicate.includes(StorageDataType.DATA);
   const processProgressData = dataToReplicate.includes(StorageDataType.PROGRESS);
   const processStatistics = dataToReplicate.includes(StorageDataType.STATISTICS);
@@ -388,8 +402,22 @@ export async function replicateData(
   await Promise.all(replicationTasks).catch(() => {});
 
   if (targetHandler instanceof BackupStorageHandler) {
+    let pdfExportFailed = false;
+    for (const id of pdfIds) {
+      try {
+        throwIfAborted(cancelSignal);
+        const { book, file } = await database.getPdfBookForBackup(id);
+        await targetHandler.savePdfBook(book, file, cancelSignal);
+        processed += 1;
+        replicationProgress$.next({ progressToAdd: 1 });
+      } catch (error) {
+        pdfExportFailed = true;
+        errorMessage = error instanceof Error ? error.message : 'Unable to back up PDF.';
+        break;
+      }
+    }
     await targetHandler
-      .createExportZip(document, cancelSignal?.aborted || !processed)
+      .createExportZip(document, cancelSignal?.aborted || !processed || pdfExportFailed)
       .catch((error) => {
         errorMessage = error.message;
       });

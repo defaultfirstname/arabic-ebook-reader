@@ -18,6 +18,7 @@ export interface PdfReadingPosition {
 
 export interface PdfBook extends PdfReadingPosition {
   id: number;
+  backupId?: string;
   title: string;
   pages: PdfPageDimensions[];
   lastBookModified: number;

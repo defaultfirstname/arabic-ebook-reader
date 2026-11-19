@@ -31,7 +31,8 @@ export async function importPdfBook(file: File, { signal, storage }: ImportPdfBo
         lastBookOpen: 0,
         lastBookmarkModified: 0
       },
-      data,
+      // Large ArrayBuffers can exceed IndexedDB's serialized-value limit in Chromium.
+      new Blob([data], { type: 'application/pdf' }),
       signal
     );
   } catch (cause) {

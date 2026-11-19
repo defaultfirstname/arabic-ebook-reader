@@ -19,7 +19,7 @@
   import { logger } from '#lib/data/logger';
   import { openLibraryBook } from '#lib/data/storage/book-library';
   import { getStorageHandler } from '#lib/data/storage/storage-handler-factory';
-  import { StorageKey } from '#lib/data/storage/storage-types';
+  import { StorageDataType, StorageKey } from '#lib/data/storage/storage-types';
   import { storageSource$ } from '#lib/data/storage/storage-view';
   import { storage } from '#lib/data/window/navigator/storage';
   import {
@@ -511,8 +511,17 @@
   }
 
   function onReplicateData() {
-    if (!eligibleBooks.length) return;
-    dialogManager.dialogs$.next([{ component: BookExportDialog, disableCloseOnClick: true }]);
+    if (!selectedBooks.length) return;
+    dialogManager.dialogs$.next([
+      {
+        component: BookExportDialog,
+        props: {
+          hasPdfBooks: selectedBooks.some((book) => book.format === 'pdf'),
+          hasTextBooks: !!eligibleBooks.length
+        },
+        disableCloseOnClick: true
+      }
+    ]);
   }
 
   async function onDeleteStatistics() {
@@ -629,7 +638,12 @@
   const replicator$ = executeReplicate$.pipe(
     switchMap(async () => {
       const books = eligibleBooks;
-      if (!books.length || !operationAllowed()) {
+      const pdfIds =
+        $lastExportedTarget$ === StorageKey.BACKUP &&
+        $lastExportedTypes$.includes(StorageDataType.DATA)
+          ? selectedBooks.filter((book) => book.format === 'pdf').map((book) => book.id)
+          : [];
+      if ((!books.length && !pdfIds.length) || !operationAllowed()) {
         return;
       }
 
@@ -655,7 +669,8 @@
         false,
         books.map((book) => ({ title: book.title, imagePath: book.imagePath })),
         $lastExportedTypes$,
-        cancelSignal
+        cancelSignal,
+        pdfIds
       ).catch((err) => err.message);
 
       resetProgress();

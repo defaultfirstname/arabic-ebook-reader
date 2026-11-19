@@ -5,9 +5,10 @@
  */
 
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { BlobReader, ZipReader } from '@zip.js/zip.js';
+import { BlobReader, BlobWriter, ZipReader } from '@zip.js/zip.js';
 import { Buffer } from 'node:buffer';
 import { readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { deflateSync } from 'node:zlib';
 import { createEpub, firstChapter } from './fixtures/arabic-book-formats';
 
@@ -200,7 +201,8 @@ test('turns pages with the wheel at fit and keeps zoomed scrolling on the same s
 
 test('imports mixed books, saves PDF layout and page, and reopens offline', async ({
   page,
-  context
+  context,
+  browser
 }) => {
   await page.goto('/manage');
   const chooser = page.waitForEvent('filechooser');
@@ -214,6 +216,37 @@ test('imports mixed books, saves PDF layout and page, and reopens offline', asyn
   const pdf = page.getByRole('button', { name: 'كتاب PDF', exact: true });
   const text = page.getByRole('button', { name: 'كتاب', exact: true });
   await expect(text).toBeVisible();
+  await expect(pdf).toBeVisible();
+  const stored = await page.evaluate(async () => {
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('books');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    try {
+      const files = await new Promise<Blob[]>((resolve, reject) => {
+        const request = db.transaction('pdfFile').objectStore('pdfFile').getAll();
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      const file = files[0];
+      if (!(file instanceof Blob)) throw new Error('New PDFs must be stored as Blobs');
+      const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
+      return {
+        size: file.size,
+        hash: Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join(
+          ''
+        )
+      };
+    } finally {
+      db.close();
+    }
+  });
+  const originalPdf = spreadFixture(200);
+  expect(stored).toEqual({
+    size: originalPdf.length,
+    hash: createHash('sha256').update(originalPdf).digest('hex')
+  });
   await pdf.click();
   await expect(page.locator('html')).toHaveCSS('color-scheme', 'dark');
   await expect(page.getByRole('heading', { name: 'PDF Viewer' })).toBeVisible();
@@ -259,7 +292,7 @@ test('imports mixed books, saves PDF layout and page, and reopens offline', asyn
   await page.goto('/manage');
   await page.getByTitle('Enable Book Selection').getByRole('button').click();
   await pdf.click();
-  await expect(page.getByTitle('Open Export Menu')).toHaveCount(0);
+  await expect(page.getByTitle('Open Export Menu')).toBeVisible();
   await expect(page.getByTitle('Delete Statistics for selected Books')).toHaveCount(0);
   await text.click();
   await expect(page.getByTitle('Open Export Menu')).toBeVisible();
@@ -271,12 +304,100 @@ test('imports mixed books, saves PDF layout and page, and reopens offline', asyn
   const exportedBackup = await download;
   expect(exportedBackup.suggestedFilename()).toMatch(/^iliktruni-export-.*\.zip$/);
   const archive = new ZipReader(
-    new BlobReader(new Blob([await readFile((await exportedBackup.path())!)]))
+    new BlobReader(new Blob([await readFile((await exportedBackup.path())!)])),
+    { useWebWorkers: false }
   );
   const entries = await archive.getEntries();
   expect(entries.filter((entry) => entry.filename.includes('/bookdata_'))).toHaveLength(1);
-  expect(entries.some((entry) => entry.filename.endsWith('.pdf'))).toBe(false);
+  const pdfEntry = entries.find((entry) => entry.filename.endsWith('/document.pdf'))!;
+  expect(pdfEntry).toBeDefined();
+  const savedPdf = await pdfEntry.getData!(new BlobWriter());
+  expect(
+    createHash('sha256')
+      .update(Buffer.from(await savedPdf.arrayBuffer()))
+      .digest('hex')
+  ).toBe(createHash('sha256').update(originalPdf).digest('hex'));
   await archive.close();
+  const restoredContext = await browser.newContext();
+  try {
+    const restored = await restoredContext.newPage();
+    await restored.goto('/manage');
+    // Occupy PDF ID 1 so restoring cannot rely on source-local database IDs.
+    const existingChooser = restored.waitForEvent('filechooser');
+    await restored.getByRole('button', { name: 'Import Files', exact: true }).click();
+    await (
+      await existingChooser
+    ).setFiles({ name: 'existing.pdf', mimeType: 'application/pdf', buffer: spreadFixture() });
+    const existing = restored.getByRole('button', { name: 'existing PDF', exact: true });
+    await expect(existing).toBeVisible();
+    const restoredPdf = restored.getByRole('button', { name: 'كتاب PDF', exact: true });
+    const restoredText = restored.getByRole('button', { name: 'كتاب', exact: true });
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      if (attempt === 2) {
+        await restored.evaluate(() => localStorage.setItem('replicationSaveBehavior', 'overwrite'));
+        await restored.reload();
+        await expect(restoredPdf).toBeVisible();
+      }
+      const chooser = restored.waitForEvent('filechooser');
+      await restored.getByRole('button', { name: 'Import Backup', exact: true }).click();
+      await (
+        await chooser
+      ).setFiles({
+        name: 'library-backup.zip',
+        mimeType: 'application/zip',
+        buffer: await readFile((await exportedBackup.path())!)
+      });
+      await Promise.race([
+        restoredPdf.waitFor({ state: 'visible' }),
+        restored
+          .getByRole('heading', { name: 'Import failed', exact: true })
+          .waitFor()
+          .then(async () => {
+            throw new Error(await restored.locator('body').innerText());
+          })
+      ]);
+      await expect(restored.getByTitle('Cancel Operation', { exact: true })).toHaveCount(0);
+      await expect(restoredPdf).toHaveCount(1);
+      await expect(restoredText).toHaveCount(1);
+      await expect(existing).toBeVisible();
+      await restoredPdf.click();
+      await expect(
+        restored.getByLabel(`Page ${attempt === 1 ? 3 : 2}`, { exact: true })
+      ).toHaveAttribute('data-ready', 'true');
+      await expect(
+        (await openPdfLayout(restored)).getByRole('radio', { name: 'Single page', exact: true })
+      ).toBeChecked();
+      await restored.getByLabel('PDF options', { exact: true }).click();
+      if (attempt === 0) {
+        await restored.keyboard.press('ArrowLeft');
+        await expect(restored.getByLabel('Page 3', { exact: true })).toHaveAttribute(
+          'data-ready',
+          'true'
+        );
+      }
+      await restored.getByRole('link', { name: 'Go to Book Manager', exact: true }).click();
+      await expect(restored).toHaveURL(/\/manage$/);
+      await expect(restoredPdf).toBeVisible();
+    }
+    await restoredText.click();
+    await expect(restored.locator('.book-content')).toContainText(firstChapter);
+    await restored.goto('/manage');
+    await restoredPdf.click();
+    await expect(restored).toHaveURL(/\/pdf\?id=\d+$/);
+    await expect(restored.getByLabel('Page 2', { exact: true })).toHaveAttribute(
+      'data-ready',
+      'true'
+    );
+    await restored.evaluate(() => navigator.serviceWorker.ready.then(() => undefined));
+    await restoredContext.setOffline(true);
+    await restored.reload();
+    await expect(restored.getByLabel('Page 2', { exact: true })).toHaveAttribute(
+      'data-ready',
+      'true'
+    );
+  } finally {
+    await restoredContext.close();
+  }
   await page.getByTitle('Disable Book Selection').click();
 
   await text.hover();
