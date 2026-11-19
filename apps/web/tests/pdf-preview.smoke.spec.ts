@@ -4,12 +4,18 @@
  * All rights reserved.
  */
 
-import { expect, test, type Locator } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { BlobReader, ZipReader } from '@zip.js/zip.js';
 import { Buffer } from 'node:buffer';
 import { readFile } from 'node:fs/promises';
 import { deflateSync } from 'node:zlib';
 import { createEpub, firstChapter } from './fixtures/arabic-book-formats';
+
+async function openPdfLayout(page: Page) {
+  const layout = page.getByRole('group', { name: 'Page layout', exact: true });
+  if (!(await layout.isVisible())) await page.getByLabel('PDF options', { exact: true }).click();
+  return layout;
+}
 
 function spreadFixture(extraPages = 0) {
   const drawing = [
@@ -88,13 +94,22 @@ test('renders RTL spreads with matching inner edges and keeps a wide scan whole 
   const left = page.getByLabel('Page 3', { exact: true });
   const wide = page.getByLabel('Page 4', { exact: true });
   const final = page.getByLabel('Page 5', { exact: true });
-  const next = page.getByRole('button', { name: 'Next' });
-  const previous = page.getByRole('button', { name: 'Previous' });
-  const layout = page.getByLabel('Page layout');
+  const layout = page.getByRole('group', { name: 'Page layout', exact: true });
+  const options = page.getByLabel('PDF options', { exact: true });
   await expect(first).toHaveAttribute('data-ready', 'true');
-  await expect(previous).toBeDisabled();
+  await expect(page.getByRole('button', { name: /^(Next|Previous)$/ })).toHaveCount(0);
+  await page.keyboard.press('ArrowRight');
+  await expect(first).toBeVisible();
+  await expect(layout).toBeHidden();
+  await options.press('Enter');
+  await expect(layout.getByRole('radio', { name: 'Cover alone, then spreads' })).toBeChecked();
+  await expect(layout.getByRole('radio')).toHaveCount(3);
+  await page.keyboard.press('Escape');
+  await expect(layout).toBeHidden();
+  await expect(options).toBeFocused();
 
-  await next.click();
+  await page.getByLabel('PDF pages', { exact: true }).hover();
+  await page.mouse.wheel(0, 120);
   await expect(right).toHaveAttribute('data-ready', 'true');
   await expect(left).toHaveAttribute('data-ready', 'true');
   const rightBox = (await right.boundingBox())!;
@@ -126,19 +141,61 @@ test('renders RTL spreads with matching inner edges and keeps a wide scan whole 
   await expect(page.locator('canvas')).toHaveCount(1);
   expect(await edgePixel(wide, 'left')).toEqual([0, 0, 255, 255]);
   expect(await edgePixel(wide, 'right')).toEqual([0, 0, 255, 255]);
-  await next.click();
+  await page.keyboard.press('ArrowLeft');
   await expect(final).toHaveAttribute('data-ready', 'true');
-  await expect(next).toBeDisabled();
+  await page.keyboard.press('ArrowLeft');
+  await expect(final).toBeVisible();
 
-  await previous.click();
-  await previous.click();
-  await layout.selectOption('paired');
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowRight');
+  await (await openPdfLayout(page)).getByRole('radio', { name: 'Spread starts at page 1' }).check();
+  await expect(layout).toBeHidden();
   await expect(first).toBeVisible();
   await expect(right).toBeVisible();
   await expect(left).toHaveCount(0);
-  await layout.selectOption('single');
+  await expect(
+    (await openPdfLayout(page)).getByRole('radio', { name: 'Spread starts at page 1' })
+  ).toBeChecked();
+  await (await openPdfLayout(page))
+    .getByRole('radio', { name: 'Single page', exact: true })
+    .check();
   await expect(right).toBeVisible();
   await expect(first).toHaveCount(0);
+});
+
+test('turns pages with the wheel at fit and keeps zoomed scrolling on the same spread', async ({
+  page
+}) => {
+  await page.goto('/pdf-preview');
+  await page.getByLabel('Open PDF').setInputFiles({
+    name: 'wheel-check.pdf',
+    mimeType: 'application/pdf',
+    buffer: spreadFixture()
+  });
+  const stage = page.getByLabel('PDF pages', { exact: true });
+  const cover = page.getByLabel('Page 1', { exact: true });
+  const right = page.getByLabel('Page 2', { exact: true });
+  await expect(cover).toHaveAttribute('data-ready', 'true');
+  await stage.dispatchEvent('wheel', { deltaY: 120, ctrlKey: true });
+  await expect(cover).toBeVisible();
+  await stage.dispatchEvent('wheel', { deltaY: 120 });
+  await expect(right).toHaveAttribute('data-ready', 'true');
+  // A burst from one wheel gesture is throttled to avoid skipping spreads.
+  await stage.dispatchEvent('wheel', { deltaY: 120 });
+  await expect(right).toBeVisible();
+  await page.waitForTimeout(160);
+  await stage.dispatchEvent('wheel', { deltaY: -120 });
+  await expect(cover).toHaveAttribute('data-ready', 'true');
+  await page.waitForTimeout(160);
+  await stage.dispatchEvent('wheel', { deltaX: -120 });
+  await expect(right).toHaveAttribute('data-ready', 'true');
+  await page.getByRole('button', { name: 'Zoom in', exact: true }).click();
+  await expect(right).toHaveAttribute('data-ready', 'true');
+  await stage.hover();
+  await page.mouse.wheel(0, 240);
+  await expect(right).toBeVisible();
+  await page.keyboard.press('ArrowLeft');
+  await expect(page.getByLabel('Page 4', { exact: true })).toHaveAttribute('data-ready', 'true');
 });
 
 test('imports mixed books, saves PDF layout and page, and reopens offline', async ({
@@ -163,23 +220,30 @@ test('imports mixed books, saves PDF layout and page, and reopens offline', asyn
   await expect(page.getByLabel('Page 1', { exact: true })).toHaveAttribute('data-ready', 'true');
   await expect(page.locator('canvas')).toHaveCount(1);
   const url = page.url();
-  await page.getByRole('button', { name: 'Next', exact: true }).click();
+  await page.keyboard.press('ArrowLeft');
   await expect(page.getByLabel('Page 3', { exact: true })).toHaveAttribute('data-ready', 'true');
-  await page.getByLabel('Page layout').selectOption('paired');
+  await (await openPdfLayout(page)).getByRole('radio', { name: 'Spread starts at page 1' }).check();
   await expect(page.getByLabel('Page 1', { exact: true })).toHaveAttribute('data-ready', 'true');
-  await page.getByRole('link', { name: 'Book Manager', exact: true }).click();
+  await page.getByRole('link', { name: 'Go to Book Manager', exact: true }).click();
   await page.getByTitle('Back to Book', { exact: true }).getByRole('button').click();
   await expect(page).toHaveURL(url);
-  await expect(page.getByLabel('Page layout')).toHaveValue('paired');
+  await expect(
+    (await openPdfLayout(page)).getByRole('radio', { name: 'Spread starts at page 1' })
+  ).toBeChecked();
   await page.evaluate(() => navigator.serviceWorker.ready.then(() => undefined));
   await context.setOffline(true);
   const reopened = await context.newPage();
   await reopened.goto('/');
   await expect(reopened).toHaveURL(url);
-  await expect(reopened.getByLabel('Page layout')).toHaveValue('paired');
+  await expect(
+    (await openPdfLayout(reopened)).getByRole('radio', { name: 'Spread starts at page 1' })
+  ).toBeChecked();
   await reopened.goto(url);
-  await expect(reopened.getByLabel('Page layout')).toHaveValue('paired');
-  await reopened.getByLabel('Page layout').selectOption('single');
+  const reopenedLayout = await openPdfLayout(reopened);
+  await expect(
+    reopenedLayout.getByRole('radio', { name: 'Spread starts at page 1' })
+  ).toBeChecked();
+  await reopenedLayout.getByRole('radio', { name: 'Single page', exact: true }).check();
   await expect(reopened.getByLabel('Page 2', { exact: true })).toHaveAttribute(
     'data-ready',
     'true'
@@ -221,7 +285,7 @@ test('imports mixed books, saves PDF layout and page, and reopens offline', asyn
   await pdf.click();
   await expect(page.getByLabel('Page 2', { exact: true })).toHaveAttribute('data-ready', 'true');
 
-  await page.getByRole('link', { name: 'Book Manager', exact: true }).click();
+  await page.getByRole('link', { name: 'Go to Book Manager', exact: true }).click();
   const textChooser = page.waitForEvent('filechooser');
   await page.getByRole('button', { name: 'Import Files', exact: true }).click();
   await (
@@ -244,7 +308,7 @@ test('imports mixed books, saves PDF layout and page, and reopens offline', asyn
   await page.goto('/manage');
   await pdf.click();
   await expect(page.getByLabel('Page 2', { exact: true })).toHaveAttribute('data-ready', 'true');
-  await page.getByRole('link', { name: 'Book Manager', exact: true }).click();
+  await page.getByRole('link', { name: 'Go to Book Manager', exact: true }).click();
   await pdf.hover();
   await page.getByTitle('Delete book', { exact: true }).click();
   await expect(pdf).toHaveCount(0);
@@ -399,6 +463,11 @@ test.describe('touch navigation', () => {
     });
     const cover = page.getByLabel('Page 1', { exact: true });
     await expect(cover).toHaveAttribute('data-ready', 'true');
+    const layout = page.getByRole('group', { name: 'Page layout', exact: true });
+    await page.getByLabel('PDF options', { exact: true }).tap();
+    await expect(layout).toBeInViewport({ ratio: 1 });
+    await cover.tap();
+    await expect(layout).toBeHidden();
 
     const session = await context.newCDPSession(page);
     async function swipe(from: number, to: number) {

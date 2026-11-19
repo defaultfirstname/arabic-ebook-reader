@@ -1,11 +1,15 @@
 <script lang="ts">
   import type { PDFDocumentProxy, PDFPageProxy, RenderTask } from 'pdfjs-dist';
+  import { faEllipsisVertical } from '@fortawesome/free-solid-svg-icons';
+  import { mergeEntries } from '#lib/components/merged-header-icon/merged-entries';
   import type { PdfPageDimensions, PdfReadingPosition } from '#lib/data/storage/pdf-book';
-  import { buttonClasses, headerSurfaceClasses, selectClasses } from '#lib/css-classes';
+  import { baseIconClasses, buttonClasses, headerSurfaceClasses } from '#lib/css-classes';
   import { formatPageTitle } from '#lib/functions/format-page-title';
+  import { clickOutside } from '#lib/functions/use-click-outside';
   import { loadPdf, pdfOpenError, readPdfDimensions } from './pdf-document';
   import { getPdfSpreads, type PdfLayout } from './pdf-spreads';
   import { tick } from 'svelte';
+  import Fa from 'svelte-fa';
 
   interface Props {
     saved?: {
@@ -34,6 +38,12 @@
   let zoomIndex = $state(0);
   let viewportElement: HTMLDivElement | undefined = $state();
   let spreadElement: HTMLDivElement | undefined = $state();
+  let layoutMenu: HTMLDetailsElement | undefined = $state();
+  const layoutOptions: { value: PdfLayout; label: string }[] = [
+    { value: 'single', label: 'Single page' },
+    { value: 'cover', label: 'Cover alone, then spreads' },
+    { value: 'paired', label: 'Spread starts at page 1' }
+  ];
   let loadId = 0;
   let loadController: AbortController | undefined;
 
@@ -181,7 +191,17 @@
     savePosition();
   }
 
+  function closeLayoutMenu(returnFocus = false) {
+    if (!layoutMenu?.open) return;
+    layoutMenu.open = false;
+    if (returnFocus) layoutMenu.querySelector('summary')?.focus();
+  }
+
   function onKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape' && !event.defaultPrevented && layoutMenu?.open) {
+      closeLayoutMenu(true);
+      return;
+    }
     if (
       event.altKey ||
       event.ctrlKey ||
@@ -190,6 +210,7 @@
       event.defaultPrevented ||
       event.target instanceof HTMLSelectElement ||
       event.target instanceof HTMLInputElement ||
+      (layoutMenu?.open && layoutMenu.contains(event.target as Node)) ||
       spreadIndex < 0
     )
       return;
@@ -197,6 +218,32 @@
       event.preventDefault();
       turn(event.key === 'ArrowLeft' ? 1 : -1);
     }
+  }
+
+  function wheelNavigation(node: HTMLElement) {
+    let lastTurn = -Infinity;
+    const onWheel = (event: WheelEvent) => {
+      if (
+        zoom !== 1 ||
+        layoutMenu?.open ||
+        spreadIndex < 0 ||
+        event.defaultPrevented ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.altKey ||
+        event.shiftKey
+      )
+        return;
+      const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? -event.deltaX : event.deltaY;
+      if (!delta) return;
+      event.preventDefault();
+      const now = performance.now();
+      if (now - lastTurn < 150) return;
+      lastTurn = now;
+      turn(delta > 0 ? 1 : -1);
+    };
+    node.addEventListener('wheel', onWheel, { passive: false });
+    return { destroy: () => node.removeEventListener('wheel', onWheel) };
   }
 
   let touchStart: { x: number; y: number } | undefined;
@@ -233,7 +280,14 @@
         {/if}
       </div>
       {#if libraryHref}
-        <a class={buttonClasses} href={libraryHref}>Book Manager</a>
+        <a
+          class={baseIconClasses}
+          href={libraryHref}
+          aria-label={mergeEntries.MANAGE.title}
+          title={mergeEntries.MANAGE.title}
+        >
+          <Fa icon={mergeEntries.MANAGE.icon} />
+        </a>
       {:else}
         <label class="open {buttonClasses}">
           Open PDF
@@ -248,25 +302,46 @@
           />
         </label>
       {/if}
+      {#if dimensions.length}
+        <details class="relative" bind:this={layoutMenu} use:clickOutside={() => closeLayoutMenu()}>
+          <summary
+            class="{baseIconClasses} list-none [&::-webkit-details-marker]:hidden"
+            aria-label="PDF options"
+            title="PDF options"
+          >
+            <Fa icon={faEllipsisVertical} />
+          </summary>
+          <div
+            class="absolute right-0 top-full z-20 w-max max-w-[calc(100vw-2rem)] rounded border border-app-divider bg-app-surface p-3 shadow-lg"
+          >
+            <fieldset class="flex flex-col gap-1 text-sm">
+              <legend class="mb-2 font-medium">Page layout</legend>
+              {#each layoutOptions as option (option.value)}
+                <label
+                  class="flex cursor-pointer items-center gap-3 rounded px-2 py-2 hover:bg-app-hover"
+                >
+                  <input
+                    type="radio"
+                    name="pdf-page-layout"
+                    value={option.value}
+                    checked={layout === option.value}
+                    onchange={() => {
+                      layout = option.value;
+                      renderError = false;
+                      savePosition();
+                      closeLayoutMenu(true);
+                    }}
+                  />
+                  {option.label}
+                </label>
+              {/each}
+            </fieldset>
+          </div>
+        </details>
+      {/if}
     </div>
     {#if dimensions.length}
       <div class="controls">
-        <label class="flex flex-wrap items-center gap-2 text-sm">
-          <span>Page layout</span>
-          <select
-            class={selectClasses}
-            value={layout}
-            onchange={(event) => {
-              layout = event.currentTarget.value as PdfLayout;
-              renderError = false;
-              savePosition();
-            }}
-          >
-            <option value="single">Single page</option>
-            <option value="cover">Cover alone, then spreads</option>
-            <option value="paired">Spread starts at page 1</option>
-          </select>
-        </label>
         <div class="zoom-controls" role="group" aria-label="PDF zoom">
           <button
             class={buttonClasses}
@@ -289,19 +364,9 @@
             onclick={() => setZoom(zoomIndex + 1)}>+</button
           >
         </div>
-        <nav aria-label="Page navigation" dir="rtl">
-          <button class={buttonClasses} disabled={spreadIndex <= 0} onclick={() => turn(-1)}
-            >Previous</button
-          >
-          <output dir="ltr" aria-live="polite">
-            {spreads[spreadIndex]?.join('–')} / {dimensions.length}
-          </output>
-          <button
-            class={buttonClasses}
-            disabled={spreadIndex >= spreads.length - 1}
-            onclick={() => turn(1)}>Next</button
-          >
-        </nav>
+        <output dir="ltr" aria-label="Page progress" aria-live="polite">
+          {spreads[spreadIndex]?.join('–')} / {dimensions.length}
+        </output>
       </div>
     {/if}
     {#if saveError}
@@ -315,6 +380,7 @@
     class:zoomed={zoom > 1}
     bind:clientWidth={width}
     bind:clientHeight={height}
+    use:wheelNavigation
     onpointerdown={onPointerDown}
     onpointerup={onPointerUp}
     onpointercancel={() => (touchStart = undefined)}
@@ -366,8 +432,7 @@
   }
 
   .heading,
-  .controls,
-  nav {
+  .controls {
     display: flex;
     align-items: center;
     justify-content: space-between;

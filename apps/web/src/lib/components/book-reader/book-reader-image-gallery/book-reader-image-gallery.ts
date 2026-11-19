@@ -7,6 +7,8 @@
 import { Subject } from 'rxjs';
 import { writableSubject } from '#lib/functions/svelte/store';
 
+export const showImageLabel = 'إظهار الصورة';
+
 export enum ReaderImageGalleryAvailableKeybind {
   PREVIOUS_IMAGE = 'previousImage',
   NEXT_IMAGE = 'nextImage',

@@ -10,11 +10,7 @@
   import LogReportDialog from '#lib/components/log-report-dialog.svelte';
   import { mergeEntries } from '#lib/components/merged-header-icon/merged-entries';
   import MessageDialog from '#lib/components/message-dialog.svelte';
-  import {
-    loadPdf,
-    pdfOpenError,
-    readPdfDimensions
-  } from '#lib/components/pdf-viewer/pdf-document';
+  import { importPdfBook } from '#lib/components/pdf-viewer/import-pdf-book';
   import { getBookHref, getBookKey } from '#lib/data/book-reference';
   import { preFilteredTitlesForStatistics$ } from '#lib/components/statistics/statistics-types';
   import { pxScreen } from '#lib/css-classes';
@@ -333,36 +329,8 @@
       replicationProgress$.next({ progressBase: 1, maxProgress: pdfFiles.length });
       for (const file of pdfFiles) {
         if (cancelSignal.aborted) break;
-        let opened: Awaited<ReturnType<typeof loadPdf>> | undefined;
-        try {
-          const data = await file.arrayBuffer();
-          // PDF.js transfers its buffer to the worker. Keep the original bytes for storage.
-          opened = await loadPdf(data.slice(0), cancelSignal);
-          const pages = await readPdfDimensions(opened.document, cancelSignal);
-          if (!pages.length) throw new Error('Empty PDF');
-          await database.addPdfBook(
-            {
-              title: file.name.replace(/\.pdf$/i, '') || file.name,
-              pages,
-              page: 1,
-              layout: 'cover',
-              lastBookModified: file.lastModified,
-              lastBookOpen: 0,
-              lastBookmarkModified: 0
-            },
-            data,
-            cancelSignal
-          );
-        } catch (cause) {
-          if (!cancelSignal.aborted) {
-            logger.warn('PDF import failed', cause);
-            errors.push(
-              `${file.name}: ${opened ? 'Could not import this PDF.' : pdfOpenError(cause)}`
-            );
-          }
-        } finally {
-          await opened?.destroy();
-        }
+        const error = await importPdfBook(file, { signal: cancelSignal, storage: database });
+        if (error) errors.push(error);
         replicationProgress$.next({ progressToAdd: 1 });
       }
     }

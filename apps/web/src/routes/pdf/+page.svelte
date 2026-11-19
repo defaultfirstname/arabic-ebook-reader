@@ -1,10 +1,12 @@
 <script lang="ts">
   import { page } from '$app/state';
+  import { mergeEntries } from '#lib/components/merged-header-icon/merged-entries';
   import PdfViewer from '#lib/components/pdf-viewer/pdf-viewer.svelte';
-  import { buttonClasses, headerSurfaceClasses } from '#lib/css-classes';
+  import { baseIconClasses, headerSurfaceClasses } from '#lib/css-classes';
   import { pagePath } from '#lib/data/env';
   import { database } from '#lib/data/store';
   import type { PdfBook } from '#lib/data/storage/pdf-book';
+  import Fa from 'svelte-fa';
 
   const libraryHref = `${pagePath}/manage`;
   const id = $derived(Number(page.url.searchParams.get('id')));
@@ -53,7 +55,14 @@
 {:else}
   <header class="flex items-center justify-between px-4 py-2 {headerSurfaceClasses}">
     <h1 class="font-semibold">PDF Viewer</h1>
-    <a href={libraryHref} class={buttonClasses}>Book Manager</a>
+    <a
+      href={libraryHref}
+      class={baseIconClasses}
+      aria-label={mergeEntries.MANAGE.title}
+      title={mergeEntries.MANAGE.title}
+    >
+      <Fa icon={mergeEntries.MANAGE.icon} />
+    </a>
   </header>
   <main class="p-6">
     {#if loading}

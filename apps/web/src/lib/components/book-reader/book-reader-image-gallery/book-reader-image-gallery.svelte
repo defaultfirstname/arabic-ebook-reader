@@ -1,7 +1,10 @@
 <script lang="ts">
   import { onKeyDownReaderImageGallery } from '../../../../routes/b/on-keydown-reader';
   import { faChevronLeft, faChevronRight, faXmark } from '@fortawesome/free-solid-svg-icons';
-  import { readerImageGalleryPictures$ } from '#lib/components/book-reader/book-reader-image-gallery/book-reader-image-gallery';
+  import {
+    readerImageGalleryPictures$,
+    showImageLabel
+  } from '#lib/components/book-reader/book-reader-image-gallery/book-reader-image-gallery';
   import {
     hideSpoilerImage$,
     readerImageGalleryKeybindMap$,
@@ -164,12 +167,13 @@
           </button>
           {#if showSpoiler}
             <button
-              title="Show Image"
+              title={showImageLabel}
               class="spoiler-label"
-              aria-hidden="true"
+              lang="ar"
+              dir="rtl"
               onclick={() => toggleGalleryPictureSpoiler(readerImageGalleryPicture.url)}
             >
-              Show image
+              {showImageLabel}
             </button>
           {/if}
         </div>
@@ -196,12 +200,13 @@
           <img class="max-h-[94vh]" src={selectedImage.url} alt="currentImage" />
           {#if showSpoiler}
             <button
-              title="Show Image"
+              title={showImageLabel}
               class="spoiler-label"
-              aria-hidden="true"
+              lang="ar"
+              dir="rtl"
               onclick={() => toggleGalleryPictureSpoiler(selectedImage.url)}
             >
-              Show image
+              {showImageLabel}
             </button>
           {/if}
         </div>
