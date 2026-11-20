@@ -35,8 +35,6 @@ To keep a PDF in your library, select **Browser DB** in Book Manager and import 
 
 In case you are facing issues for epub files like this (non closing anchor tags):
 
-<img height="240" alt="image" src="https://github.com/user-attachments/assets/85262001-47bf-4b34-a41c-2c026f3d1ab5" />
-
 you can try to (temporarily) enable standard or extendend mode for the "Epub Import Fixes" setting under "Data" and (re) import the file to verify potential auto fixes.
 
 **Note for Text Files**: The book title (which is also used to check for duplicates) will be the name of the file. The text will be splitted into paragraphs at punctuation such as periods and Arabic question marks (؟). Sections will be splitted around 10000 characters each. The file content will be parsed as plain text - any html tags (e. g. links) will therefore be printed out as text and not elements.
