@@ -35,7 +35,6 @@ To keep a PDF in your library, select **Browser DB** in Book Manager and import 
 
 In case you are facing issues for epub files like this (non closing anchor tags):
 
-<img height="240" alt="image" src="https://github.com/user-attachments/assets/85262001-47bf-4b34-a41c-2c026f3d1ab5" />
 
 you can try to (temporarily) enable standard or extendend mode for the "Epub Import Fixes" setting under "Data" and (re) import the file to verify potential auto fixes.
 
