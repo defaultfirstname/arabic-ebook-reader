@@ -15,6 +15,7 @@ import type {
 } from '#lib/data/database/books-db/versions/books-db';
 import { Observable, Subject, from } from 'rxjs';
 import type { PdfBook, PdfReadingPosition } from '#lib/data/storage/pdf-book';
+import { getPdfRestoreDecision } from '#lib/data/storage/pdf-restore-rules';
 import { StorageDataType, StorageKey } from '#lib/data/storage/storage-types';
 import {
   advanceDateDays,
@@ -397,19 +398,12 @@ export class DatabaseService {
     const tx = db.transaction(['pdfBook', 'pdfFile'], 'readwrite');
     const books = tx.objectStore('pdfBook');
     const existing = (await books.getAll()).find((entry) => entry.backupId === book.backupId);
-    const overwrite = saveBehavior === ReplicationSaveBehavior.Overwrite;
-    const replaceFile = !existing || overwrite || book.lastBookModified > existing.lastBookModified;
-    const restored = { ...(replaceFile ? book : existing) } as PdfBook;
-    if (existing) {
-      restored.id = existing.id;
-      if (!overwrite) restored.lastBookOpen = Math.max(book.lastBookOpen, existing.lastBookOpen);
-      const position =
-        overwrite || book.lastBookmarkModified > existing.lastBookmarkModified ? book : existing;
-      restored.page = Math.min(position.page, restored.pages.length);
-      restored.layout = position.layout;
-      restored.lastBookmarkModified = position.lastBookmarkModified;
-    }
-    const id = await books.put(restored);
+    const { book: restored, replaceFile } = getPdfRestoreDecision({
+      existing,
+      incoming: book,
+      overwrite: saveBehavior === ReplicationSaveBehavior.Overwrite
+    });
+    const id = await books.put(restored as PdfBook);
     if (replaceFile) await tx.objectStore('pdfFile').put(file, id);
     await tx.done;
     this.pdfBooksChanged$.next();
